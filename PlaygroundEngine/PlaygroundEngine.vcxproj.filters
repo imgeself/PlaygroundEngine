@@ -24,25 +24,25 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\PGWindowWin32.cpp">
-      <Filter>Platform\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="PGSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\Win32\PGWindowWin32.cpp">
+      <Filter>Platform\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PGWindow.h">
-      <Filter>Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="Platform\PGPlatformDefinesWin32.h">
-      <Filter>Platform\Win32</Filter>
-    </ClInclude>
-    <ClInclude Include="Platform\PGEventCallbackWin32.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PGSystem.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Win32\PGEventCallbackWin32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h">
+      <Filter>Platform\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PGWindow.h">
+      <Filter>Platform</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef PLATFORM_WIN32
-#include "Platform/PGPlatformDefinesWin32.h"
+#include "Win32/PGPlatformDefinesWin32.h"
 #endif // PLATFORM_WIN32
 
 class PGWindow {

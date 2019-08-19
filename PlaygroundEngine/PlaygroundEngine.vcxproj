@@ -153,13 +153,13 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PGSystem.cpp" />
-    <ClCompile Include="Platform\PGWindowWin32.cpp" />
+    <ClCompile Include="Platform\Win32\PGWindowWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSystem.h" />
-    <ClInclude Include="Platform\PGEventCallbackWin32.h" />
-    <ClInclude Include="Platform\PGPlatformDefinesWin32.h" />
-    <ClInclude Include="PGWindow.h" />
+    <ClInclude Include="Platform\Win32\PGEventCallbackWin32.h" />
+    <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h" />
+    <ClInclude Include="Platform\PGWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

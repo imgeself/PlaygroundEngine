@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PGWindow.h"
+#include "Platform/PGWindow.h"
 
 class PGSystem {
 public:

@@ -1,5 +1,5 @@
 #pragma once
 
-#include "PGEventCallbackWin32.h"
+#include <Windows.h>
 
 typedef HWND WindowHandle;

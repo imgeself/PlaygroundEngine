@@ -30,12 +30,12 @@
     <ClCompile Include="Platform\Win32\PGWindowWin32.cpp">
       <Filter>Platform\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="Events\PGSystemEventDispatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Platform\Win32\PGEventCallbackWin32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h">
@@ -43,6 +43,12 @@
     </ClInclude>
     <ClInclude Include="Platform\PGWindow.h">
       <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Events\PGEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Events\PGSystemEventDispatcher.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

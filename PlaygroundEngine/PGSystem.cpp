@@ -33,11 +33,13 @@ void PGSystem::RunMainLoop() {
             delete m_Window;
             running = false;
         }
+
+        if (PGInput::IsKeyPressed(PGKEY_W)) {
+            printf("W is pressed\n");
+        }
     }
 }
 
 void PGSystem::OnSystemEvent(SystemEvent event) {
     printf("Event occured %d\n", event);
 }
-
-

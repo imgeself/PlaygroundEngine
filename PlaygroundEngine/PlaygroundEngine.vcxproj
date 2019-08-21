@@ -154,12 +154,15 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PGSystem.cpp" />
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
+    <ClCompile Include="Platform\Win32\PGInputWin32.cpp" />
     <ClCompile Include="Platform\Win32\PGWindowWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Events\PGEvent.h" />
     <ClInclude Include="PGSystem.h" />
     <ClInclude Include="Events\PGSystemEventDispatcher.h" />
+    <ClInclude Include="Platform\PGInput.h" />
+    <ClInclude Include="Platform\PGKeycode.h" />
     <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h" />
     <ClInclude Include="Platform\PGWindow.h" />
   </ItemGroup>

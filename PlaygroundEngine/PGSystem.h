@@ -15,7 +15,6 @@ public:
 
     virtual void OnSystemEvent(SystemEvent event) override;
 
-
     static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return m_systemEventDispatcher; };
 
 private:

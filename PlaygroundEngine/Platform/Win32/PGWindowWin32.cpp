@@ -1,10 +1,28 @@
 #include "../PGWindow.h"
 
-static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (uMsg == WM_CREATE) {
+        LONG_PTR window = (LONG_PTR)reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams;
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, window);
+    }
+
+    PGWindow* window = hwnd ? reinterpret_cast<PGWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)) : NULL;
+
     switch (uMsg) {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+        } return 0;
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        {
+            PGInput::keyPressedState[wParam] = true;
+        } break;
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+        {
+            PGInput::keyPressedState[wParam] = false;
+        } break;
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 };
@@ -14,7 +32,7 @@ PGWindow::PGWindow(const char* name, int width, int height) {
 
     const char* windowClassName = "WindowClass";
     WNDCLASS windowClass = {};
-    windowClass.lpfnWndProc = WindowProc;
+    windowClass.lpfnWndProc = &PGWindow::WindowProc;
     windowClass.hInstance = hInstance;
     windowClass.lpszClassName = windowClassName;
 
@@ -31,7 +49,7 @@ PGWindow::PGWindow(const char* name, int width, int height) {
         NULL,
         NULL,
         hInstance,
-        NULL);
+        this);
 
 
     m_Handle = windowHandle;

@@ -1,8 +1,8 @@
 #pragma once
 
-#ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINDOWS
 #include "Win32/PGPlatformDefinesWin32.h"
-#endif // PLATFORM_WIN32
+#endif // PLATFORM_WINDOWS
 
 #include "PGInput.h"
 
@@ -19,7 +19,7 @@ public:
 private:
     WindowHandle m_Handle;
 
-#ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINDOWS
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
 };

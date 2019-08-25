@@ -2,7 +2,7 @@
 
 typedef int KeyCode;
 
-#ifdef PLATFORM_WIN32
+#ifdef PLATFORM_WINDOWS
 #include <Windows.h>
 
 #define PGKEY_UNKNOWN            -1

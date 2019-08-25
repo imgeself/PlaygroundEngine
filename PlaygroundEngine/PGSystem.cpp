@@ -1,5 +1,6 @@
 #include "PGSystem.h"
 #include "Renderer/PGRenderer.h"
+#include "Renderer/DX11/DX11Renderer.h"
 
 // Static members
 std::shared_ptr<PGSystemEventDispatcher> PGSystem::m_systemEventDispatcher = std::make_shared<PGSystemEventDispatcher>();
@@ -17,7 +18,7 @@ bool PGSystem::InitializeSystem() {
     const char* windowName = "PlaygroundEngine";
     m_Window = new PGWindow(windowName, 1280, 720);
 
-    PGRenderer renderer = PGRenderer(m_Window);
+    m_Renderer = new DX11Renderer(m_Window);
     
     m_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     
@@ -40,6 +41,11 @@ void PGSystem::RunMainLoop() {
         if (PGInput::IsKeyPressed(PGKEY_W)) {
             printf("W is pressed\n");
         }
+
+        const float color[] = {1.0f, 0.0f, 0.0f, 1.0f};
+        m_Renderer->ClearScreen(color);
+
+        m_Renderer->EndFrame();
     }
 }
 

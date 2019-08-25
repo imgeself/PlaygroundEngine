@@ -179,6 +179,7 @@
     <ClInclude Include="Platform\PGKeycode.h" />
     <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h" />
     <ClInclude Include="Platform\PGWindow.h" />
+    <ClInclude Include="Renderer\DX11\DX11Renderer.h" />
     <ClInclude Include="Renderer\PGRenderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

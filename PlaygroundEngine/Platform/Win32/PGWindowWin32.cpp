@@ -20,7 +20,9 @@ LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
     }
 };
 
-PGWindow::PGWindow(const char* name, uin32_t width, uint32_t height) {
+PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height) 
+    : m_Width(width)
+    , m_Height(height) {
     HINSTANCE hInstance = GetModuleHandle(0);
 
     const char* windowClassName = "WindowClass";
@@ -46,8 +48,6 @@ PGWindow::PGWindow(const char* name, uin32_t width, uint32_t height) {
 
 
     m_Handle = windowHandle;
-    m_Width = width;
-    m_Height = height;
 }
 
 PGWindow::~PGWindow() {

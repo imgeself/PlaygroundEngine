@@ -3,9 +3,12 @@
 #include "../Core.h"
 #include "../Platform/PGWindow.h"
 
-class PGRenderer {
+class IRenderer {
 public:
-    PGRenderer(PGWindow* window);
-    ~PGRenderer();
+    
+    virtual ~IRenderer() = default;
+
+    virtual void ClearScreen(const float* color) = 0;
+    virtual void EndFrame() = 0;
 };
 

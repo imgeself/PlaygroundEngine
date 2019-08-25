@@ -1,33 +1,26 @@
 #include "../PGWindow.h"
 
 LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    if (uMsg == WM_CREATE) {
-        LONG_PTR window = (LONG_PTR)reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams;
-        SetWindowLongPtrW(hwnd, GWLP_USERDATA, window);
+    PGWindow* window = nullptr;
+
+    if (uMsg == WM_NCCREATE) {
+        CREATESTRUCT* create = reinterpret_cast<CREATESTRUCT*>(lParam);
+        window = reinterpret_cast<PGWindow*>(create->lpCreateParams);
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) window);
+
+        window->m_Handle = hwnd;
+    } else {
+        window = reinterpret_cast<PGWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
     }
 
-    PGWindow* window = hwnd ? reinterpret_cast<PGWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)) : NULL;
-
-    switch (uMsg) {
-        case WM_DESTROY:
-        {
-            PostQuitMessage(0);
-        } return 0;
-        case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-        {
-            PGInput::keyPressedState[wParam] = true;
-        } break;
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
-            PGInput::keyPressedState[wParam] = false;
-        } break;
+    if (window) {
+        window->HandleMessage(uMsg, wParam, lParam);
+    } else {
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 };
 
-PGWindow::PGWindow(const char* name, int width, int height) {
+PGWindow::PGWindow(const char* name, uin32_t width, uint32_t height) {
     HINSTANCE hInstance = GetModuleHandle(0);
 
     const char* windowClassName = "WindowClass";
@@ -53,10 +46,24 @@ PGWindow::PGWindow(const char* name, int width, int height) {
 
 
     m_Handle = windowHandle;
+    m_Width = width;
+    m_Height = height;
 }
 
 PGWindow::~PGWindow() {
     DestroyWindow(m_Handle);
+}
+
+WindowHandle PGWindow::GetWindowHandle() {
+    return m_Handle;
+}
+
+uint32_t PGWindow::GetWidth() {
+    return m_Width;
+}
+
+uint32_t PGWindow::GetHeight() {
+    return m_Height;
 }
 
 void PGWindow::Show() {
@@ -78,3 +85,26 @@ bool PGWindow::ProcessMessages() {
 
     return true;
 }
+
+LRESULT PGWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+        } return 0;
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        {
+            PGInput::keyPressedState[wParam] = true;
+        } break;
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+        {
+            PGInput::keyPressedState[wParam] = false;
+        } break;
+    }
+
+    return DefWindowProc(m_Handle, uMsg, wParam, lParam);
+}
+
+

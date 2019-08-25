@@ -1,4 +1,5 @@
 #include "PGSystem.h"
+#include "Renderer/PGRenderer.h"
 
 // Static members
 std::shared_ptr<PGSystemEventDispatcher> PGSystem::m_systemEventDispatcher = std::make_shared<PGSystemEventDispatcher>();
@@ -15,6 +16,8 @@ bool PGSystem::InitializeSystem() {
 
     const char* windowName = "PlaygroundEngine";
     m_Window = new PGWindow(windowName, 1280, 720);
+
+    PGRenderer renderer = PGRenderer(m_Window);
     
     m_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     

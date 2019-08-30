@@ -42,7 +42,7 @@ void PGSystem::RunMainLoop() {
             printf("W is pressed\n");
         }
 
-        const float color[] = {1.0f, 0.0f, 0.0f, 1.0f};
+        const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
         m_Renderer->ClearScreen(color);
 
         m_Renderer->EndFrame();

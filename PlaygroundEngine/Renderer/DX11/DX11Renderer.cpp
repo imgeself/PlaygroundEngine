@@ -1,4 +1,7 @@
 #include "DX11Renderer.h"
+#include "../../Math/math_util.h"
+
+#include <time.h>
 
 #define SAFE_RELEASE(p) { if(p) { p->Release(); } }
 
@@ -97,10 +100,65 @@ DX11Renderer::DX11Renderer(PGWindow* window) {
     PG_ASSERT(SUCCEEDED(result), "Couldn't get the render target view");
     backbuffer->Release();
 
+    D3D11_TEXTURE2D_DESC depthStencilTextureDesc = {};
+    depthStencilTextureDesc.Width = width;
+    depthStencilTextureDesc.Height = height;
+    depthStencilTextureDesc.MipLevels = 1;
+    depthStencilTextureDesc.ArraySize = 1;
+    depthStencilTextureDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    depthStencilTextureDesc.SampleDesc.Count = 1;
+    depthStencilTextureDesc.SampleDesc.Quality = 0;
+    depthStencilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthStencilTextureDesc.CPUAccessFlags = 0;
+    depthStencilTextureDesc.MiscFlags = 0;
+
+    ID3D11Texture2D* depthStencilTexture = nullptr;
+    result = m_Device->CreateTexture2D(&depthStencilTextureDesc, nullptr, &depthStencilTexture);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil texture");
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+    depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    depthStencilViewDesc.Flags = 0;
+    depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+    result = m_Device->CreateDepthStencilView(depthStencilTexture, &depthStencilViewDesc, &m_BackbufferDepthStencilView);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil view");
+
     const float vertexData[] = {
-          0.0f, 0.5f, 1.0f,
-          0.5f, -0.5f, 1.0f,
-         -0.5f, -0.5f, 1.0f,
+         -1.0f, -1.0f,  -1.0f,
+         -1.0f,  1.0f,  -1.0f,
+          1.0f,  1.0f,  -1.0f,
+          1.0f, -1.0f,  -1.0f,
+         -1.0f, -1.0f,  1.0f,
+         -1.0f,  1.0f,  1.0f,
+          1.0f,  1.0f,  1.0f,
+          1.0f, -1.0f,  1.0f,
+    };
+
+    const float colors[] = {
+        1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 1.0f,
+    };
+
+    const uint32_t indices[] = {
+        0, 1, 2,
+        0, 2, 3,
+        4, 6, 5,
+        4, 7, 6,
+        4, 5, 1,
+        4, 1, 0,
+        3, 2, 6,
+        3, 6, 7,
+        1, 5, 6,
+        1, 6, 2,
+        4, 0, 3,
+        4, 3, 7
     };
 
     D3D11_BUFFER_DESC vertexBufferDescriptor = {};
@@ -117,6 +175,21 @@ DX11Renderer::DX11Renderer(PGWindow* window) {
     ID3D11Buffer* vertexBuffer = nullptr;
     result = m_Device->CreateBuffer(&vertexBufferDescriptor, &vertexBufferSubresourceData, &vertexBuffer);
     PG_ASSERT(SUCCEEDED(result), "Error at creating vertex buffer");
+
+    D3D11_BUFFER_DESC indexBufferDescriptor = {};
+    indexBufferDescriptor.ByteWidth = sizeof(indices);
+    indexBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;
+    indexBufferDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    indexBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    indexBufferDescriptor.MiscFlags = 0;
+    indexBufferDescriptor.StructureByteStride = sizeof(uint32_t) * 3;
+
+    D3D11_SUBRESOURCE_DATA indexBufferSubresourceData = {};
+    indexBufferSubresourceData.pSysMem = indices;
+
+    ID3D11Buffer* indexBuffer = nullptr;
+    result = m_Device->CreateBuffer(&indexBufferDescriptor, &indexBufferSubresourceData, &indexBuffer);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating index buffer");
 
     // Vertex Shader creation
     const char* vertexShaderFileName = "../bin/shaders/VertexShader.cso";
@@ -141,10 +214,26 @@ DX11Renderer::DX11Renderer(PGWindow* window) {
     result = m_Device->CreatePixelShader(pixelShaderFile.fileData, pixelShaderFile.fileSize, 0, &pixelShader);
     PG_ASSERT(SUCCEEDED(result), "Error at creating pixel shader");
 
+    D3D11_BUFFER_DESC constantBufferDescriptor = {};
+    constantBufferDescriptor.ByteWidth = sizeof(colors);
+    constantBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;
+    constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    constantBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    constantBufferDescriptor.MiscFlags = 0;
+    constantBufferDescriptor.StructureByteStride = 0;
+
+    D3D11_SUBRESOURCE_DATA constantBufferSubresourceData = {};
+    constantBufferSubresourceData.pSysMem = colors;
+
+    ID3D11Buffer* constantBuffer = nullptr;
+    result = m_Device->CreateBuffer(&constantBufferDescriptor, &constantBufferSubresourceData, &constantBuffer);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating constant buffer");
+
     // Bindings
     UINT stride = sizeof(float) * 3;
     UINT offset = 0;
     m_DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    m_DeviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
     m_DeviceContext->IASetInputLayout(inputLayout);
     m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -155,14 +244,63 @@ DX11Renderer::DX11Renderer(PGWindow* window) {
     viewport.TopLeftY = 0;
     viewport.Width = width;
     viewport.Height = height;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
+    viewport.MinDepth = 0;
+    viewport.MaxDepth = 1;
     
     m_DeviceContext->RSSetViewports(1, &viewport);
 
+    D3D11_RASTERIZER_DESC rasterizerDesc = {};
+    rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    rasterizerDesc.CullMode = D3D11_CULL_NONE;
+    rasterizerDesc.FrontCounterClockwise = FALSE;
+    rasterizerDesc.DepthBias = 0;
+    rasterizerDesc.DepthBiasClamp = 0.0f;
+    rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+    rasterizerDesc.DepthClipEnable = TRUE;
+    rasterizerDesc.ScissorEnable = FALSE;
+    rasterizerDesc.MultisampleEnable = FALSE;
+    rasterizerDesc.AntialiasedLineEnable = FALSE;
+
+    ID3D11RasterizerState* rasterizerState = nullptr;
+    result = m_Device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating rasterizer state");
+
+    m_DeviceContext->RSSetState(rasterizerState);
+
     m_DeviceContext->PSSetShader(pixelShader, 0, 0);
+    m_DeviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
 
+    D3D11_DEPTH_STENCIL_DESC dsDesc = {};
 
+    // Depth test parameters
+    dsDesc.DepthEnable = true;
+    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+    // Stencil test parameters
+    dsDesc.StencilEnable = false;
+    dsDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+    dsDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+
+    // Stencil operations if pixel is front-facing
+    dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+    dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+    // Stencil operations if pixel is back-facing
+    dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+    dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+    // Create depth stencil state
+    ID3D11DepthStencilState* pDSState;
+    result = m_Device->CreateDepthStencilState(&dsDesc, &pDSState);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil state");
+
+    m_DeviceContext->OMSetRenderTargets(1, &m_BackbufferRenderTargetView, m_BackbufferDepthStencilView);
+    m_DeviceContext->OMSetDepthStencilState(pDSState, 0);
 }
 
 DX11Renderer::~DX11Renderer() {
@@ -173,15 +311,51 @@ DX11Renderer::~DX11Renderer() {
 }
 
 void DX11Renderer::ClearScreen(const float* color) {
-    m_DeviceContext->OMSetRenderTargets(1, &m_BackbufferRenderTargetView, nullptr);
     m_DeviceContext->ClearRenderTargetView(m_BackbufferRenderTargetView, color);
+    m_DeviceContext->ClearDepthStencilView(m_BackbufferDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
 
-    m_DeviceContext->Draw(3, 0);
+void DX11Renderer::Render() {
+    struct ConstantBuffer {
+        Matrix4 transform;
+    } cBuff;
+
+    cBuff.transform = IdentityMatrix;
+
+    Vector3 translate(0.0f, 0.0f, 6.0f);
+    Matrix4 transMatrix = TranslateMatrix(translate);
+    
+    time_t time = clock();
+    float seed = time % 125263 / 662.9f;
+    Matrix4 xAxisRotate = RotateMatrixXAxis(seed);
+    Matrix4 yAxisRotate = RotateMatrixYAxis(seed);
+    Matrix4 rotateMatrix = yAxisRotate * xAxisRotate;
+
+    Matrix4 projMatrix = PerspectiveMatrix(1280, 720, 0.01f, 100.f, PI / 4.0f);
+
+    cBuff.transform = projMatrix * transMatrix * rotateMatrix * cBuff.transform;
+
+    D3D11_BUFFER_DESC constantBufferDescriptor = {};
+    constantBufferDescriptor.ByteWidth = sizeof(ConstantBuffer);
+    constantBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;
+    constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    constantBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    constantBufferDescriptor.MiscFlags = 0;
+    constantBufferDescriptor.StructureByteStride = 0;
+
+    D3D11_SUBRESOURCE_DATA constantBufferSubresourceData = {};
+    constantBufferSubresourceData.pSysMem = &cBuff;
+
+    ID3D11Buffer* constantBuffer = nullptr;
+    HRESULT result = m_Device->CreateBuffer(&constantBufferDescriptor, &constantBufferSubresourceData, &constantBuffer);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating constant buffer");
+    m_DeviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
+    m_DeviceContext->DrawIndexed(36, 0, 0);
 }
 
 void DX11Renderer::EndFrame() {
     HRESULT result = m_SwapChain->Present(1, 0);
-    m_DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
     PG_ASSERT(SUCCEEDED(result), "Error at presenting");
 }
 

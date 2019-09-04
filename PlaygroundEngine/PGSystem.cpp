@@ -44,7 +44,7 @@ void PGSystem::RunMainLoop() {
 
         const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
         m_Renderer->ClearScreen(color);
-
+        m_Renderer->Render();
         m_Renderer->EndFrame();
     }
 }

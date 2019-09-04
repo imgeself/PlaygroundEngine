@@ -189,6 +189,9 @@
   <ItemGroup>
     <ClInclude Include="Core.h" />
     <ClInclude Include="Events\PGEvent.h" />
+    <ClInclude Include="Math\math_matrix.h" />
+    <ClInclude Include="Math\math_util.h" />
+    <ClInclude Include="Math\math_vector.h" />
     <ClInclude Include="PGSystem.h" />
     <ClInclude Include="Events\PGSystemEventDispatcher.h" />
     <ClInclude Include="Platform\PGInput.h" />

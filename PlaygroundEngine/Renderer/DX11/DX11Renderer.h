@@ -3,6 +3,7 @@
 #include "../PGRenderer.h"
 
 #include "DX11Buffer.h"
+#include "DX11Shader.h"
 
 #include <d3d11.h>
 
@@ -17,6 +18,7 @@ public:
 
     IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) override;
     IIndexBuffer* CreateIndexBuffer(void* bufferData, size_t size) override;
+    IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) override;
 
 private:
     IDXGISwapChain* m_SwapChain = nullptr;

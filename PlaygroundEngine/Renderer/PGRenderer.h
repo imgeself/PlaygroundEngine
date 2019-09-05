@@ -4,6 +4,7 @@
 #include "../Platform/PGWindow.h"
 
 #include "PGBuffer.h"
+#include "PGShader.h"
 
 class IRenderer {
 public:
@@ -15,5 +16,6 @@ public:
 
     virtual IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) = 0;
     virtual IIndexBuffer* CreateIndexBuffer(void* bufferData, size_t size) = 0;
+    virtual IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) = 0;
 };
 

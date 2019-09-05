@@ -367,3 +367,7 @@ IVertexBuffer* DX11Renderer::CreateVertexBuffer(void* bufferData, size_t size) {
 IIndexBuffer* DX11Renderer::CreateIndexBuffer(void* bufferData, size_t size) {
     return new DX11IndexBuffer(m_Device, bufferData, size);
 }
+
+IShaderProgram* DX11Renderer::CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) {
+    return new DX11ShaderProgram(m_Device, vertexShaderFileName, pixelShaderFileName);
+}

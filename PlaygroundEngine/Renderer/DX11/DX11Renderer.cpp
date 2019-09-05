@@ -359,3 +359,11 @@ void DX11Renderer::EndFrame() {
     PG_ASSERT(SUCCEEDED(result), "Error at presenting");
 }
 
+
+IVertexBuffer* DX11Renderer::CreateVertexBuffer(void* bufferData, size_t size) {
+    return new DX11VertexBuffer(m_Device, bufferData, size);
+}
+
+IIndexBuffer* DX11Renderer::CreateIndexBuffer(void* bufferData, size_t size) {
+    return new DX11IndexBuffer(m_Device, bufferData, size);
+}

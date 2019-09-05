@@ -2,6 +2,8 @@
 
 #include "../PGRenderer.h"
 
+#include "DX11Buffer.h"
+
 #include <d3d11.h>
 
 class DX11Renderer : public IRenderer {
@@ -12,6 +14,9 @@ public:
     void ClearScreen(const float* color) override;
     void Render() override;
     void EndFrame() override;
+
+    IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) override;
+    IIndexBuffer* CreateIndexBuffer(void* bufferData, size_t size) override;
 
 private:
     IDXGISwapChain* m_SwapChain = nullptr;

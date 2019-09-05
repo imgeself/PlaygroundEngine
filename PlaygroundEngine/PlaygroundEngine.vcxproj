@@ -184,6 +184,7 @@
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
     <ClCompile Include="Platform\Win32\PGInputWin32.cpp" />
     <ClCompile Include="Platform\Win32\PGWindowWin32.cpp" />
+    <ClCompile Include="Renderer\DX11\DX11Buffer.cpp" />
     <ClCompile Include="Renderer\DX11\DX11Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -198,7 +199,9 @@
     <ClInclude Include="Platform\PGKeycode.h" />
     <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h" />
     <ClInclude Include="Platform\PGWindow.h" />
+    <ClInclude Include="Renderer\DX11\DX11Buffer.h" />
     <ClInclude Include="Renderer\DX11\DX11Renderer.h" />
+    <ClInclude Include="Renderer\PGBuffer.h" />
     <ClInclude Include="Renderer\PGRenderer.h" />
   </ItemGroup>
   <ItemGroup>

@@ -5,11 +5,6 @@
 
 #define SAFE_RELEASE(p) { if(p) { p->Release(); } }
 
-struct ShaderFile {
-    char* fileData;
-    size_t fileSize;
-};
-
 static ShaderFile ReadBinaryFile(const char* filename) {
     HANDLE shaderFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ,
         NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -371,3 +366,8 @@ IIndexBuffer* DX11Renderer::CreateIndexBuffer(void* bufferData, size_t size) {
 IShaderProgram* DX11Renderer::CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) {
     return new DX11ShaderProgram(m_Device, vertexShaderFileName, pixelShaderFileName);
 }
+
+IVertexInputLayout* DX11Renderer::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) {
+    return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram);
+}
+

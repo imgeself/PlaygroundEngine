@@ -9,9 +9,9 @@
 
 #include <vector>
 
-class IRenderer {
+class IRendererAPI {
 public:
-    virtual ~IRenderer() = default;
+    virtual ~IRendererAPI() = default;
 
     virtual void ClearScreen(const float* color) = 0;
     virtual void Render() = 0;

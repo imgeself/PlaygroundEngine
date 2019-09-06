@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../PGRenderer.h"
+#include "../PGRendererAPI.h"
 
 #include "DX11Buffer.h"
 #include "DX11Shader.h"
@@ -8,10 +8,10 @@
 
 #include <d3d11.h>
 
-class DX11Renderer : public IRenderer {
+class DX11RendererAPI : public IRendererAPI {
 public:
-    DX11Renderer(PGWindow* window);
-    ~DX11Renderer() override;
+    DX11RendererAPI(PGWindow* window);
+    ~DX11RendererAPI() override;
 
     void ClearScreen(const float* color) override;
     void Render() override;

@@ -1,4 +1,4 @@
-#include "DX11Renderer.h"
+#include "DX11RendererAPI.h"
 #include "../../Math/math_util.h"
 
 #include <time.h>
@@ -30,7 +30,7 @@ static ShaderFile ReadBinaryFile(const char* filename) {
     return file;
 }
 
-DX11Renderer::DX11Renderer(PGWindow* window) {
+DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
 
     // NOTE: We don't specify refresh rate at the moment.
     // Both numerator and denominator are 0;
@@ -298,19 +298,19 @@ DX11Renderer::DX11Renderer(PGWindow* window) {
     m_DeviceContext->OMSetDepthStencilState(pDSState, 0);
 }
 
-DX11Renderer::~DX11Renderer() {
+DX11RendererAPI::~DX11RendererAPI() {
     SAFE_RELEASE(m_BackbufferRenderTargetView);
     SAFE_RELEASE(m_SwapChain);
     SAFE_RELEASE(m_Device);
     SAFE_RELEASE(m_DeviceContext);
 }
 
-void DX11Renderer::ClearScreen(const float* color) {
+void DX11RendererAPI::ClearScreen(const float* color) {
     m_DeviceContext->ClearRenderTargetView(m_BackbufferRenderTargetView, color);
     m_DeviceContext->ClearDepthStencilView(m_BackbufferDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void DX11Renderer::Render() {
+void DX11RendererAPI::Render() {
     struct ConstantBuffer {
         Matrix4 transform;
     } cBuff;
@@ -349,25 +349,25 @@ void DX11Renderer::Render() {
     m_DeviceContext->DrawIndexed(36, 0, 0);
 }
 
-void DX11Renderer::EndFrame() {
+void DX11RendererAPI::EndFrame() {
     HRESULT result = m_SwapChain->Present(1, 0);
     PG_ASSERT(SUCCEEDED(result), "Error at presenting");
 }
 
 
-IVertexBuffer* DX11Renderer::CreateVertexBuffer(void* bufferData, size_t size) {
+IVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size) {
     return new DX11VertexBuffer(m_Device, bufferData, size);
 }
 
-IIndexBuffer* DX11Renderer::CreateIndexBuffer(void* bufferData, size_t size) {
+IIndexBuffer* DX11RendererAPI::CreateIndexBuffer(void* bufferData, size_t size) {
     return new DX11IndexBuffer(m_Device, bufferData, size);
 }
 
-IShaderProgram* DX11Renderer::CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) {
+IShaderProgram* DX11RendererAPI::CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) {
     return new DX11ShaderProgram(m_Device, vertexShaderFileName, pixelShaderFileName);
 }
 
-IVertexInputLayout* DX11Renderer::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) {
+IVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) {
     return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram);
 }
 

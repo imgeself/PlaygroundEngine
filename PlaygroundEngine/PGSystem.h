@@ -2,7 +2,7 @@
 
 #include "Events/PGSystemEventDispatcher.h"
 #include "Platform/PGWindow.h"
-#include "Renderer/PGRenderer.h"
+#include "Renderer/PGRendererAPI.h"
 
 #include <memory>
 
@@ -20,7 +20,7 @@ public:
 
 private:
     PGWindow* m_Window;
-    IRenderer* m_Renderer;
+    IRendererAPI* m_Renderer;
 
     static std::shared_ptr<PGSystemEventDispatcher> m_systemEventDispatcher;
 };

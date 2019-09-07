@@ -1,16 +1,22 @@
 #include "PGSystem.h"
 #include "Renderer/PGRendererAPI.h"
 #include "Renderer/DX11/DX11RendererAPI.h"
+#include "PGGameApplication.h"
 
 // Static members
-std::shared_ptr<PGSystemEventDispatcher> PGSystem::m_systemEventDispatcher = std::make_shared<PGSystemEventDispatcher>();
+std::shared_ptr<PGSystemEventDispatcher> PGSystem::s_systemEventDispatcher = std::make_shared<PGSystemEventDispatcher>();
 
 PGSystem::PGSystem() {
-    m_systemEventDispatcher->RegisterListener(this);
+    s_systemEventDispatcher->RegisterListener(this);
 }
 
 PGSystem::~PGSystem() {
-    m_systemEventDispatcher->RemoveListener(this);
+    s_systemEventDispatcher->RemoveListener(this);
+
+    delete m_Renderer;
+    delete m_GameApplication;
+    delete m_GameLibrary;
+    delete m_Window;
 }
 
 bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
@@ -21,7 +27,7 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
 
     GameApplicationProc GetGameApplication = m_GameLibrary->GetFunctionAddress<GameApplicationProc>("GetGameApplication");
     PG_ASSERT(GetGameApplication, "Couldn't get the game application proc");
-    m_GameApplication = GetGameApplication();
+    m_GameApplication = GetGameApplication(this);
     PG_ASSERT(m_GameApplication, "Couldn't get the game application");
 
     const char* windowName = "PlaygroundEngine";
@@ -29,7 +35,7 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
 
     m_Renderer = new DX11RendererAPI(m_Window);
     
-    m_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
+    s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     m_GameApplication->OnInit();
     
     return true;
@@ -41,7 +47,7 @@ void PGSystem::RunMainLoop() {
     while (true) {
         if (!m_Window->ProcessMessages()) {
             // Close requested
-            m_systemEventDispatcher->DispatchSystemEvent(SystemEvent::CLOSE);
+            s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::CLOSE);
             m_GameApplication->OnExit();
             break;
         }

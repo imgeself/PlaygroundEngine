@@ -5,7 +5,7 @@
 #include "Platform/PGWindow.h"
 #include "Platform/PGLibrary.h"
 #include "Renderer/PGRendererAPI.h"
-#include "PGGameApplication.h"
+#include "PGApplication.h"
 
 #include <memory>
 
@@ -19,7 +19,8 @@ public:
 
     virtual void OnSystemEvent(SystemEvent event) override;
 
-    static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return m_systemEventDispatcher; };
+    static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return s_systemEventDispatcher; };
+    IRendererAPI* GetRendererApi() { return m_Renderer; };
 
 private:
     PGWindow* m_Window;
@@ -27,6 +28,6 @@ private:
     DLibrary* m_GameLibrary;
     IApplication* m_GameApplication;
 
-    static std::shared_ptr<PGSystemEventDispatcher> m_systemEventDispatcher;
+    static std::shared_ptr<PGSystemEventDispatcher> s_systemEventDispatcher;
 };
 

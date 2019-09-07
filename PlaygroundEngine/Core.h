@@ -9,9 +9,13 @@
 #define SAFE_RELEASE(p) { if(p) { p->Release(); } }
 
 #ifdef PLATFORM_WINDOWS
-    #ifdef _WINDLL
-        #define PG_API __declspec(dllexport)
-    #else
-        #define PG_API __declspec(dllimport)
-    #endif
+    #define DLL_EXPORT __declspec(dllexport)
+    #define DLL_IMPORT __declspec(dllimport)
+    #define PG_API DLL_EXPORT
 #endif
+
+struct SystemInitArguments {
+    const char* executablePath;
+    const char* gameLibraryPath;
+};
+

@@ -15,6 +15,8 @@ public:
     ~DX11ShaderProgram() override;
 
     ShaderFile GetVertexShaderFile() { return m_VertexShaderFile; }
+    ID3D11VertexShader* GetDXVertexShader() { return m_VertexShader; }
+    ID3D11PixelShader* GetDXPixelShader() { return m_PixelShader; }
 
 private:
     //NOTE: For now, we will keep vertex shader file source in here for input layout creation.

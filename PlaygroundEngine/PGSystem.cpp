@@ -62,8 +62,7 @@ void PGSystem::RunMainLoop() {
 
         m_GameApplication->OnRender();
 
-        m_Renderer->Render();
-        m_Renderer->EndFrame();
+        m_Renderer->Present();
     }
 }
 

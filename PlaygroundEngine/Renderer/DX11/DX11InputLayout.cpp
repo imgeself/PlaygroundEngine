@@ -25,11 +25,12 @@ static DXGI_FORMAT ConvertInputFormatToDXGIFormat(VertexDataFormat format) {
 DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<VertexInputElement> inputElements, DX11ShaderProgram* shaderProgram) {
     // Input layout creation
     const int size = inputElements.size();
-    std::vector<D3D11_INPUT_ELEMENT_DESC> layoutDescription = std::vector<D3D11_INPUT_ELEMENT_DESC>(inputElements.size());
+    std::vector<D3D11_INPUT_ELEMENT_DESC> layoutDescription;
+    layoutDescription.reserve(size);
 
     for (VertexInputElement& element : inputElements) {
         D3D11_INPUT_ELEMENT_DESC dx11Description = {};
-        dx11Description.SemanticName = element.name;
+        dx11Description.SemanticName = element.name.c_str();
         dx11Description.SemanticIndex = 0;
         dx11Description.Format = ConvertInputFormatToDXGIFormat(element.format);
         dx11Description.InputSlot = element.inputSlot;

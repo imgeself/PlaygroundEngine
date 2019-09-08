@@ -14,13 +14,18 @@ public:
     ~DX11RendererAPI() override;
 
     void ClearScreen(const float* color) override;
-    void Render() override;
-    void EndFrame() override;
+    void DrawIndexed(IIndexBuffer* indexBuffer) override;
+    void Present() override;
 
     IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) override;
-    IIndexBuffer* CreateIndexBuffer(void* bufferData, size_t size) override;
+    IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) override;
     IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) override;
     IVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) override;
+
+    void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) override;
+    void SetIndexBuffer(IIndexBuffer* indexBuffer) override;
+    void SetInputLayout(IVertexInputLayout* vertexInputLayout) override;
+    void SetShaderProgram(IShaderProgram* shaderProgram) override;
 
 private:
     IDXGISwapChain* m_SwapChain = nullptr;

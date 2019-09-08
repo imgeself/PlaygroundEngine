@@ -11,6 +11,8 @@ public:
     DX11VertexInputLayout(ID3D11Device* device, std::vector<VertexInputElement> inputElements, DX11ShaderProgram* shaderProgram);
     ~DX11VertexInputLayout() override;
 
+    ID3D11InputLayout* GetDXInputLayout() { return m_InputLayout; }
+
 private:
     ID3D11InputLayout* m_InputLayout;
 };

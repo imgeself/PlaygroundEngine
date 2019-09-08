@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Core.h"
+#include <string>
 
 enum VertexDataFormat {
     VertexDataFormat_FLOAT,
@@ -18,13 +19,16 @@ enum VertexDataFormat {
 };
 
 struct VertexInputElement {
-    char* name;
+    std::string name;
     VertexDataFormat format;
     uint32_t inputSlot;
     uint32_t offset;
+
+    VertexInputElement(const std::string& name, VertexDataFormat format, uint32_t slot, uint32_t offset) 
+        : name(name), format(format), inputSlot(slot), offset(offset) {}
 };
 
-class PG_API IVertexInputLayout {
+class IVertexInputLayout {
 public:
     virtual ~IVertexInputLayout() = default;
 };

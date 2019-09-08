@@ -15,6 +15,7 @@ public:
 
 private:
     PGSystem* m_System;
+    std::shared_ptr<IIndexBuffer> m_IndexBuffer;
 
 };
 REGISTER_GAME_APPLICATION(Application)

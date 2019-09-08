@@ -2,12 +2,12 @@
 
 #include "../Core.h"
 
-class PG_API IVertexBuffer {
+class IVertexBuffer {
 public:
     virtual ~IVertexBuffer() = default;
 };
 
-class PG_API IIndexBuffer {
+class IIndexBuffer {
 public:
     virtual ~IIndexBuffer() = default;
 };

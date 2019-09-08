@@ -17,6 +17,7 @@ public:
     virtual void DrawIndexed(IIndexBuffer* indexBuffer) = 0;
     virtual void Present() = 0;
 
+    virtual IConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) = 0;
     virtual IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) = 0;
     virtual IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) = 0;
     virtual IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) = 0;
@@ -26,5 +27,8 @@ public:
     virtual void SetIndexBuffer(IIndexBuffer* indexBuffer) = 0;
     virtual void SetInputLayout(IVertexInputLayout* vertexInputLayout) = 0;
     virtual void SetShaderProgram(IShaderProgram* shaderProgram) = 0;
+    
+    virtual void SetConstanBufferVS(IConstantBuffer* constantBuffer) = 0;
+    virtual void SetConstanBufferPS(IConstantBuffer* constantBuffer) = 0;
 };
 

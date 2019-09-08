@@ -200,6 +200,9 @@ void DX11RendererAPI::Present() {
     PG_ASSERT(SUCCEEDED(result), "Error at presenting");
 }
 
+IConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size) {
+    return new DX11ConstantBuffer(m_Device, bufferData, size);
+}
 
 IVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size) {
     return new DX11VertexBuffer(m_Device, bufferData, size);
@@ -245,6 +248,18 @@ void DX11RendererAPI::SetShaderProgram(IShaderProgram* shaderProgram) {
     ID3D11PixelShader* pixelShader = dx11ShaderProgram->GetDXPixelShader();
     m_DeviceContext->VSSetShader(vertexShader, nullptr, 0);
     m_DeviceContext->PSSetShader(pixelShader, nullptr, 0);
+}
+
+void DX11RendererAPI::SetConstanBufferVS(IConstantBuffer* constantBuffer) {
+    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*) constantBuffer;
+    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
+    m_DeviceContext->VSSetConstantBuffers(0, 1, &buffer);
+}
+
+void DX11RendererAPI::SetConstanBufferPS(IConstantBuffer* constantBuffer) {
+    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*)constantBuffer;
+    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
+    m_DeviceContext->PSSetConstantBuffers(0, 1, &buffer);
 }
 
 

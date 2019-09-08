@@ -17,6 +17,7 @@ public:
     void DrawIndexed(IIndexBuffer* indexBuffer) override;
     void Present() override;
 
+    IConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
     IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) override;
     IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) override;
     IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) override;
@@ -26,6 +27,9 @@ public:
     void SetIndexBuffer(IIndexBuffer* indexBuffer) override;
     void SetInputLayout(IVertexInputLayout* vertexInputLayout) override;
     void SetShaderProgram(IShaderProgram* shaderProgram) override;
+
+    void SetConstanBufferVS(IConstantBuffer* constantBuffer) override;
+    void SetConstanBufferPS(IConstantBuffer* constantBuffer) override;
 
 private:
     IDXGISwapChain* m_SwapChain = nullptr;

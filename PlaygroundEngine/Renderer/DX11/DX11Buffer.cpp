@@ -1,5 +1,25 @@
 #include "DX11Buffer.h"
 
+DX11ConstantBuffer::DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size) {
+    D3D11_BUFFER_DESC constantBufferDescriptor = {};
+    constantBufferDescriptor.ByteWidth = size;
+    constantBufferDescriptor.Usage = D3D11_USAGE_DEFAULT;
+    constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    constantBufferDescriptor.CPUAccessFlags = 0;
+    constantBufferDescriptor.MiscFlags = 0;
+    constantBufferDescriptor.StructureByteStride = 0;
+
+    D3D11_SUBRESOURCE_DATA constantBufferSubresourceData = {};
+    constantBufferSubresourceData.pSysMem = data;
+
+    HRESULT result = device->CreateBuffer(&constantBufferDescriptor, &constantBufferSubresourceData, &m_Buffer);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating constant buffer");
+}
+
+DX11ConstantBuffer::~DX11ConstantBuffer() {
+    SAFE_RELEASE(m_Buffer);
+}
+
 DX11VertexBuffer::DX11VertexBuffer(ID3D11Device* device, void* data, size_t size) {
     D3D11_BUFFER_DESC vertexBufferDescriptor = {};
     vertexBufferDescriptor.ByteWidth = size;

@@ -8,7 +8,7 @@
 
 #define U32Max ((uint32_t)-1)
 #define F32Max FLT_MAX
-#define PI 3.1415926535f
+#define PI 3.14159265f
 #define HALF_PI PI * 0.5f
 
 inline float Clamp(float low, float value, float high) {

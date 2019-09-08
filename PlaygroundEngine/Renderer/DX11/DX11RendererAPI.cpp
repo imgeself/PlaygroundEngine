@@ -1,7 +1,4 @@
 #include "DX11RendererAPI.h"
-#include "../../Math/math_util.h"
-
-#include <time.h>
 
 DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
 
@@ -94,22 +91,6 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     result = m_Device->CreateDepthStencilView(depthStencilTexture, &depthStencilViewDesc, &m_BackbufferDepthStencilView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil view");
 
-    /*
-    D3D11_BUFFER_DESC constantBufferDescriptor = {};
-    constantBufferDescriptor.ByteWidth = sizeof(colors);
-    constantBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;
-    constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constantBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    constantBufferDescriptor.MiscFlags = 0;
-    constantBufferDescriptor.StructureByteStride = 0;
-
-    D3D11_SUBRESOURCE_DATA constantBufferSubresourceData = {};
-    constantBufferSubresourceData.pSysMem = colors;
-
-    ID3D11Buffer* constantBuffer = nullptr;
-    result = m_Device->CreateBuffer(&constantBufferDescriptor, &constantBufferSubresourceData, &constantBuffer);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating constant buffer");
-    */
     m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     D3D11_VIEWPORT viewport = {};
@@ -155,42 +136,6 @@ void DX11RendererAPI::ClearScreen(const float* color) {
 }
 
 void DX11RendererAPI::DrawIndexed(IIndexBuffer* indexBuffer) {
-    /*
-    struct ConstantBuffer {
-        Matrix4 transform;
-    } cBuff;
-
-    cBuff.transform = IdentityMatrix;
-
-    Vector3 translate(0.0f, 0.0f, 6.0f);
-    Matrix4 transMatrix = TranslateMatrix(translate);
-    
-    time_t time = clock();
-    float seed = time % 125263 / 662.9f;
-    Matrix4 xAxisRotate = RotateMatrixXAxis(seed);
-    Matrix4 yAxisRotate = RotateMatrixYAxis(seed);
-    Matrix4 rotateMatrix = yAxisRotate * xAxisRotate;
-
-    Matrix4 projMatrix = PerspectiveMatrix(1280, 720, 0.01f, 100.f, PI / 4.0f);
-
-    cBuff.transform = projMatrix * transMatrix * rotateMatrix * cBuff.transform;
-
-    D3D11_BUFFER_DESC constantBufferDescriptor = {};
-    constantBufferDescriptor.ByteWidth = sizeof(ConstantBuffer);
-    constantBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;
-    constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constantBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    constantBufferDescriptor.MiscFlags = 0;
-    constantBufferDescriptor.StructureByteStride = 0;
-
-    D3D11_SUBRESOURCE_DATA constantBufferSubresourceData = {};
-    constantBufferSubresourceData.pSysMem = &cBuff;
-
-    ID3D11Buffer* constantBuffer = nullptr;
-    HRESULT result = m_Device->CreateBuffer(&constantBufferDescriptor, &constantBufferSubresourceData, &constantBuffer);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating constant buffer");
-    m_DeviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);*/
-
     DX11IndexBuffer* dx11IndexBuffer = (DX11IndexBuffer*)indexBuffer;
     m_DeviceContext->DrawIndexed(dx11IndexBuffer->GetCount(), 0, 0);
 }

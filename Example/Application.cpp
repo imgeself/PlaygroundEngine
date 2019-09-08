@@ -1,6 +1,8 @@
 #include "Application.h"
 
 #include <stdio.h>
+#include <time.h>
+#include <Math/math_util.h>
 
 Application::Application(PGSystem* system) 
     : m_System(system) {
@@ -64,12 +66,15 @@ void Application::OnInit() {
 
     std::shared_ptr<IVertexInputLayout> inputLayout(rendererAPI->CreateVertexInputLayout(inputElements, shaderProgram.get()));
 
+    std::shared_ptr<IConstantBuffer> psConstantBuffer(rendererAPI->CreateConstantBuffer(colors, sizeof(colors)));
+
     // Bindings
     UINT stride = sizeof(float) * 3;
     rendererAPI->SetVertexBuffer(vertexBuffer.get(), stride);
     rendererAPI->SetIndexBuffer(m_IndexBuffer.get());
     rendererAPI->SetInputLayout(inputLayout.get());
     rendererAPI->SetShaderProgram(shaderProgram.get());
+    rendererAPI->SetConstanBufferPS(psConstantBuffer.get());
 }
 
 void Application::OnUpdate() {
@@ -77,7 +82,31 @@ void Application::OnUpdate() {
 }
 
 void Application::OnRender() {
-    m_System->GetRendererApi()->DrawIndexed(m_IndexBuffer.get());
+    IRendererAPI* rendererAPI = m_System->GetRendererApi();
+
+    struct ConstantBuffer {
+        Matrix4 transform;
+    } cBuff;
+
+    cBuff.transform = IdentityMatrix;
+
+    Vector3 translate(0.0f, 0.0f, 6.0f);
+    Matrix4 transMatrix = TranslateMatrix(translate);
+
+    time_t time = clock();
+    float seed = time % 125263 / 662.9f;
+    Matrix4 xAxisRotate = RotateMatrixXAxis(seed);
+    Matrix4 yAxisRotate = RotateMatrixYAxis(seed);
+    Matrix4 rotateMatrix = yAxisRotate * xAxisRotate;
+
+    Matrix4 projMatrix = PerspectiveMatrix(1280, 720, 0.01f, 100.f, PI / 4.0f);
+
+    cBuff.transform = projMatrix * transMatrix * rotateMatrix * cBuff.transform;
+
+    std::shared_ptr<IConstantBuffer> vsConstantBuffer(rendererAPI->CreateConstantBuffer(&cBuff, sizeof(ConstantBuffer)));
+    rendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
+
+    rendererAPI->DrawIndexed(m_IndexBuffer.get());
 }
 
 void Application::OnExit() {

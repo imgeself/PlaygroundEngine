@@ -4,5 +4,5 @@ cbuffer Colors {
 
 float4 main(uint pid : SV_PrimitiveID) : SV_Target
 {
-    return float4(1.0f, 1.0f, 1.0f, 1.0f); // colors[pid / 2];
+    return colors[pid / 2];
 }

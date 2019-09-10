@@ -2,6 +2,10 @@
 
 typedef int KeyCode;
 
+#define PGMOUSE_LBUTTON 0
+#define PGMOUSE_RBUTTON 1
+#define PGMOUSE_MBUTTON 2
+
 #ifdef PLATFORM_WINDOWS
 #include <Windows.h>
 

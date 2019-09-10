@@ -102,6 +102,30 @@ LRESULT PGWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) {
         {
             PGInput::keyPressedState[wParam] = false;
         } break;
+        case WM_LBUTTONDOWN:
+        {
+            PGInput::mouseButtonPressedState[PGMOUSE_LBUTTON] = true;
+        }
+        case WM_RBUTTONDOWN:
+        {
+            PGInput::mouseButtonPressedState[PGMOUSE_RBUTTON] = true;
+        }
+        case WM_MBUTTONDOWN:
+        {
+            PGInput::mouseButtonPressedState[PGMOUSE_MBUTTON] = true;
+        }
+        case WM_LBUTTONUP:
+        {
+            PGInput::mouseButtonPressedState[PGMOUSE_LBUTTON] = false;
+        }
+        case WM_RBUTTONUP:
+        {
+            PGInput::mouseButtonPressedState[PGMOUSE_RBUTTON] = false;
+        }
+        case WM_MBUTTONUP:
+        {
+            PGInput::mouseButtonPressedState[PGMOUSE_MBUTTON] = false;
+        }
     }
 
     return DefWindowProc(m_Handle, uMsg, wParam, lParam);

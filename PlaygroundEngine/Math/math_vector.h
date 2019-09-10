@@ -4,6 +4,163 @@
 // TODO: Make flexible vector class using templates someday!
 #include <stdint.h>
 
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+struct Vector2 {
+    float x, y = 0.0f;
+
+    Vector2();
+    Vector2(float x, float y);
+    Vector2(const Vector2& v);
+
+    float& operator[](const uint32_t index);
+    Vector2 operator-();
+    Vector2 operator=(const Vector2 v);
+    Vector2 operator+=(const Vector2 v);
+    Vector2 operator*=(const Vector2 v);
+    Vector2 operator-=(const Vector2 v);
+    Vector2 operator/=(const Vector2 v);
+    Vector2 operator-(const Vector2 v);
+    Vector2 operator-(const Vector2 v) const;
+    Vector2 operator*(const Vector2 v);
+    Vector2 operator*(const Vector2 v) const;
+    Vector2 operator/(const Vector2 v);
+    Vector2 operator/(const Vector2 v) const;
+    Vector2 operator+(const Vector2 v);
+    Vector2 operator+(const Vector2 v) const;
+
+    Vector2 operator*(const float factor);
+    Vector2 operator+(const float factor);
+    Vector2 operator-(const float factor);
+    Vector2 operator/(const float factor);
+
+    bool operator==(const Vector2 v);
+    bool operator!=(const Vector2 v);
+};
+
+inline Vector2::Vector2() {
+}
+
+inline Vector2::Vector2(float x, float y) {
+    this->x = x;
+    this->y = y;
+}
+
+inline Vector2::Vector2(const Vector2& v) {
+    this->x = v.x;
+    this->y = v.y;
+}
+
+inline float& Vector2::operator[](const uint32_t index) {
+    return (&x)[index];
+}
+
+inline Vector2 Vector2::operator-() {
+    return Vector2(-x, -y);
+}
+
+inline Vector2 Vector2::operator=(const Vector2 v) {
+    x = v.x;
+    y = v.y;
+    return *this;
+}
+
+inline Vector2 Vector2::operator+=(const Vector2 v) {
+    x += v.x;
+    y += v.y;
+    return *this;
+}
+
+inline Vector2 Vector2::operator*=(const Vector2 v) {
+    x *= v.x;
+    y *= v.y;
+    return *this;
+}
+
+inline Vector2 Vector2::operator-=(const Vector2 v) {
+    x -= v.x;
+    y -= v.y;
+    return *this;
+}
+
+inline Vector2 Vector2::operator/=(const Vector2 v) {
+    x /= v.x;
+    y /= v.y;
+    return *this;
+}
+
+inline Vector2 Vector2::operator*(const Vector2 v) {
+    return Vector2(x * v.x, y * v.y);
+}
+
+inline Vector2 Vector2::operator*(const Vector2 v) const {
+    return Vector2(x * v.x, y * v.y);
+}
+
+inline Vector2 Vector2::operator/(const Vector2 v) {
+    return Vector2(x / v.x, y / v.y);
+}
+
+inline Vector2 Vector2::operator/(const Vector2 v) const {
+    return Vector2(x / v.x, y / v.y);
+}
+
+inline Vector2 Vector2::operator+(const Vector2 v) {
+    return Vector2(x + v.x, y + v.y);
+}
+
+inline Vector2 Vector2::operator+(const Vector2 v) const {
+    return Vector2(x + v.x, y + v.y);
+}
+
+inline Vector2 Vector2::operator-(const Vector2 v) {
+    return Vector2(x - v.x, y - v.y);
+}
+
+inline Vector2 Vector2::operator-(const Vector2 v) const {
+    return Vector2(x - v.x, y - v.y);
+}
+
+inline Vector2 Vector2::operator*(const float factor) {
+    return Vector2(x * factor, y * factor);
+}
+
+inline Vector2 Vector2::operator+(const float factor) {
+    return Vector2(x + factor, y + factor);
+}
+
+inline Vector2 Vector2::operator-(const float factor) {
+    return Vector2(x - factor, y - factor);
+}
+
+inline Vector2 Vector2::operator/(const float factor) {
+    return Vector2(x / factor, y / factor);
+}
+
+inline bool Vector2::operator==(const Vector2 v) {
+    return ((x == v.x) && (y == v.y));
+}
+
+inline bool Vector2::operator!=(const Vector2 v) {
+    return ((x != v.x) || (y != v.y));
+}
+
+inline float DotProduct(const Vector2 v1, const Vector2 v2) {
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
+inline float Lenght(const Vector2 v) {
+    return sqrtf(DotProduct(v, v));
+}
+
+inline Vector2 Normalize(const Vector2 v) {
+    const float dot = DotProduct(v, v);
+    const float factor = 1 / sqrtf(dot);
+    return Vector2(v.x * factor, v.y * factor);
+}
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 struct Vector3 {
     float x,y,z = 0.0f;
     
@@ -170,7 +327,8 @@ inline Vector3 Normalize(const Vector3 v) {
     return Vector3(v.x * factor, v.y * factor, v.z * factor);
 }
 
-// Vector4
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 struct Vector4 {
     float x, y, z, w = 0.0f;
 

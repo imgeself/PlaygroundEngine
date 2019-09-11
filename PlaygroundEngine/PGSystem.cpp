@@ -37,7 +37,8 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
     
     s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     m_GameApplication->OnInit();
-    
+
+    ImguiModule::Initialize(m_Window, m_Renderer);
     return true;
 }
 
@@ -55,12 +56,17 @@ void PGSystem::RunMainLoop() {
         if (PGInput::IsKeyPressed(PGKEY_W)) {
             printf("W is pressed\n");
         }
+
         m_GameApplication->OnUpdate();
 
         const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
         m_Renderer->ClearScreen(color);
 
         m_GameApplication->OnRender();
+
+        ImguiModule::Begin();
+        m_GameApplication->OnUIRender();
+        ImguiModule::Render();
 
         m_Renderer->Present();
     }

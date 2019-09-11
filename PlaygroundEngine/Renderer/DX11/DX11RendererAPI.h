@@ -31,6 +31,9 @@ public:
     void SetConstanBufferVS(IConstantBuffer* constantBuffer) override;
     void SetConstanBufferPS(IConstantBuffer* constantBuffer) override;
 
+    ID3D11Device* GetDX11Device() { return m_Device; }
+    ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }
+
 private:
     IDXGISwapChain* m_SwapChain = nullptr;
     ID3D11Device* m_Device = nullptr;

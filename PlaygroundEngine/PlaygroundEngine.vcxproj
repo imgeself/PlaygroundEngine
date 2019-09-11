@@ -179,6 +179,12 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Imgui\imgui.cpp" />
+    <ClCompile Include="Imgui\imgui_demo.cpp" />
+    <ClCompile Include="Imgui\imgui_draw.cpp" />
+    <ClCompile Include="Imgui\imgui_impl.cpp" />
+    <ClCompile Include="Imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Imgui\imgui_widgets.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PGSystem.cpp" />
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
@@ -193,6 +199,14 @@
   <ItemGroup>
     <ClInclude Include="Core.h" />
     <ClInclude Include="Events\PGEvent.h" />
+    <ClInclude Include="Imgui\imconfig.h" />
+    <ClInclude Include="Imgui\imgui.h" />
+    <ClInclude Include="Imgui\imgui_impl.h" />
+    <ClInclude Include="Imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="Imgui\imgui_internal.h" />
+    <ClInclude Include="Imgui\imstb_rectpack.h" />
+    <ClInclude Include="Imgui\imstb_textedit.h" />
+    <ClInclude Include="Imgui\imstb_truetype.h" />
     <ClInclude Include="Math\math_matrix.h" />
     <ClInclude Include="Math\math_util.h" />
     <ClInclude Include="Math\math_vector.h" />
@@ -213,6 +227,9 @@
     <ClInclude Include="Renderer\PGInputLayout.h" />
     <ClInclude Include="Renderer\PGRendererAPI.h" />
     <ClInclude Include="Renderer\PGShader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Imgui\LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -11,6 +11,7 @@ public:
     void OnInit() override;
     void OnUpdate() override;
     void OnRender() override;
+    void OnUIRender() override;
     void OnExit() override;
 
 private:

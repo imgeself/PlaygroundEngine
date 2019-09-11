@@ -9,15 +9,9 @@
 class PG_API PGInput {
     friend class PGWindow;
 public:
-    inline static bool IsKeyPressed(KeyCode keycode) {
-        return keyPressedState[keycode];
-    }
-
-    inline static bool IsMouseButtonPressed(KeyCode keycode) {
-        return mouseButtonPressedState[keycode];
-    }
-
-    inline static Vector2 GetMousePos(PGWindow* window);
+    inline static bool IsKeyPressed(KeyCode keycode);
+    inline static bool IsMouseButtonPressed(KeyCode keycode);
+    inline static Vector2 GetMousePos();
 
 private:
     PGInput();

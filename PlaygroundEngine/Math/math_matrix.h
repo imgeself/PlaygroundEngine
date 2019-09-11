@@ -88,7 +88,7 @@ inline Matrix4 PerspectiveMatrix(uint32_t width, uint32_t height, float nearDist
     const float zNear = nearDistance;
     const float zFar = farDistance;
     const float zRange = zNear - zFar;
-    const float tanHalfFOV = tanf(fov / 2.0);
+    const float tanHalfFOV = tanf(fov / 2.0f);
 
     result[0][0] = 1.0f / (tanHalfFOV * ar);
     result[0][1] = 0.0f;

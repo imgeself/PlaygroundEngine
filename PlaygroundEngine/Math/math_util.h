@@ -56,10 +56,10 @@ inline bool Refract(Vector3 incidentVector, Vector3 normal,
     Vector3 hitNormal = normal;
     float refractiveIndexRatio;
     // NOTE: we assume incident ray comes from the air which has refraction index equals 1.
-    if (cosIncidentAngle < 0) {
+    if (cosIncidentAngle < 0.0f) {
         // We are coming from outside the surface
         cosIncidentAngle = -cosIncidentAngle;
-        refractiveIndexRatio = 1.0 / refractiveIndex;
+        refractiveIndexRatio = 1.0f / refractiveIndex;
     } else {
         hitNormal = -normal;
         refractiveIndexRatio = refractiveIndex; // / 1.0f
@@ -104,7 +104,7 @@ inline float LinearTosRGB(float value) {
 
     float result = value * 12.92f;
     if (value >= 0.0031308f) {
-        result = (1.055f * pow(value, 1.0f / 2.4f)) - 0.055f;
+        result = (1.055f * powf(value, 1.0f / 2.4f)) - 0.055f;
     }
 
     return result;

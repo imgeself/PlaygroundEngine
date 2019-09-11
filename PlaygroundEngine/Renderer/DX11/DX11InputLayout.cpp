@@ -24,7 +24,7 @@ static DXGI_FORMAT ConvertInputFormatToDXGIFormat(VertexDataFormat format) {
 
 DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<VertexInputElement> inputElements, DX11ShaderProgram* shaderProgram) {
     // Input layout creation
-    const int size = inputElements.size();
+    const size_t size = inputElements.size();
     std::vector<D3D11_INPUT_ELEMENT_DESC> layoutDescription;
     layoutDescription.reserve(size);
 
@@ -42,7 +42,7 @@ DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<V
     }
 
     ShaderFile vertexShaderFile = shaderProgram->GetVertexShaderFile();
-    HRESULT result = device->CreateInputLayout(layoutDescription.data(), layoutDescription.size(), 
+    HRESULT result = device->CreateInputLayout(layoutDescription.data(), (UINT) layoutDescription.size(), 
         vertexShaderFile.fileData, vertexShaderFile.fileSize, &m_InputLayout);
     PG_ASSERT(SUCCEEDED(result), "Error at creating input layout");
 }

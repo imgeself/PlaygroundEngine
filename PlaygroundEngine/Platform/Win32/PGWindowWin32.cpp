@@ -14,7 +14,7 @@ LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
     }
 
     if (window) {
-        window->HandleMessage(uMsg, wParam, lParam);
+        return window->HandleMessage(uMsg, wParam, lParam);
     } else {
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }

@@ -2,7 +2,7 @@
 
 DX11ConstantBuffer::DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size) {
     D3D11_BUFFER_DESC constantBufferDescriptor = {};
-    constantBufferDescriptor.ByteWidth = size;
+    constantBufferDescriptor.ByteWidth = (UINT) size;
     constantBufferDescriptor.Usage = D3D11_USAGE_DEFAULT;
     constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     constantBufferDescriptor.CPUAccessFlags = 0;
@@ -22,7 +22,7 @@ DX11ConstantBuffer::~DX11ConstantBuffer() {
 
 DX11VertexBuffer::DX11VertexBuffer(ID3D11Device* device, void* data, size_t size) {
     D3D11_BUFFER_DESC vertexBufferDescriptor = {};
-    vertexBufferDescriptor.ByteWidth = size;
+    vertexBufferDescriptor.ByteWidth = (UINT) size;
     vertexBufferDescriptor.Usage = D3D11_USAGE_DEFAULT;
     vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertexBufferDescriptor.CPUAccessFlags = 0;

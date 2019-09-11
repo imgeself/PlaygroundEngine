@@ -11,7 +11,7 @@ static ShaderFile ReadBinaryFile(const char* filename) {
 
     char* shaderSource = (char*)malloc(size.QuadPart);
     DWORD readSize;
-    result = ReadFile(shaderFile, (LPVOID)shaderSource, size.QuadPart, &readSize, NULL);
+    result = ReadFile(shaderFile, (LPVOID)shaderSource, (DWORD) size.QuadPart, &readSize, NULL);
     PG_ASSERT(result, "Couldn't read file");
     PG_ASSERT(readSize == size.QuadPart, "Wanted size and actual read size doesn't match");
     CloseHandle(shaderFile);

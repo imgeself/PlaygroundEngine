@@ -6,10 +6,9 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     // Both numerator and denominator are 0;
     DXGI_RATIONAL refreshRate = {};
 
-    RECT rect;
-    GetClientRect(window->GetWindowHandle(), &rect);
-    const UINT width = rect.right - rect.left;
-    const UINT height = rect.bottom - rect.top;
+    Vector2 clientSize = window->GetClientSize();
+    const UINT width = (UINT) clientSize.x;
+    const UINT height = (UINT) clientSize.y;
 
     DXGI_MODE_DESC modeDescriptor = {};
     modeDescriptor.Width = width;
@@ -96,10 +95,10 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     D3D11_VIEWPORT viewport = {};
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-    viewport.Width = width;
-    viewport.Height = height;
-    viewport.MinDepth = 0;
-    viewport.MaxDepth = 1;
+    viewport.Width = clientSize.x;
+    viewport.Height = clientSize.y;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
     
     m_DeviceContext->RSSetViewports(1, &viewport);
 

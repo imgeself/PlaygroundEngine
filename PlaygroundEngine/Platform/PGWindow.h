@@ -6,10 +6,9 @@
 
 #include "../Core.h"
 #include "PGInput.h"
+#include "../Math/math_util.h"
 
-#include <set>
-
-class PGWindow {
+class PG_API PGWindow {
 public:
     PGWindow(const char* name, uint32_t width, uint32_t height);
     ~PGWindow();
@@ -20,6 +19,7 @@ public:
     WindowHandle GetWindowHandle();
     uint32_t GetWidth();
     uint32_t GetHeight();
+    Vector2 GetClientSize();
 
 private:
     WindowHandle m_Handle;

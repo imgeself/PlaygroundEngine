@@ -66,6 +66,13 @@ uint32_t PGWindow::GetHeight() {
     return m_Height;
 }
 
+Vector2 PGWindow::GetClientSize() {
+    RECT rect;
+    GetClientRect(m_Handle, &rect);
+    return Vector2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+}
+
+
 void PGWindow::Show() {
     ShowWindow(m_Handle, SW_SHOWDEFAULT);
 }
@@ -105,27 +112,27 @@ LRESULT PGWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) {
         case WM_LBUTTONDOWN:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_LBUTTON] = true;
-        }
+        } break;
         case WM_RBUTTONDOWN:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_RBUTTON] = true;
-        }
+        } break;
         case WM_MBUTTONDOWN:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_MBUTTON] = true;
-        }
+        } break;
         case WM_LBUTTONUP:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_LBUTTON] = false;
-        }
+        } break;
         case WM_RBUTTONUP:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_RBUTTON] = false;
-        }
+        } break;
         case WM_MBUTTONUP:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_MBUTTON] = false;
-        }
+        } break;
     }
 
     return DefWindowProc(m_Handle, uMsg, wParam, lParam);

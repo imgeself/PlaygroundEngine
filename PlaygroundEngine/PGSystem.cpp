@@ -2,6 +2,7 @@
 #include "Renderer/PGRendererAPI.h"
 #include "Renderer/DX11/DX11RendererAPI.h"
 #include "PGGameApplication.h"
+#include "Platform/PGTime.h"
 
 // Static members
 std::shared_ptr<PGSystemEventDispatcher> PGSystem::s_systemEventDispatcher = std::make_shared<PGSystemEventDispatcher>();
@@ -53,11 +54,19 @@ void PGSystem::RunMainLoop() {
             break;
         }
 
+        static uint64_t lastTime;
+        uint64_t time = PGTime::GetTimeMacroseconds();
+        uint64_t timePast = time - lastTime;
+        float deltaTime = (float) (timePast / 1000000.0);
+        printf("time: %f \n", deltaTime);
+        lastTime = time;
+
+
         if (PGInput::IsKeyPressed(PGKEY_W)) {
             printf("W is pressed\n");
         }
 
-        m_GameApplication->OnUpdate();
+        m_GameApplication->OnUpdate(deltaTime);
 
         const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
         m_Renderer->ClearScreen(color);

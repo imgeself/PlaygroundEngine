@@ -77,35 +77,34 @@ void Application::OnInit() {
     rendererAPI->SetConstanBufferPS(psConstantBuffer.get());
 }
 
-void Application::OnUpdate() {
-
-}
-
-void Application::OnRender() {
+void Application::OnUpdate(float deltaTime) {
     IRendererAPI* rendererAPI = m_System->GetRendererApi();
 
-    struct ConstantBuffer {
-        Matrix4 transform;
+    static Vector3 translate(0.0f, 0.0f, 6.0f);
+    static Matrix4 transMatrix = TranslateMatrix(translate);
+    static Matrix4 inverseTransMatrix = TranslateMatrix(-translate);
+    static struct ConstantBuffer {
+        Matrix4 transform = transMatrix;
+        Matrix4 projMatrix = IdentityMatrix;
     } cBuff;
 
-    cBuff.transform = IdentityMatrix;
 
-    Vector3 translate(0.0f, 0.0f, 6.0f);
-    Matrix4 transMatrix = TranslateMatrix(translate);
-
-    time_t time = clock();
-    float seed = time % 125263 / 662.9f;
+    float seed = 2.0f * deltaTime;
     Matrix4 xAxisRotate = RotateMatrixXAxis(seed);
     Matrix4 yAxisRotate = RotateMatrixYAxis(seed);
     Matrix4 rotateMatrix = yAxisRotate * xAxisRotate;
 
     Matrix4 projMatrix = PerspectiveMatrix(1280, 720, 0.01f, 100.f, PI / 4.0f);
 
-    cBuff.transform = projMatrix * transMatrix * rotateMatrix * cBuff.transform;
+    cBuff.transform = transMatrix * rotateMatrix * inverseTransMatrix * cBuff.transform;
+    cBuff.projMatrix = projMatrix;
 
     std::shared_ptr<IConstantBuffer> vsConstantBuffer(rendererAPI->CreateConstantBuffer(&cBuff, sizeof(ConstantBuffer)));
     rendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
+}
 
+void Application::OnRender() {
+    IRendererAPI* rendererAPI = m_System->GetRendererApi();
     rendererAPI->DrawIndexed(m_IndexBuffer.get());
 }
 

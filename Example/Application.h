@@ -9,7 +9,7 @@ public:
     ~Application() override;
 
     void OnInit() override;
-    void OnUpdate() override;
+    void OnUpdate(float deltaTime) override;
     void OnRender() override;
     void OnUIRender() override;
     void OnExit() override;

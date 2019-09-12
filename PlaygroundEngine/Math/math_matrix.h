@@ -193,7 +193,7 @@ inline Matrix4 Inverse(Matrix4& mat) {
 }
 
 // Transform operations
-inline Matrix4 ScaleMatrix(Vector3& scaleFactors) {
+inline Matrix4 ScaleMatrix(const Vector3& scaleFactors) {
     Matrix4 result;
     result[0][0] = scaleFactors.x;
     result[1][1] = scaleFactors.y;
@@ -203,7 +203,7 @@ inline Matrix4 ScaleMatrix(Vector3& scaleFactors) {
     return result;
 }
 
-inline Matrix4 TranslateMatrix(Vector3& translateVector) {
+inline Matrix4 TranslateMatrix(const Vector3& translateVector) {
     Matrix4 result;
     result[0][0] = 1.0f;
     result[0][3] = translateVector.x;

@@ -13,7 +13,7 @@ public:
     ~ImguiModule();
 
     static void Initialize(PGWindow* window, IRendererAPI* rendererAPI);
-    static void Begin();
+    static void Begin(float deltaTime);
     static void Render();
 
 private:

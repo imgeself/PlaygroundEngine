@@ -50,7 +50,7 @@ ImguiModule::~ImguiModule() {
     ImGui::DestroyContext();
 }
 
-void ImguiModule::Begin() {
+void ImguiModule::Begin(float deltaTime) {
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
 
@@ -61,7 +61,7 @@ void ImguiModule::Begin() {
     Vector2 clientSize = m_Window->GetClientSize();
     io.DisplaySize = ImVec2(clientSize.x, clientSize.y);
 
-    //io.DeltaTime = deltaTime;
+    io.DeltaTime = deltaTime;
 
     // Read keyboard modifiers inputs
     io.KeyCtrl = PGInput::IsKeyPressed(PGKEY_LEFT_CONTROL) || PGInput::IsKeyPressed(PGKEY_RIGHT_CONTROL);

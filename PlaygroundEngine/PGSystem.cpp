@@ -58,7 +58,6 @@ void PGSystem::RunMainLoop() {
         uint64_t time = PGTime::GetTimeMacroseconds();
         uint64_t timePast = time - lastTime;
         float deltaTime = (float) (timePast / 1000000.0);
-        printf("time: %f \n", deltaTime);
         lastTime = time;
 
 
@@ -73,7 +72,7 @@ void PGSystem::RunMainLoop() {
 
         m_GameApplication->OnRender();
 
-        ImguiModule::Begin();
+        ImguiModule::Begin(deltaTime);
         m_GameApplication->OnUIRender();
         ImguiModule::Render();
 

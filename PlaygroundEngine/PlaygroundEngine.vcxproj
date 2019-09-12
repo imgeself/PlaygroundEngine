@@ -190,6 +190,7 @@
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
     <ClCompile Include="Platform\Win32\PGInputWin32.cpp" />
     <ClCompile Include="Platform\Win32\PGLibraryWin32.cpp" />
+    <ClCompile Include="Platform\Win32\PGTimeWin32.cpp" />
     <ClCompile Include="Platform\Win32\PGWindowWin32.cpp" />
     <ClCompile Include="Renderer\DX11\DX11Buffer.cpp" />
     <ClCompile Include="Renderer\DX11\DX11InputLayout.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="Platform\PGKeycode.h" />
     <ClInclude Include="Platform\PGLibrary.h" />
     <ClInclude Include="PGGameApplication.h" />
+    <ClInclude Include="Platform\PGTime.h" />
     <ClInclude Include="Platform\Win32\PGPlatformDefinesWin32.h" />
     <ClInclude Include="Platform\PGWindow.h" />
     <ClInclude Include="Renderer\DX11\DX11Buffer.h" />

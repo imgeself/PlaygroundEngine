@@ -72,6 +72,9 @@
     <ClCompile Include="Platform\Win32\PGTimeWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PGCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSystem.h">
@@ -165,6 +168,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform\PGTime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PGCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

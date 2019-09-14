@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <Math/math_util.h>
+#include <Platform/PGTime.h>
 
 Application::Application(PGSystem* system) 
     : m_System(system) {
@@ -75,6 +76,9 @@ void Application::OnInit() {
     rendererAPI->SetInputLayout(inputLayout.get());
     rendererAPI->SetShaderProgram(shaderProgram.get());
     rendererAPI->SetConstanBufferPS(psConstantBuffer.get());
+
+    m_Camera.SetFrustum(1280, 720, 0.001, 1000.0f, PI / 4.0f);
+    m_Camera.SetView(Vector3(0.0f, 0.0f, -10.0f), Vector3(0.0f, 0.0f, 0.0f));
 }
 
 std::vector<float> frameTimes;
@@ -88,24 +92,38 @@ void Application::OnUpdate(float deltaTime) {
 
     IRendererAPI* rendererAPI = m_System->GetRendererApi();
 
-    static Vector3 translate(0.0f, 0.0f, 6.0f);
+    static Vector3 translate(0.0f, 0.0f, 0.0f);
     static Matrix4 transMatrix = TranslateMatrix(translate);
     static Matrix4 inverseTransMatrix = TranslateMatrix(-translate);
     static struct ConstantBuffer {
         Matrix4 transform = transMatrix;
-        Matrix4 projMatrix = IdentityMatrix;
+        Matrix4 viewMatrix;
+        Matrix4 projMatrix;
     } cBuff;
 
+    Vector3 cameraPos = m_Camera.GetPosition();
+    if (PGInput::IsKeyPressed(PGKEY_W)) {
+        cameraPos.y += 5.0f * deltaTime;
+    } else if (PGInput::IsKeyPressed(PGKEY_S)) {
+        cameraPos.y -= 5.0f * deltaTime;
+    }
 
-    float seed = 2.0f * deltaTime;
+    if (PGInput::IsKeyPressed(PGKEY_A)) {
+        cameraPos.x -= 5.0f * deltaTime;
+    }
+    else if (PGInput::IsKeyPressed(PGKEY_D)) {
+        cameraPos.x += 5.0f * deltaTime;
+    }
+    m_Camera.SetView(cameraPos, Vector3(0.0f, 0.0f, 0.0f));
+
+    float seed = 0.0f;// *deltaTime;
     Matrix4 xAxisRotate = RotateMatrixXAxis(seed);
     Matrix4 yAxisRotate = RotateMatrixYAxis(seed);
     Matrix4 rotateMatrix = yAxisRotate * xAxisRotate;
 
-    Matrix4 projMatrix = PerspectiveMatrix(1280, 720, 0.01f, 100.f, PI / 4.0f);
-
-    cBuff.transform = transMatrix * rotateMatrix * inverseTransMatrix * cBuff.transform;
-    cBuff.projMatrix = projMatrix;
+    cBuff.transform = transMatrix * rotateMatrix;// *inverseTransMatrix* cBuff.transform;
+    cBuff.viewMatrix = m_Camera.GetViewMatrix();
+    cBuff.projMatrix = m_Camera.GetProjectionMatrix();
 
     std::shared_ptr<IConstantBuffer> vsConstantBuffer(rendererAPI->CreateConstantBuffer(&cBuff, sizeof(ConstantBuffer)));
     rendererAPI->SetConstanBufferVS(vsConstantBuffer.get());

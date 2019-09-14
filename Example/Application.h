@@ -2,6 +2,7 @@
 
 #include <PGSystem.h>
 #include <PGGameApplication.h>
+#include <PGCamera.h>
 
 class Application : public IApplication {
 public:
@@ -17,6 +18,8 @@ public:
 private:
     PGSystem* m_System;
     std::shared_ptr<IIndexBuffer> m_IndexBuffer;
+
+    PGCamera m_Camera;
 
 };
 REGISTER_GAME_APPLICATION(Application)

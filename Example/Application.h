@@ -17,7 +17,9 @@ public:
 
 private:
     PGSystem* m_System;
+
     std::shared_ptr<IIndexBuffer> m_IndexBuffer;
+    std::shared_ptr<IVertexBuffer> m_VertexBuffer;
 
     PGCamera m_Camera;
 

@@ -17,13 +17,15 @@ private:
 
 class DX11VertexBuffer : public IVertexBuffer {
 public:
-    DX11VertexBuffer(ID3D11Device* device, void* data, size_t size);
+    DX11VertexBuffer(ID3D11Device* device, void* data, size_t size, size_t strideSize);
     ~DX11VertexBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
+    uint32_t GetCount() { return m_Count; }
 
 private:
     ID3D11Buffer* m_Buffer;
+    uint32_t m_Count;
 };
 
 class DX11IndexBuffer : public IIndexBuffer {

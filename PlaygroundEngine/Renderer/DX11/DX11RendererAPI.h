@@ -14,11 +14,12 @@ public:
     ~DX11RendererAPI() override;
 
     void ClearScreen(const float* color) override;
+    void Draw(IVertexBuffer* vertexBuffer) override;
     void DrawIndexed(IIndexBuffer* indexBuffer) override;
     void Present() override;
 
     IConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
-    IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size) override;
+    IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
     IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) override;
     IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) override;
     IVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) override;

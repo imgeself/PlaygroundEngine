@@ -124,6 +124,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
 
 DX11RendererAPI::~DX11RendererAPI() {
     SAFE_RELEASE(m_BackbufferRenderTargetView);
+    SAFE_RELEASE(m_BackbufferDepthStencilView);
     SAFE_RELEASE(m_SwapChain);
     SAFE_RELEASE(m_Device);
     SAFE_RELEASE(m_DeviceContext);
@@ -132,6 +133,11 @@ DX11RendererAPI::~DX11RendererAPI() {
 void DX11RendererAPI::ClearScreen(const float* color) {
     m_DeviceContext->ClearRenderTargetView(m_BackbufferRenderTargetView, color);
     m_DeviceContext->ClearDepthStencilView(m_BackbufferDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
+
+void DX11RendererAPI::Draw(IVertexBuffer* vertexBuffer) {
+    DX11VertexBuffer* dx11VertexBuffer = (DX11VertexBuffer*) vertexBuffer;
+    m_DeviceContext->Draw(dx11VertexBuffer->GetCount(), 0);
 }
 
 void DX11RendererAPI::DrawIndexed(IIndexBuffer* indexBuffer) {
@@ -148,8 +154,8 @@ IConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t 
     return new DX11ConstantBuffer(m_Device, bufferData, size);
 }
 
-IVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size) {
-    return new DX11VertexBuffer(m_Device, bufferData, size);
+IVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) {
+    return new DX11VertexBuffer(m_Device, bufferData, size, strideSize);
 }
 
 IIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, uint32_t count) {

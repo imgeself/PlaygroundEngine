@@ -20,20 +20,22 @@ DX11ConstantBuffer::~DX11ConstantBuffer() {
     SAFE_RELEASE(m_Buffer);
 }
 
-DX11VertexBuffer::DX11VertexBuffer(ID3D11Device* device, void* data, size_t size) {
+DX11VertexBuffer::DX11VertexBuffer(ID3D11Device* device, void* data, size_t size, size_t strideSize) {
     D3D11_BUFFER_DESC vertexBufferDescriptor = {};
     vertexBufferDescriptor.ByteWidth = (UINT) size;
     vertexBufferDescriptor.Usage = D3D11_USAGE_DEFAULT;
     vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertexBufferDescriptor.CPUAccessFlags = 0;
     vertexBufferDescriptor.MiscFlags = 0;
-    vertexBufferDescriptor.StructureByteStride = 0;
+    vertexBufferDescriptor.StructureByteStride = (UINT) strideSize;
 
     D3D11_SUBRESOURCE_DATA vertexBufferSubresourceData = {};
     vertexBufferSubresourceData.pSysMem = data;
 
     HRESULT result = device->CreateBuffer(&vertexBufferDescriptor, &vertexBufferSubresourceData, &m_Buffer);
     PG_ASSERT(SUCCEEDED(result), "Error at creating vertex buffer");
+
+    m_Count = (uint32_t) (size / strideSize);
 }
 
 DX11VertexBuffer::~DX11VertexBuffer() {

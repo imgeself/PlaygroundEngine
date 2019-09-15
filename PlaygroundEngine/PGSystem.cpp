@@ -65,10 +65,11 @@ void PGSystem::RunMainLoop() {
             printf("W is pressed\n");
         }
 
-        m_GameApplication->OnUpdate(deltaTime);
 
         const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
         m_Renderer->ClearScreen(color);
+
+        m_GameApplication->OnUpdate(deltaTime);
 
         m_GameApplication->OnRender();
 

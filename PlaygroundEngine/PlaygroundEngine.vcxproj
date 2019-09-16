@@ -212,6 +212,8 @@
     <ClInclude Include="Math\math_matrix.h" />
     <ClInclude Include="Math\math_util.h" />
     <ClInclude Include="Math\math_vector.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshUtils.h" />
     <ClInclude Include="PGApplication.h" />
     <ClInclude Include="PGCamera.h" />
     <ClInclude Include="PGSystem.h" />

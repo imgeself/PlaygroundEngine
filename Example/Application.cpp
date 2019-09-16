@@ -16,67 +16,7 @@ Application::~Application() {
 void Application::OnInit() {
     printf("init \n");
 
-    const float vertexData[] = {
-     -1.0f, -1.0f,  -1.0f, // 0
-     -1.0f,  1.0f,  -1.0f, // 1
-      1.0f,  1.0f,  -1.0f, // 2
-      1.0f, -1.0f,  -1.0f, // 3
-     -1.0f, -1.0f,  1.0f, // 4
-     -1.0f,  1.0f,  1.0f, // 5
-      1.0f,  1.0f,  1.0f, // 6
-      1.0f, -1.0f,  1.0f, // 7
-    };
-
-    const float vertexDataArray[] = {
-     -1.0f, -1.0f,  -1.0f, 0.0f, 0.0f, -1.0f,
-     -1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, -1.0f,
-      1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, -1.0f,
-
-     -1.0f, -1.0f,  -1.0f, 0.0f, 0.0f, -1.0f,
-      1.0f,  1.0f,  -1.0f, 0.0f, 0.0f, -1.0f,
-      1.0f, -1.0f,  -1.0f, 0.0f, 0.0f, -1.0f,
-
-      -1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // 4
-      1.0f,  1.0f,  1.0f,  0.0f, 0.0f, 1.0f, // 6
-     -1.0f,  1.0f,  1.0f,  0.0f, 0.0f, 1.0f, // 5
-
-     -1.0f, -1.0f,  1.0f,  0.0f, 0.0f, 1.0f,// 4
-      1.0f, -1.0f,  1.0f,  0.0f, 0.0f, 1.0f,// 7
-      1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f,// 6 
-
-      -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, // 4
-     -1.0f,  1.0f,  1.0f,  -1.0f, 0.0f, 0.0f,// 5
-     -1.0f,  1.0f,  -1.0f, -1.0f, 0.0f, 0.0f,// 1
-
-      -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f,// 4
-      -1.0f,  1.0f,  -1.0f, -1.0f, 0.0f, 0.0f,// 1
-      -1.0f, -1.0f,  -1.0f, -1.0f, 0.0f, 0.0f,// 0
-
-      1.0f, -1.0f,  -1.0f, 1.0f, 0.0f, 0.0f,// 3
-      1.0f,  1.0f,  -1.0f, 1.0f, 0.0f, 0.0f,// 2
-      1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f,// 6
-
-      1.0f, -1.0f,  -1.0f, 1.0f, 0.0f, 0.0f,// 3
-      1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f,// 6
-      1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f,// 7
-
-     -1.0f,  1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,// 1
-     -1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f,// 5
-      1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f,// 6
-
-      -1.0f,  1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,// 1
-      1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f,// 6
-      1.0f,  1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,// 2
-
-      -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,// 4
-     -1.0f, -1.0f,  -1.0f, 0.0f, -1.0f, 0.0f,// 0
-      1.0f, -1.0f,  -1.0f, 0.0f, -1.0f, 0.0f,// 3
-
-      -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,// 4
-      1.0f, -1.0f,  -1.0f, 0.0f, -1.0f, 0.0f,// 3
-      1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f// 7
-
-    };
+    MeshRef cubeMesh = m_System->GetDefaultMesh("Cube");
 
     float colors[] = {
         1.0f, 0.0f, 0.0f, 1.0f,
@@ -87,27 +27,14 @@ void Application::OnInit() {
         1.0f, 0.0f, 1.0f, 1.0f,
     };
 
-    uint32_t indices[] = {
-        0, 1, 2,
-        0, 2, 3,
-        4, 6, 5,
-        4, 7, 6,
-        4, 5, 1,
-        4, 1, 0,
-        3, 2, 6,
-        3, 6, 7,
-        1, 5, 6,
-        1, 6, 2,
-        4, 0, 3,
-        4, 3, 7
-    };
-
     IRendererAPI* rendererAPI = m_System->GetRendererApi();
-    uint32_t stride = sizeof(float) * 6;
-    m_VertexBuffer = std::shared_ptr<IVertexBuffer>(rendererAPI->CreateVertexBuffer((void*)vertexDataArray, sizeof(vertexDataArray), stride));
 
-    uint32_t indicesCount = sizeof(indices) / sizeof(uint32_t);
-    //m_IndexBuffer = std::shared_ptr<IIndexBuffer>(rendererAPI->CreateIndexBuffer(indices, indicesCount));
+    size_t vertexBufferStride = sizeof(Vertex);
+    size_t vertexBufferSize = sizeof(Vertex) * cubeMesh->vertices.size();
+    m_VertexBuffer = std::shared_ptr<IVertexBuffer>(rendererAPI->CreateVertexBuffer(cubeMesh->vertices.data(), vertexBufferSize, vertexBufferStride));
+
+    uint32_t indicesCount = cubeMesh->indices.size();
+    m_IndexBuffer = std::shared_ptr<IIndexBuffer>(rendererAPI->CreateIndexBuffer(cubeMesh->indices.data(), indicesCount));
 
     const char* vertexShaderFileName = "../bin/shaders/VertexShader.cso";
     const char* pixelShaderFileName = "../bin/shaders/PixelShader.cso";
@@ -127,8 +54,8 @@ void Application::OnInit() {
     std::shared_ptr<IConstantBuffer> psConstantBuffer(rendererAPI->CreateConstantBuffer(colors, sizeof(colors)));
 
     // Bindings
-    rendererAPI->SetVertexBuffer(m_VertexBuffer.get(), stride);
-    //rendererAPI->SetIndexBuffer(m_IndexBuffer.get());
+    rendererAPI->SetVertexBuffer(m_VertexBuffer.get(), vertexBufferStride);
+    rendererAPI->SetIndexBuffer(m_IndexBuffer.get());
     rendererAPI->SetInputLayout(inputLayout.get());
     rendererAPI->SetShaderProgram(m_CubeShader.get());
     rendererAPI->SetConstanBufferPS(psConstantBuffer.get());
@@ -203,7 +130,7 @@ void Application::OnUpdate(float deltaTime) {
     std::shared_ptr<IConstantBuffer> vsConstantBuffer(rendererAPI->CreateConstantBuffer(&cBuff, sizeof(ConstantBuffer)));
     rendererAPI->SetShaderProgram(m_CubeShader.get());
     rendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
-    rendererAPI->Draw(m_VertexBuffer.get());
+    rendererAPI->DrawIndexed(m_IndexBuffer.get());
 
     Matrix4 lightCubeTranslateMatrix = TranslateMatrix(lightPos.xyz());
     Matrix4 lightCubeScaleMatrix = ScaleMatrix(Vector3(0.3f, 0.3f, 0.3f));
@@ -213,7 +140,7 @@ void Application::OnUpdate(float deltaTime) {
     std::shared_ptr<IConstantBuffer> lightCubeVSConstantBuffer(rendererAPI->CreateConstantBuffer(&lightCubeConstantBuffer, sizeof(ConstantBuffer)));
     rendererAPI->SetShaderProgram(m_LightCubeShader.get());
     rendererAPI->SetConstanBufferVS(lightCubeVSConstantBuffer.get());
-    rendererAPI->Draw(m_VertexBuffer.get());
+    rendererAPI->DrawIndexed(m_IndexBuffer.get());
 
 }
 

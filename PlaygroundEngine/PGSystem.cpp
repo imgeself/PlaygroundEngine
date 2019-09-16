@@ -35,6 +35,8 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
     m_Window = new PGWindow(windowName, 1280, 720);
 
     m_Renderer = new DX11RendererAPI(m_Window);
+
+    m_DefaultMeshMap = LoadDefaultMeshes();
     
     s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     m_GameApplication->OnInit();
@@ -59,12 +61,6 @@ void PGSystem::RunMainLoop() {
         uint64_t timePast = time - lastTime;
         float deltaTime = (float) (timePast / 1000000.0);
         lastTime = time;
-
-
-        if (PGInput::IsKeyPressed(PGKEY_W)) {
-            printf("W is pressed\n");
-        }
-
 
         const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
         m_Renderer->ClearScreen(color);

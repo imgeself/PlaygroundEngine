@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "PGApplication.h"
 #include "PGSystem.h"
+#include "PGApplication.h"
 
 int main(int argc, char** argv)
 {

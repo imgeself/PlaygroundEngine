@@ -7,6 +7,7 @@
 #include "Renderer/PGRendererAPI.h"
 #include "PGApplication.h"
 #include "Imgui/imgui_impl.h"
+#include "MeshUtils.h"
 
 #include <memory>
 
@@ -22,12 +23,15 @@ public:
 
     static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return s_systemEventDispatcher; };
     IRendererAPI* GetRendererApi() { return m_Renderer; };
+    MeshRef GetDefaultMesh(const std::string& name) { return m_DefaultMeshMap[name]; }
 
 private:
     PGWindow* m_Window;
     IRendererAPI* m_Renderer;
     DLibrary* m_GameLibrary;
     IApplication* m_GameApplication;
+
+    std::unordered_map<std::string, MeshRef> m_DefaultMeshMap;
 
     static std::shared_ptr<PGSystemEventDispatcher> s_systemEventDispatcher;
 };

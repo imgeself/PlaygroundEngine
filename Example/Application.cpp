@@ -144,12 +144,6 @@ void Application::OnUpdate(float deltaTime) {
 
 }
 
-void Application::OnRender() {
-    IRendererAPI* rendererAPI = m_System->GetRendererApi();
-    //rendererAPI->DrawIndexed(m_IndexBuffer.get());
-    //rendererAPI->Draw(m_VertexBuffer.get());
-}
-
 void Application::OnUIRender() {
     ImGui::Begin("Performance");
     ImGui::PlotLines("", frameTimes.data(), frameTimes.size(), 0, "Frame Time", 0.0f, 0.038f, ImVec2(0, 80));

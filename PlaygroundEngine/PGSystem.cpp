@@ -67,8 +67,6 @@ void PGSystem::RunMainLoop() {
 
         m_GameApplication->OnUpdate(deltaTime);
 
-        m_GameApplication->OnRender();
-
         ImguiModule::Begin(deltaTime);
         m_GameApplication->OnUIRender();
         ImguiModule::Render();

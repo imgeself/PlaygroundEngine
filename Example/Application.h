@@ -11,7 +11,6 @@ public:
 
     void OnInit() override;
     void OnUpdate(float deltaTime) override;
-    void OnRender() override;
     void OnUIRender() override;
     void OnExit() override;
 

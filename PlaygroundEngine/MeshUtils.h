@@ -51,7 +51,9 @@ static MeshRef CreateCubeMesh() {
         21, 22, 23
     };
 
-    return std::make_shared<Mesh>("Cube", vertices, indices);
+    Material defaultMaterial;
+    Transform defaultTransform;
+    return std::make_shared<Mesh>("Cube", vertices, indices, defaultMaterial, defaultTransform);
 }
 
 static std::unordered_map<std::string, MeshRef> LoadDefaultMeshes() {

@@ -1,6 +1,6 @@
 
-cbuffer Cbuff {
-    row_major matrix transform;
+cbuffer EngineConstanBuffer {
+    row_major matrix modelMatrix;
     row_major matrix viewMatrix;
     row_major matrix projMatrix;
     float4 lightPos;
@@ -17,12 +17,12 @@ struct VSOut {
 
 VSOut main(float3 pos : Position, float3 normal : Normal)
 {
-    float4 transformedPosition = mul(projMatrix, mul(viewMatrix, mul(transform, float4(pos, 1.0f))));
+    float4 transformedPosition = mul(projMatrix, mul(viewMatrix, mul(modelMatrix, float4(pos, 1.0f))));
 
     VSOut vertexOut;
-    vertexOut.normal = (float3) mul(transform, float4(normal, 0.0f));
+    vertexOut.normal = (float3) mul(modelMatrix, float4(normal, 0.0f));
     vertexOut.pos = transformedPosition;
-    vertexOut.worldPos = (float3) mul(transform, float4(pos, 1.0f));
+    vertexOut.worldPos = (float3) mul(modelMatrix, float4(pos, 1.0f));
     vertexOut.lightPos = (float3) lightPos;
     vertexOut.cameraPos = (float3) cameraPos;
 

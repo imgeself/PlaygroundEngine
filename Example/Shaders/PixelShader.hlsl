@@ -1,6 +1,3 @@
-cbuffer Colors {
-    float4 colors[6];
-};
 
 struct PSIn {
     float3 normal : Normal;
@@ -12,6 +9,14 @@ struct PSIn {
 
 float4 main(PSIn input, uint pid : SV_PrimitiveID) : SV_Target
 {
+    float4 colors[6] = {
+        1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 1.0f,
+    };
     float3 color = colors[pid / 2];
 
     // Diffuse

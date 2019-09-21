@@ -23,7 +23,10 @@ private:
     std::shared_ptr<IShaderProgram> m_CubeShader;
     std::shared_ptr<IShaderProgram> m_LightCubeShader;
 
-    PGCamera m_Camera;
+    Mesh* m_CubeMesh;
+    Mesh* m_LightCubeMesh;
+
+    PGScene m_Scene;
 
 };
 REGISTER_GAME_APPLICATION(Application)

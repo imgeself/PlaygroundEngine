@@ -16,7 +16,6 @@ Application::~Application() {
 void Application::OnInit() {
     printf("init \n");
 
-    MeshRef cubeMesh = m_System->GetDefaultMesh("Cube");
 
     float colors[] = {
         1.0f, 0.0f, 0.0f, 1.0f,
@@ -27,41 +26,37 @@ void Application::OnInit() {
         1.0f, 0.0f, 1.0f, 1.0f,
     };
 
-    IRendererAPI* rendererAPI = m_System->GetRendererApi();
-
-    size_t vertexBufferStride = sizeof(Vertex);
-    size_t vertexBufferSize = sizeof(Vertex) * cubeMesh->vertices.size();
-    m_VertexBuffer = std::shared_ptr<IVertexBuffer>(rendererAPI->CreateVertexBuffer(cubeMesh->vertices.data(), vertexBufferSize, vertexBufferStride));
-
-    uint32_t indicesCount = cubeMesh->indices.size();
-    m_IndexBuffer = std::shared_ptr<IIndexBuffer>(rendererAPI->CreateIndexBuffer(cubeMesh->indices.data(), indicesCount));
+    PGCamera* mainCamera = new PGCamera;
+    mainCamera->SetFrustum(1280, 720, 0.001, 1000.0f, PI / 4.0f);
+    mainCamera->SetView(Vector3(0.0f, 0.0f, -10.0f), Vector3(0.0f, 0.0f, 0.0f));
 
     const char* vertexShaderFileName = "../bin/shaders/VertexShader.cso";
     const char* pixelShaderFileName = "../bin/shaders/PixelShader.cso";
-    m_CubeShader = std::shared_ptr<IShaderProgram>(rendererAPI->CreateShaderProgram(vertexShaderFileName, pixelShaderFileName));
+    m_CubeShader = std::shared_ptr<IShaderProgram>(PGRenderer::GetRendererAPI()->CreateShaderProgram(vertexShaderFileName, pixelShaderFileName));
+    Material cubeMaterial = { m_CubeShader.get() };
+    Transform cubeTransform;
+    m_CubeMesh = m_System->GetDefaultMeshInstance("Cube", cubeMaterial, cubeTransform);
 
     const char* lightCubeVertexShaderFileName = "../bin/shaders/LightCubeVertex.cso";
     const char* lightCubePixelShaderFileName = "../bin/shaders/LightCubePixel.cso";
-    m_LightCubeShader = std::shared_ptr<IShaderProgram>(rendererAPI->CreateShaderProgram(lightCubeVertexShaderFileName, lightCubePixelShaderFileName));
+    m_LightCubeShader = std::shared_ptr<IShaderProgram>(PGRenderer::GetRendererAPI()->CreateShaderProgram(lightCubeVertexShaderFileName, lightCubePixelShaderFileName));
+    Material lightCubeMaterial = { m_LightCubeShader.get() };
+    Transform lightCubeTransform;
+    Vector3 lightPosition(2.0f, 2.0f, -2.0f);
+    lightCubeTransform.Translate(lightPosition);
+    lightCubeTransform.Scale(Vector3(0.3f, 0.3f, 0.3f));
+    m_LightCubeMesh = m_System->GetDefaultMeshInstance("Cube", lightCubeMaterial, lightCubeTransform);
 
-    std::vector<VertexInputElement> inputElements = {
-        { "Position", VertexDataFormat_FLOAT3, 0, 0 },
-        { "Normal", VertexDataFormat_FLOAT3, 0, 12 }
-    };
+    PGLight* mainLight = new PGLight;
+    mainLight->position = lightPosition;
 
-    std::shared_ptr<IVertexInputLayout> inputLayout(rendererAPI->CreateVertexInputLayout(inputElements, m_CubeShader.get()));
+    m_Scene.camera = mainCamera;
+    m_Scene.light = mainLight;
 
-    std::shared_ptr<IConstantBuffer> psConstantBuffer(rendererAPI->CreateConstantBuffer(colors, sizeof(colors)));
+    PGRenderer::BeginScene(&m_Scene);
 
-    // Bindings
-    rendererAPI->SetVertexBuffer(m_VertexBuffer.get(), vertexBufferStride);
-    rendererAPI->SetIndexBuffer(m_IndexBuffer.get());
-    rendererAPI->SetInputLayout(inputLayout.get());
-    rendererAPI->SetShaderProgram(m_CubeShader.get());
-    rendererAPI->SetConstanBufferPS(psConstantBuffer.get());
-
-    m_Camera.SetFrustum(1280, 720, 0.001, 1000.0f, PI / 4.0f);
-    m_Camera.SetView(Vector3(0.0f, 0.0f, -10.0f), Vector3(0.0f, 0.0f, 0.0f));
+    PGRenderer::AddRenderObject(m_CubeMesh);
+    PGRenderer::AddRenderObject(m_LightCubeMesh);
 }
 
 std::vector<float> frameTimes;
@@ -73,21 +68,8 @@ void Application::OnUpdate(float deltaTime) {
         frameTimes[frameTimes.size() - 1] = deltaTime;
     }
 
-    IRendererAPI* rendererAPI = m_System->GetRendererApi();
 
-    static Vector3 translate(0.0f, 0.0f, 0.0f);
-    static Matrix4 transMatrix = TranslateMatrix(translate);
-    static Matrix4 inverseTransMatrix = TranslateMatrix(-translate);
-    static Vector4 lightPos(2.0f, 2.0f, -2.0f, 1.0f);
-    static struct ConstantBuffer {
-        Matrix4 transform = transMatrix;
-        Matrix4 viewMatrix;
-        Matrix4 projMatrix;
-        Vector4 lightPos;
-        Vector4 cameraPos;
-    } cBuff;
-
-    Vector3 cameraPos = m_Camera.GetPosition();
+    Vector3 cameraPos = m_Scene.camera->GetPosition();
     if (PGInput::IsKeyPressed(PGKEY_W)) {
         cameraPos.y += 5.0f * deltaTime;
     } else if (PGInput::IsKeyPressed(PGKEY_S)) {
@@ -100,8 +82,9 @@ void Application::OnUpdate(float deltaTime) {
     else if (PGInput::IsKeyPressed(PGKEY_D)) {
         cameraPos.x += 5.0f * deltaTime;
     }
-    m_Camera.SetView(cameraPos, Vector3(0.0f, 0.0f, 0.0f));
+    m_Scene.camera->SetView(cameraPos, Vector3(0.0f, 0.0f, 0.0f));
 
+    Vector3 lightPos = m_Scene.light->position;
     if (PGInput::IsKeyPressed(PGKEY_I)) {
         lightPos.z += 5.0f * deltaTime;
     }
@@ -115,32 +98,15 @@ void Application::OnUpdate(float deltaTime) {
     else if (PGInput::IsKeyPressed(PGKEY_L)) {
         lightPos.x += 5.0f * deltaTime;
     }
+    m_Scene.light->position = lightPos;
 
     float seed = 2.0f * deltaTime;
-    Matrix4 xAxisRotate = RotateMatrixXAxis(seed);
-    Matrix4 yAxisRotate = RotateMatrixYAxis(seed);
-    Matrix4 rotateMatrix = yAxisRotate * xAxisRotate;
+    m_CubeMesh->transform.RotateXAxis(seed);
+    m_CubeMesh->transform.RotateYAxis(seed);
 
-    cBuff.transform = transMatrix * rotateMatrix * inverseTransMatrix * cBuff.transform;
-    cBuff.viewMatrix = m_Camera.GetViewMatrix();
-    cBuff.projMatrix = m_Camera.GetProjectionMatrix();
-    cBuff.lightPos = lightPos;
-    cBuff.cameraPos = Vector4(cameraPos, 1.0f);
+    m_LightCubeMesh->transform.SetPosition(lightPos);
 
-    std::shared_ptr<IConstantBuffer> vsConstantBuffer(rendererAPI->CreateConstantBuffer(&cBuff, sizeof(ConstantBuffer)));
-    rendererAPI->SetShaderProgram(m_CubeShader.get());
-    rendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
-    rendererAPI->DrawIndexed(m_IndexBuffer.get());
-
-    Matrix4 lightCubeTranslateMatrix = TranslateMatrix(lightPos.xyz());
-    Matrix4 lightCubeScaleMatrix = ScaleMatrix(Vector3(0.3f, 0.3f, 0.3f));
-    ConstantBuffer lightCubeConstantBuffer = cBuff;
-    lightCubeConstantBuffer.transform = lightCubeTranslateMatrix * lightCubeScaleMatrix;
-
-    std::shared_ptr<IConstantBuffer> lightCubeVSConstantBuffer(rendererAPI->CreateConstantBuffer(&lightCubeConstantBuffer, sizeof(ConstantBuffer)));
-    rendererAPI->SetShaderProgram(m_LightCubeShader.get());
-    rendererAPI->SetConstanBufferVS(lightCubeVSConstantBuffer.get());
-    rendererAPI->DrawIndexed(m_IndexBuffer.get());
+    PGRenderer::EndScene();
 
 }
 

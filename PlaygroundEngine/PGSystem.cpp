@@ -14,7 +14,6 @@ PGSystem::PGSystem() {
 PGSystem::~PGSystem() {
     s_systemEventDispatcher->RemoveListener(this);
 
-    delete m_Renderer;
     delete m_GameApplication;
     delete m_GameLibrary;
     delete m_Window;
@@ -34,14 +33,14 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
     const char* windowName = "PlaygroundEngine";
     m_Window = new PGWindow(windowName, 1280, 720);
 
-    m_Renderer = new DX11RendererAPI(m_Window);
+    PGRenderer::Initialize(m_Window);
 
     m_DefaultMeshMap = LoadDefaultMeshes();
     
     s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     m_GameApplication->OnInit();
 
-    ImguiModule::Initialize(m_Window, m_Renderer);
+    ImguiModule::Initialize(m_Window, PGRenderer::GetRendererAPI());
     return true;
 }
 
@@ -62,8 +61,7 @@ void PGSystem::RunMainLoop() {
         float deltaTime = (float) (timePast / 1000000.0);
         lastTime = time;
 
-        const float color[] = {0.0f, 0.0f, 0.0f, 1.0f};
-        m_Renderer->ClearScreen(color);
+        PGRenderer::BeginFrame();
 
         m_GameApplication->OnUpdate(deltaTime);
 
@@ -71,7 +69,7 @@ void PGSystem::RunMainLoop() {
         m_GameApplication->OnUIRender();
         ImguiModule::Render();
 
-        m_Renderer->Present();
+        PGRenderer::EndFrame();
     }
 }
 

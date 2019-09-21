@@ -4,7 +4,7 @@
 #include "Events/PGSystemEventDispatcher.h"
 #include "Platform/PGWindow.h"
 #include "Platform/PGLibrary.h"
-#include "Renderer/PGRendererAPI.h"
+#include "Renderer/PGRenderer.h"
 #include "PGApplication.h"
 #include "Imgui/imgui_impl.h"
 #include "MeshUtils.h"
@@ -22,12 +22,13 @@ public:
     virtual void OnSystemEvent(SystemEvent event) override;
 
     static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return s_systemEventDispatcher; };
-    IRendererAPI* GetRendererApi() { return m_Renderer; };
-    MeshRef GetDefaultMesh(const std::string& name) { return m_DefaultMeshMap[name]; }
+    Mesh* GetDefaultMeshInstance(const std::string& name, const Material& material, const Transform& transform) { 
+        MeshRef ref = m_DefaultMeshMap[name];
+        return new Mesh(ref->name, ref->vertices, ref->indices, material, transform);
+    }
 
 private:
     PGWindow* m_Window;
-    IRendererAPI* m_Renderer;
     DLibrary* m_GameLibrary;
     IApplication* m_GameApplication;
 

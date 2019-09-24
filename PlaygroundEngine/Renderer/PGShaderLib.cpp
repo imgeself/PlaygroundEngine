@@ -11,11 +11,12 @@ static ShaderFileData ReadBinaryFile(const char* filename) {
     PG_ASSERT(result, "File size error");
 
     // This resource will be freed in platform spesific shader implementation
-    char* shaderSource = (char*)malloc(size.QuadPart);
+    char* shaderSource = (char*)malloc(size.QuadPart + 1);
     DWORD readSize;
     result = ReadFile(shaderFile, (LPVOID)shaderSource, (DWORD)size.QuadPart, &readSize, NULL);
     PG_ASSERT(result, "Couldn't read file");
     PG_ASSERT(readSize == size.QuadPart, "Wanted size and actual read size doesn't match");
+    shaderSource[size.QuadPart] = '\0';
     CloseHandle(shaderFile);
 
     ShaderFileData file = {};
@@ -32,9 +33,14 @@ PGShaderLib::PGShaderLib(IRendererAPI* rendererAPI)
 ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderName) {
     // TODO: We read shader files from shader binary directory for now.
     // But we will read shader source files in the future for parsing constant buffers, and other fancy stuff.
+    /*
     const std::string binaryShaderFileDirectory = "../bin/shaders/";
     const std::string vertexShaderFileName = binaryShaderFileDirectory + shaderName + "Vertex.cso";
     const std::string pixelShaderFileName = binaryShaderFileDirectory + shaderName + "Pixel.cso";
+    */
+    const std::string binaryShaderFileDirectory = "./Shaders/";
+    const std::string vertexShaderFileName = binaryShaderFileDirectory + shaderName + "Vertex.hlsl";
+    const std::string pixelShaderFileName = binaryShaderFileDirectory + shaderName + "Pixel.hlsl";
 
     ShaderFileData vertexShaderData = ReadBinaryFile(vertexShaderFileName.c_str());
     ShaderFileData pixelShaderData = ReadBinaryFile(pixelShaderFileName.c_str());

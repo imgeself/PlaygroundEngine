@@ -1,4 +1,4 @@
-#include "../../PlaygroundEngine/Assets/Shaders/ShaderDefinitions.h"
+#include "../PlaygroundEngine/Assets/Shaders/ShaderDefinitions.h"
 
 struct VSOut {
     float3 normal : Normal;

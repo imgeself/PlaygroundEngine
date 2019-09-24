@@ -24,10 +24,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\LightCubeVertex.hlsl" />
-    <FxCompile Include="Shaders\LightCubePixel.hlsl" />
-    <FxCompile Include="Shaders\PhongShaderPixel.hlsl" />
-    <FxCompile Include="Shaders\PhongShaderVertex.hlsl" />
-  </ItemGroup>
 </Project>

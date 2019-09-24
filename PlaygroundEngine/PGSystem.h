@@ -5,8 +5,9 @@
 #include "Platform/PGWindow.h"
 #include "Platform/PGLibrary.h"
 #include "Renderer/PGRenderer.h"
-#include "PGApplication.h"
+#include "Renderer/PGShaderLib.h"
 #include "Imgui/imgui_impl.h"
+#include "PGApplication.h"
 #include "MeshUtils.h"
 
 #include <memory>
@@ -25,6 +26,10 @@ public:
     Mesh* GetDefaultMeshInstance(const std::string& name, const Material& material, const Transform& transform) { 
         MeshRef ref = m_DefaultMeshMap[name];
         return new Mesh(ref->name, ref->vertices, ref->indices, material, transform);
+    }
+
+    inline PGShaderLib* GetShaderLib() {
+        return PGRenderer::GetShaderLib();
     }
 
 private:

@@ -21,7 +21,7 @@ public:
     IConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
     IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
     IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) override;
-    IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) override;
+    IShaderProgram* CreateShaderProgram(ShaderFileData vertexShaderFileData, ShaderFileData pixelShaderFileData) override;
     IVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) override;
 
     void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) override;

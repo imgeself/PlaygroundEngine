@@ -21,7 +21,7 @@ public:
     virtual IConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) = 0;
     virtual IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) = 0;
     virtual IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) = 0;
-    virtual IShaderProgram* CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) = 0;
+    virtual IShaderProgram* CreateShaderProgram(ShaderFileData vertexShaderFileData, ShaderFileData pixelShaderFileData) = 0;
     virtual IVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) = 0;
 
     virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) = 0;

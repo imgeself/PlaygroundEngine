@@ -198,6 +198,7 @@
     <ClCompile Include="Renderer\DX11\DX11RendererAPI.cpp" />
     <ClCompile Include="Renderer\DX11\DX11Shader.cpp" />
     <ClCompile Include="Renderer\PGRenderer.cpp" />
+    <ClCompile Include="Renderer\PGShaderLib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core.h" />
@@ -236,6 +237,7 @@
     <ClInclude Include="Renderer\PGRenderer.h" />
     <ClInclude Include="Renderer\PGRendererAPI.h" />
     <ClInclude Include="Renderer\PGShader.h" />
+    <ClInclude Include="Renderer\PGShaderLib.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Transform.h" />
   </ItemGroup>

@@ -30,16 +30,14 @@ void Application::OnInit() {
     mainCamera->SetFrustum(1280, 720, 0.001, 1000.0f, PI / 4.0f);
     mainCamera->SetView(Vector3(0.0f, 0.0f, -10.0f), Vector3(0.0f, 0.0f, 0.0f));
 
-    const char* vertexShaderFileName = "../bin/shaders/VertexShader.cso";
-    const char* pixelShaderFileName = "../bin/shaders/PixelShader.cso";
-    m_CubeShader = std::shared_ptr<IShaderProgram>(PGRenderer::GetRendererAPI()->CreateShaderProgram(vertexShaderFileName, pixelShaderFileName));
+    PGShaderLib* shaderLib = m_System->GetShaderLib();
+    m_CubeShader = shaderLib->LoadShaderFromDisk("PhongShader");
+
     Material cubeMaterial = { m_CubeShader.get() };
     Transform cubeTransform;
     m_CubeMesh = m_System->GetDefaultMeshInstance("Cube", cubeMaterial, cubeTransform);
 
-    const char* lightCubeVertexShaderFileName = "../bin/shaders/LightCubeVertex.cso";
-    const char* lightCubePixelShaderFileName = "../bin/shaders/LightCubePixel.cso";
-    m_LightCubeShader = std::shared_ptr<IShaderProgram>(PGRenderer::GetRendererAPI()->CreateShaderProgram(lightCubeVertexShaderFileName, lightCubePixelShaderFileName));
+    m_LightCubeShader = shaderLib->LoadShaderFromDisk("LightCube");
     Material lightCubeMaterial = { m_LightCubeShader.get() };
     Transform lightCubeTransform;
     Vector3 lightPosition(2.0f, 2.0f, -2.0f);

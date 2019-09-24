@@ -162,8 +162,8 @@ IIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, uint32_t 
     return new DX11IndexBuffer(m_Device, bufferData, count);
 }
 
-IShaderProgram* DX11RendererAPI::CreateShaderProgram(const char* vertexShaderFileName, const char* pixelShaderFileName) {
-    return new DX11ShaderProgram(m_Device, vertexShaderFileName, pixelShaderFileName);
+IShaderProgram* DX11RendererAPI::CreateShaderProgram(ShaderFileData vertexShaderFileData, ShaderFileData pixelShaderFileData) {
+    return new DX11ShaderProgram(m_Device, vertexShaderFileData, pixelShaderFileData);
 }
 
 IVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) {

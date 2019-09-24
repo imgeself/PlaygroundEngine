@@ -41,7 +41,7 @@ DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<V
         layoutDescription.push_back(dx11Description);
     }
 
-    ShaderFile vertexShaderFile = shaderProgram->GetVertexShaderFile();
+    ShaderFileData vertexShaderFile = shaderProgram->GetVertexShaderFile();
     HRESULT result = device->CreateInputLayout(layoutDescription.data(), (UINT) layoutDescription.size(), 
         vertexShaderFile.fileData, vertexShaderFile.fileSize, &m_InputLayout);
     PG_ASSERT(SUCCEEDED(result), "Error at creating input layout");

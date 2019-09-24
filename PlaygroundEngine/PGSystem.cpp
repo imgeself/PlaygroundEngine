@@ -1,5 +1,4 @@
 #include "PGSystem.h"
-#include "Renderer/PGRendererAPI.h"
 #include "Renderer/DX11/DX11RendererAPI.h"
 #include "PGGameApplication.h"
 #include "Platform/PGTime.h"

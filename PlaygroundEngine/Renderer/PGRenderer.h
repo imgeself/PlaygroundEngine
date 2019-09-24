@@ -5,6 +5,7 @@
 #include "../Scene.h"
 #include "../Platform/PGWindow.h"
 #include "PGRendererAPI.h"
+#include "PGShaderLib.h"
 
 #include <unordered_set>
 
@@ -24,10 +25,15 @@ public:
         return m_RendererAPI;
     }
 
+    static PGShaderLib* GetShaderLib() {
+        return m_ShaderLib;
+    }
+
 private:
     PGRenderer();
 
     static IRendererAPI* m_RendererAPI;
+    static PGShaderLib* m_ShaderLib;
     static std::unordered_set<Mesh*> m_RenderObjects;
     static PGScene* m_ActiveSceneData;
 };

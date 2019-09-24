@@ -5,18 +5,19 @@
 #include <memory>
 
 IRendererAPI* PGRenderer::m_RendererAPI = nullptr;
+PGShaderLib* PGRenderer::m_ShaderLib = nullptr;
 std::unordered_set<Mesh*> PGRenderer::m_RenderObjects = std::unordered_set<Mesh*>();
 PGScene* PGRenderer::m_ActiveSceneData;
 
 PGRenderer::~PGRenderer() {
-    if (m_RendererAPI) {
-        delete m_RendererAPI;
-    }
+    delete m_RendererAPI;
+    delete m_ShaderLib;
 }
 
 bool PGRenderer::Initialize(PGWindow* window) {
     m_RendererAPI = new DX11RendererAPI(window);
-
+    m_ShaderLib = new PGShaderLib(m_RendererAPI);
+    m_ShaderLib->LoadDefaultShaders();
     return true;
 }
 

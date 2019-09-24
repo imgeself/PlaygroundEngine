@@ -17,15 +17,15 @@ static ID3DBlob* CompileShader(ShaderFileData source, const char* mainFunctionNa
     return shaderBlob;
 }
 
-DX11ShaderProgram::DX11ShaderProgram(ID3D11Device* device, ShaderFileData vertexShaderFileData, ShaderFileData pixelShaderFileData) {
+DX11ShaderProgram::DX11ShaderProgram(ID3D11Device* device, ShaderFileData shaderFileData) {
     // Vertex Shader creation
-    ID3DBlob* vertexShaderBlob = CompileShader(vertexShaderFileData, "main", "vs_4_0");
+    ID3DBlob* vertexShaderBlob = CompileShader(shaderFileData, "VSMain", "vs_4_0");
     HRESULT result = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), 0, &m_VertexShader);
     PG_ASSERT(SUCCEEDED(result), "Error at creating vertex shader");
     m_VertexShaderBlob = vertexShaderBlob;
 
     // Pixel shader creation
-    ID3DBlob* pixelShaderBlob = CompileShader(pixelShaderFileData, "main", "ps_4_0");
+    ID3DBlob* pixelShaderBlob = CompileShader(shaderFileData, "PSMain", "ps_4_0");
     result = device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), 0, &m_PixelShader);
     PG_ASSERT(SUCCEEDED(result), "Error at creating pixel shader");
     SAFE_RELEASE(pixelShaderBlob);

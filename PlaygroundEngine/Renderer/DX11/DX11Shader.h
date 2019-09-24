@@ -7,7 +7,7 @@
 
 class DX11ShaderProgram : public IShaderProgram {
 public:
-    DX11ShaderProgram(ID3D11Device* device, ShaderFileData vertexShaderFileData, ShaderFileData pixelShaderFileData);
+    DX11ShaderProgram(ID3D11Device* device, ShaderFileData shaderFileData);
     ~DX11ShaderProgram() override;
 
     ID3DBlob* GetVertexShaderBlob() { return m_VertexShaderBlob; }

@@ -1,7 +1,7 @@
 #include "PGShaderLib.h"
 
 // TODO: This file reading code should be platform independent
-static ShaderFileData ReadBinaryFile(const char* filename) {
+static ShaderFileData ReadFile(const char* filename) {
     HANDLE shaderFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ,
         NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     PG_ASSERT(shaderFile != INVALID_HANDLE_VALUE, "File is invalid");
@@ -10,7 +10,6 @@ static ShaderFileData ReadBinaryFile(const char* filename) {
     BOOL result = GetFileSizeEx(shaderFile, &size);
     PG_ASSERT(result, "File size error");
 
-    // This resource will be freed in platform spesific shader implementation
     char* shaderSource = (char*)malloc(size.QuadPart + 1);
     DWORD readSize;
     result = ReadFile(shaderFile, (LPVOID)shaderSource, (DWORD)size.QuadPart, &readSize, NULL);
@@ -30,32 +29,14 @@ PGShaderLib::PGShaderLib(IRendererAPI* rendererAPI)
     : m_RendererAPI(rendererAPI) {
 }
 
-ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderName) {
-    // TODO: We read shader files from shader binary directory for now.
-    // But we will read shader source files in the future for parsing constant buffers, and other fancy stuff.
-    /*
-    const std::string binaryShaderFileDirectory = "../bin/shaders/";
-    const std::string vertexShaderFileName = binaryShaderFileDirectory + shaderName + "Vertex.cso";
-    const std::string pixelShaderFileName = binaryShaderFileDirectory + shaderName + "Pixel.cso";
-    */
-    const std::string binaryShaderFileDirectory = "./Shaders/";
-    const std::string vertexShaderFileName = binaryShaderFileDirectory + shaderName + "Vertex.hlsl";
-    const std::string pixelShaderFileName = binaryShaderFileDirectory + shaderName + "Pixel.hlsl";
-
-    ShaderFileData vertexShaderData = ReadBinaryFile(vertexShaderFileName.c_str());
-    ShaderFileData pixelShaderData = ReadBinaryFile(pixelShaderFileName.c_str());
-
-    ShaderRef shaderProgram = std::shared_ptr<IShaderProgram>(m_RendererAPI->CreateShaderProgram(vertexShaderData, pixelShaderData));
-    m_Shaders[shaderName] = shaderProgram;
-    return shaderProgram;
-}
-
-ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& name, const std::string& vertexShaderFileName, const std::string& pixelShaderFileName) {
-    ShaderFileData vertexShaderData = ReadBinaryFile(vertexShaderFileName.c_str());
-    ShaderFileData pixelShaderData = ReadBinaryFile(pixelShaderFileName.c_str());
-
-    ShaderRef shaderProgram = std::shared_ptr<IShaderProgram>(m_RendererAPI->CreateShaderProgram(vertexShaderData, pixelShaderData));
+ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderFilePath) {
+    ShaderFileData shaderData = ReadFile(shaderFilePath.c_str());
+    size_t fileNameEndIndex = shaderFilePath.rfind('.');
+    size_t fileNameStartIndex = shaderFilePath.rfind('/') + 1;
+    const std::string name = shaderFilePath.substr(fileNameStartIndex, fileNameEndIndex - fileNameStartIndex);
+    ShaderRef shaderProgram = std::shared_ptr<IShaderProgram>(m_RendererAPI->CreateShaderProgram(shaderData));
     m_Shaders[name] = shaderProgram;
+    free(shaderData.fileData);
     return shaderProgram;
 }
 

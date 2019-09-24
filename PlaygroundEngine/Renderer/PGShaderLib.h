@@ -13,8 +13,7 @@ public:
     PGShaderLib(IRendererAPI* rendererAPI);
     ~PGShaderLib() = default;
 
-    ShaderRef LoadShaderFromDisk(const std::string& shaderName);
-    ShaderRef LoadShaderFromDisk(const std::string& name, const std::string& vertexShaderFileName, const std::string& pixelShaderFileName);
+    ShaderRef LoadShaderFromDisk(const std::string& shaderFileName);
 
     void LoadDefaultShaders();
     ShaderRef GetDefaultShader(const std::string& name);

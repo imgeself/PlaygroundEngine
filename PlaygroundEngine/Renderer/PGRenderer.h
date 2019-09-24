@@ -6,6 +6,7 @@
 #include "../Platform/PGWindow.h"
 #include "PGRendererAPI.h"
 #include "PGShaderLib.h"
+#include "../Assets/Shaders/ShaderDefinitions.h"
 
 #include <unordered_set>
 

@@ -65,23 +65,14 @@ void PGRenderer::EndScene() {
         m_RendererAPI->SetInputLayout(inputLayout.get());
         m_RendererAPI->SetShaderProgram(shader);
 
-        // TODO: Uniform data should be constructed by parsing shader files.
-        struct EngineConstantBuffer {
-            Matrix4 modelMatrix;
-            Matrix4 viewMatrix;
-            Matrix4 projMatrix;
-            Vector4 lightPos;
-            Vector4 cameraPos;
-        };
-
-        EngineConstantBuffer constantBuffer = {};
+        PerFrameData constantBuffer = {};
         constantBuffer.modelMatrix = renderObject->transform.GetTransformMatrix();
         constantBuffer.viewMatrix = m_ActiveSceneData->camera->GetViewMatrix();
         constantBuffer.projMatrix = m_ActiveSceneData->camera->GetProjectionMatrix();
         constantBuffer.lightPos = Vector4(m_ActiveSceneData->light->position, 1.0f);
         constantBuffer.cameraPos = Vector4(m_ActiveSceneData->camera->GetPosition(), 1.0f);
 
-        std::shared_ptr<IConstantBuffer> vsConstantBuffer(m_RendererAPI->CreateConstantBuffer(&constantBuffer, sizeof(EngineConstantBuffer)));
+        std::shared_ptr<IConstantBuffer> vsConstantBuffer(m_RendererAPI->CreateConstantBuffer(&constantBuffer, sizeof(PerFrameData)));
         m_RendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
         m_RendererAPI->DrawIndexed(indexBuffer.get());
     }

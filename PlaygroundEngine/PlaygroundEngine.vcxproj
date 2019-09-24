@@ -201,6 +201,7 @@
     <ClCompile Include="Renderer\PGShaderLib.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Assets\Shaders\ShaderDefinitions.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Events\PGEvent.h" />
     <ClInclude Include="Imgui\imconfig.h" />

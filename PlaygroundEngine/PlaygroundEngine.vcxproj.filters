@@ -200,6 +200,9 @@
     <ClInclude Include="Renderer\PGShaderLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Assets\Shaders\ShaderDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Imgui\LICENSE.txt" />

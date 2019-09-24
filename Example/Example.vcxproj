@@ -103,6 +103,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(SolutionDir)bin\shaders\%(Filename).cso</ObjectFileOutput>
+      <PreprocessorDefinitions>_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -121,6 +122,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(SolutionDir)bin\shaders\%(Filename).cso</ObjectFileOutput>
+      <PreprocessorDefinitions>_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,6 +145,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(SolutionDir)bin\shaders\%(Filename).cso</ObjectFileOutput>
+      <PreprocessorDefinitions>_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -165,6 +168,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(SolutionDir)bin\shaders\%(Filename).cso</ObjectFileOutput>
+      <PreprocessorDefinitions>_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -190,6 +194,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">_HLSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </FxCompile>
     <FxCompile Include="Shaders\PhongShaderPixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

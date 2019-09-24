@@ -1,11 +1,4 @@
-
-cbuffer EngineConstanBuffer {
-    row_major matrix modelMatrix;
-    row_major matrix viewMatrix;
-    row_major matrix projMatrix;
-    float4 lightPos;
-    float4 cameraPos;
-};
+#include "../../PlaygroundEngine/Assets/Shaders/ShaderDefinitions.h"
 
 struct VSOut {
     float3 normal : Normal;

@@ -10,7 +10,6 @@ Application::Application(PGSystem* system)
 }
 
 Application::~Application() {
-    printf("Destructor \n");
 }
 
 void Application::OnInit() {
@@ -33,12 +32,12 @@ void Application::OnInit() {
     PGShaderLib* shaderLib = m_System->GetShaderLib();
     m_CubeShader = shaderLib->LoadShaderFromDisk("Shaders/PhongShader.hlsl");
 
-    Material cubeMaterial = { m_CubeShader.get() };
+    Material cubeMaterial = { m_CubeShader };
     Transform cubeTransform;
     m_CubeMesh = m_System->GetDefaultMeshInstance("Cube", cubeMaterial, cubeTransform);
 
     m_LightCubeShader = shaderLib->LoadShaderFromDisk("Shaders/LightCube.hlsl");
-    Material lightCubeMaterial = { m_LightCubeShader.get() };
+    Material lightCubeMaterial = { m_LightCubeShader };
     Transform lightCubeTransform;
     Vector3 lightPosition(2.0f, 2.0f, -2.0f);
     lightCubeTransform.Translate(lightPosition);

@@ -12,9 +12,8 @@
 
 class PG_API PGRenderer {
 public:
-    ~PGRenderer();
-
     static bool Initialize(PGWindow* window);
+    static void Uninitialize();
     static void BeginFrame();
     static void EndFrame();
 
@@ -23,19 +22,19 @@ public:
     static void EndScene();
 
     static IRendererAPI* GetRendererAPI() {
-        return m_RendererAPI;
+        return s_RendererAPI;
     }
 
     static PGShaderLib* GetShaderLib() {
-        return m_ShaderLib;
+        return s_ShaderLib;
     }
 
 private:
     PGRenderer();
 
-    static IRendererAPI* m_RendererAPI;
-    static PGShaderLib* m_ShaderLib;
-    static std::unordered_set<Mesh*> m_RenderObjects;
-    static PGScene* m_ActiveSceneData;
+    static IRendererAPI* s_RendererAPI;
+    static PGShaderLib* s_ShaderLib;
+    static std::unordered_set<Mesh*> s_RenderObjects;
+    static PGScene* s_ActiveSceneData;
 };
 

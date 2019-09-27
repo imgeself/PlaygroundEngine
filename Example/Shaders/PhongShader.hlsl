@@ -40,7 +40,7 @@ float4 PSMain(VSOut input, uint pid : SV_PrimitiveID) : SV_Target
         0.0f, 0.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 1.0f,
     };
-    float3 color = (float3) colors[pid / 2];
+    float3 color = float3(0.5f, 0.5f, 0.5f); //(float3) colors[pid / 2];
 
     // Diffuse
     float3 lightDir = normalize(input.lightPos - input.worldPos);

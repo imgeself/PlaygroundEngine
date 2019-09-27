@@ -4,51 +4,52 @@
 
 #include <memory>
 
-IRendererAPI* PGRenderer::m_RendererAPI = nullptr;
-PGShaderLib* PGRenderer::m_ShaderLib = nullptr;
-std::unordered_set<Mesh*> PGRenderer::m_RenderObjects = std::unordered_set<Mesh*>();
-PGScene* PGRenderer::m_ActiveSceneData;
+IRendererAPI* PGRenderer::s_RendererAPI = nullptr;
+PGShaderLib* PGRenderer::s_ShaderLib = nullptr;
+std::unordered_set<Mesh*> PGRenderer::s_RenderObjects = std::unordered_set<Mesh*>();
+PGScene* PGRenderer::s_ActiveSceneData;
 
-PGRenderer::~PGRenderer() {
-    delete m_RendererAPI;
-    delete m_ShaderLib;
+void PGRenderer::Uninitialize() {
+    delete s_RendererAPI;
+    delete s_ShaderLib;
 }
 
 bool PGRenderer::Initialize(PGWindow* window) {
-    m_RendererAPI = new DX11RendererAPI(window);
-    m_ShaderLib = new PGShaderLib(m_RendererAPI);
-    m_ShaderLib->LoadDefaultShaders();
+    s_RendererAPI = new DX11RendererAPI(window);
+    s_ShaderLib = new PGShaderLib(s_RendererAPI);
+    s_ShaderLib->LoadDefaultShaders();
     return true;
 }
 
 void PGRenderer::BeginFrame() {
     const float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    m_RendererAPI->ClearScreen(color);
+    s_RendererAPI->ClearScreen(color);
 }
 
 void PGRenderer::EndFrame() {
-    m_RendererAPI->Present();
+    s_RendererAPI->Present();
 }
 
 void PGRenderer::BeginScene(PGScene* sceneData) {
-    m_ActiveSceneData = sceneData;
+    s_ActiveSceneData = sceneData;
 }
 
 void PGRenderer::AddRenderObject(Mesh* renderMesh) {
-    m_RenderObjects.insert(renderMesh);
+    s_RenderObjects.insert(renderMesh);
 }
 
 void PGRenderer::EndScene() {
     //TODO: This function should be create gpu commands and pass them to render thread.
-    for (Mesh* renderObject : m_RenderObjects) {
+    s_ShaderLib->ReloadShadersIfNeeded();
+    for (Mesh* renderObject : s_RenderObjects) {
         size_t vertexBufferStride = sizeof(Vertex);
         size_t vertexBufferSize = sizeof(Vertex) * renderObject->vertices.size();
-        std::shared_ptr<IVertexBuffer>vertexBuffer(m_RendererAPI->CreateVertexBuffer(renderObject->vertices.data(), vertexBufferSize, vertexBufferStride));
+        std::shared_ptr<IVertexBuffer>vertexBuffer(s_RendererAPI->CreateVertexBuffer(renderObject->vertices.data(), vertexBufferSize, vertexBufferStride));
 
         uint32_t indicesCount = renderObject->indices.size();
-        std::shared_ptr<IIndexBuffer> indexBuffer(m_RendererAPI->CreateIndexBuffer(renderObject->indices.data(), indicesCount));
+        std::shared_ptr<IIndexBuffer> indexBuffer(s_RendererAPI->CreateIndexBuffer(renderObject->indices.data(), indicesCount));
 
-        IShaderProgram* shader = renderObject->material.shader;
+        IShaderProgram* shader = *(renderObject->material.shader);
 
         //TODO: Do we want fixed input elements for all shaders?
         std::vector<VertexInputElement> inputElements = {
@@ -56,25 +57,25 @@ void PGRenderer::EndScene() {
             { "Normal", VertexDataFormat_FLOAT3, 0, 12 }
         };
 
-        std::shared_ptr<IVertexInputLayout> inputLayout(m_RendererAPI->CreateVertexInputLayout(inputElements, shader));
+        std::shared_ptr<IVertexInputLayout> inputLayout(s_RendererAPI->CreateVertexInputLayout(inputElements, shader));
 
 
         // Bindings
-        m_RendererAPI->SetVertexBuffer(vertexBuffer.get(), vertexBufferStride);
-        m_RendererAPI->SetIndexBuffer(indexBuffer.get());
-        m_RendererAPI->SetInputLayout(inputLayout.get());
-        m_RendererAPI->SetShaderProgram(shader);
+        s_RendererAPI->SetVertexBuffer(vertexBuffer.get(), vertexBufferStride);
+        s_RendererAPI->SetIndexBuffer(indexBuffer.get());
+        s_RendererAPI->SetInputLayout(inputLayout.get());
+        s_RendererAPI->SetShaderProgram(shader);
 
         PerFrameData constantBuffer = {};
         constantBuffer.modelMatrix = renderObject->transform.GetTransformMatrix();
-        constantBuffer.viewMatrix = m_ActiveSceneData->camera->GetViewMatrix();
-        constantBuffer.projMatrix = m_ActiveSceneData->camera->GetProjectionMatrix();
-        constantBuffer.lightPos = Vector4(m_ActiveSceneData->light->position, 1.0f);
-        constantBuffer.cameraPos = Vector4(m_ActiveSceneData->camera->GetPosition(), 1.0f);
+        constantBuffer.viewMatrix = s_ActiveSceneData->camera->GetViewMatrix();
+        constantBuffer.projMatrix = s_ActiveSceneData->camera->GetProjectionMatrix();
+        constantBuffer.lightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
+        constantBuffer.cameraPos = Vector4(s_ActiveSceneData->camera->GetPosition(), 1.0f);
 
-        std::shared_ptr<IConstantBuffer> vsConstantBuffer(m_RendererAPI->CreateConstantBuffer(&constantBuffer, sizeof(PerFrameData)));
-        m_RendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
-        m_RendererAPI->DrawIndexed(indexBuffer.get());
+        std::shared_ptr<IConstantBuffer> vsConstantBuffer(s_RendererAPI->CreateConstantBuffer(&constantBuffer, sizeof(PerFrameData)));
+        s_RendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
+        s_RendererAPI->DrawIndexed(indexBuffer.get());
     }
 
 }

@@ -20,8 +20,8 @@ private:
     std::shared_ptr<IIndexBuffer> m_IndexBuffer;
     std::shared_ptr<IVertexBuffer> m_VertexBuffer;
 
-    std::shared_ptr<IShaderProgram> m_CubeShader;
-    std::shared_ptr<IShaderProgram> m_LightCubeShader;
+    ShaderRef m_CubeShader;
+    ShaderRef m_LightCubeShader;
 
     Mesh* m_CubeMesh;
     Mesh* m_LightCubeMesh;

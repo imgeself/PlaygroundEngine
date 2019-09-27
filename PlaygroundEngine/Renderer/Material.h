@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../Core.h"
-#include "PGShader.h"
+#include "PGShaderLib.h"
 
 #include <memory>
 
 struct Material {
-    IShaderProgram* shader;
+    ShaderRef shader;
 };
 

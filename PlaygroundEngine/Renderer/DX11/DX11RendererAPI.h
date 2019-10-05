@@ -29,8 +29,10 @@ public:
     void SetInputLayout(IVertexInputLayout* vertexInputLayout) override;
     void SetShaderProgram(IShaderProgram* shaderProgram) override;
 
-    void SetConstanBufferVS(IConstantBuffer* constantBuffer) override;
-    void SetConstanBufferPS(IConstantBuffer* constantBuffer) override;
+    void SetConstanBuffersVS(IConstantBuffer** constantBuffers, size_t count) override;
+    void SetConstanBuffersPS(IConstantBuffer** constantBuffers, size_t count) override;
+
+    void SetShaderConstantBuffers(IShaderProgram* shaderProgram) override;
 
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }

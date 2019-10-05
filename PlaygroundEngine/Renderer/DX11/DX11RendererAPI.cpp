@@ -200,16 +200,33 @@ void DX11RendererAPI::SetShaderProgram(IShaderProgram* shaderProgram) {
     m_DeviceContext->PSSetShader(pixelShader, nullptr, 0);
 }
 
-void DX11RendererAPI::SetConstanBufferVS(IConstantBuffer* constantBuffer) {
-    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*) constantBuffer;
-    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
-    m_DeviceContext->VSSetConstantBuffers(0, 1, &buffer);
+void DX11RendererAPI::SetConstanBuffersVS(IConstantBuffer** constantBuffers, size_t count) {
+    DX11ConstantBuffer** dx11ConstantBuffer = (DX11ConstantBuffer**) constantBuffers;
+    ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * count);
+    for (size_t i = 0; i < count; ++i) {
+        *(buffers + i) = (*dx11ConstantBuffer)->GetDXBuffer();
+        dx11ConstantBuffer++;
+    }
+
+    m_DeviceContext->VSSetConstantBuffers(0, count, buffers);
 }
 
-void DX11RendererAPI::SetConstanBufferPS(IConstantBuffer* constantBuffer) {
-    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*)constantBuffer;
-    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
-    m_DeviceContext->PSSetConstantBuffers(0, 1, &buffer);
+void DX11RendererAPI::SetConstanBuffersPS(IConstantBuffer** constantBuffers, size_t count) {
+    DX11ConstantBuffer** dx11ConstantBuffer = (DX11ConstantBuffer **) constantBuffers;
+    ID3D11Buffer** buffers = (ID3D11Buffer **) alloca(sizeof(ID3D11Buffer*) * count);
+    for (size_t i = 0; i < count; ++i) {
+        *(buffers + i) = (*dx11ConstantBuffer)->GetDXBuffer();
+        dx11ConstantBuffer++;
+    }
+
+    m_DeviceContext->PSSetConstantBuffers(0, count, buffers);
 }
 
+void DX11RendererAPI::SetShaderConstantBuffers(IShaderProgram* shaderProgram) {
+    DX11ShaderProgram* dx11ShaderProgram = (DX11ShaderProgram*)shaderProgram;
+    ConstantBufferList vertexShaderConstantBuffers = dx11ShaderProgram->GetVertexShaderConstantBuffers();
+    ConstantBufferList pixelShaderConstantBuffers = dx11ShaderProgram->GetPixelShaderConstantBuffers();
+    //m_DeviceContext->VSSetConstantBuffers(0, vertexShaderConstantBuffers.size(), vertexShaderConstantBuffers.data())
+
+}
 

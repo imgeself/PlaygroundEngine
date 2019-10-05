@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <memory>
 
-typedef IShaderProgram** ShaderRef;
+typedef IShaderProgram* ShaderRef;
 
 class PG_API PGShaderLib {
 public:

@@ -70,8 +70,7 @@ PGShaderLib::PGShaderLib(IRendererAPI* rendererAPI)
 
 PGShaderLib::~PGShaderLib() {
     for (auto pair : m_Shaders) {
-        delete *(pair.second);
-        free(pair.second);
+        delete (pair.second);
     }
 }
 
@@ -92,16 +91,11 @@ ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderFilePath, boo
     free(shaderData.fileData);
 
     if (shaderSearch != m_Shaders.end()) {
-        // Shader program exists! Free old shader program!
-        delete *(shaderSearch->second);
-
-        *(shaderSearch->second) = shaderProgramPointer;
+        *(shaderSearch->second) = *shaderProgramPointer;
         return shaderSearch->second;
     } else {
-        ShaderRef shaderRef = (ShaderRef) malloc(sizeof(IShaderProgram*));
-        *shaderRef = shaderProgramPointer;
-        m_Shaders[name] = shaderRef;
-        return shaderRef;
+        m_Shaders[name] = shaderProgramPointer;
+        return shaderProgramPointer;
     }
 }
 

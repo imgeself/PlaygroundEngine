@@ -29,7 +29,9 @@ public:
     virtual void SetInputLayout(IVertexInputLayout* vertexInputLayout) = 0;
     virtual void SetShaderProgram(IShaderProgram* shaderProgram) = 0;
     
-    virtual void SetConstanBufferVS(IConstantBuffer* constantBuffer) = 0;
-    virtual void SetConstanBufferPS(IConstantBuffer* constantBuffer) = 0;
+    virtual void SetConstanBuffersVS(IConstantBuffer** constantBuffers, size_t count) = 0;
+    virtual void SetConstanBuffersPS(IConstantBuffer** constantBuffers, size_t count) = 0;
+
+    virtual void SetShaderConstantBuffers(IShaderProgram* shaderProgram) = 0;
 };
 

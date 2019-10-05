@@ -49,7 +49,7 @@ void PGRenderer::EndScene() {
         uint32_t indicesCount = renderObject->indices.size();
         std::shared_ptr<IIndexBuffer> indexBuffer(s_RendererAPI->CreateIndexBuffer(renderObject->indices.data(), indicesCount));
 
-        IShaderProgram* shader = *(renderObject->material.shader);
+        IShaderProgram* shader = renderObject->material.shader;
 
         //TODO: Do we want fixed input elements for all shaders?
         std::vector<VertexInputElement> inputElements = {
@@ -66,6 +66,7 @@ void PGRenderer::EndScene() {
         s_RendererAPI->SetInputLayout(inputLayout.get());
         s_RendererAPI->SetShaderProgram(shader);
 
+        /*
         PerFrameData constantBuffer = {};
         constantBuffer.modelMatrix = renderObject->transform.GetTransformMatrix();
         constantBuffer.viewMatrix = s_ActiveSceneData->camera->GetViewMatrix();
@@ -73,8 +74,38 @@ void PGRenderer::EndScene() {
         constantBuffer.lightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
         constantBuffer.cameraPos = Vector4(s_ActiveSceneData->camera->GetPosition(), 1.0f);
 
-        std::shared_ptr<IConstantBuffer> vsConstantBuffer(s_RendererAPI->CreateConstantBuffer(&constantBuffer, sizeof(PerFrameData)));
-        s_RendererAPI->SetConstanBufferVS(vsConstantBuffer.get());
+        //IConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(&constantBuffer, sizeof(PerFrameData));
+        */
+
+        ConstantBufferList vertexConstantBuffers = shader->GetVertexShaderConstantBuffers();
+        ConstantBufferList pixelConstantBuffers = shader->GetPixelShaderConstantBuffers();
+
+        if (vertexConstantBuffers.size() > 0) {
+            IConstantBuffer** vsConstantBuffers = (IConstantBuffer**) alloca(sizeof(IConstantBuffer*) * vertexConstantBuffers.size());
+            for (size_t i = 0; i < vertexConstantBuffers.size(); ++i) {
+                ConstantBufferResource* constantBuffer = vertexConstantBuffers[i];
+                IConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(constantBuffer->GetData(), constantBuffer->GetSize());
+                *(vsConstantBuffers + i) = vsConstantBuffer;
+            }
+            s_RendererAPI->SetConstanBuffersVS(vsConstantBuffers, vertexConstantBuffers.size());
+            for (size_t i = 0; i < vertexConstantBuffers.size(); ++i) {
+                delete* (vsConstantBuffers + i);
+            }
+        }
+
+        if (pixelConstantBuffers.size() > 0) {
+            IConstantBuffer** psConstantBuffers = (IConstantBuffer**) alloca(sizeof(IConstantBuffer*) * pixelConstantBuffers.size());
+            for (size_t i = 0; i < pixelConstantBuffers.size(); ++i) {
+                ConstantBufferResource* constantBuffer = pixelConstantBuffers[i];
+                IConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(constantBuffer->GetData(), constantBuffer->GetSize());
+                *(psConstantBuffers + i) = vsConstantBuffer;
+            }
+            s_RendererAPI->SetConstanBuffersPS(psConstantBuffers, pixelConstantBuffers.size());
+            for (size_t i = 0; i < pixelConstantBuffers.size(); ++i) {
+                delete *(psConstantBuffers + i);
+            }
+        }
+
         s_RendererAPI->DrawIndexed(indexBuffer.get());
     }
 

@@ -103,6 +103,18 @@ void Application::OnUpdate(float deltaTime) {
 
     m_LightCubeMesh->transform.SetPosition(lightPos);
 
+    m_CubeShader->SetConstantValue("modelMatrix", m_CubeMesh->transform.GetTransformMatrix());
+    m_CubeShader->SetConstantValue("viewMatrix", m_Scene.camera->GetViewMatrix());
+    m_CubeShader->SetConstantValue("projMatrix", m_Scene.camera->GetProjectionMatrix());
+    m_CubeShader->SetConstantValue("lightPos", Vector4(m_Scene.light->position, 1.0f));
+    m_CubeShader->SetConstantValue("cameraPos", Vector4(m_Scene.camera->GetPosition(), 1.0f));
+
+    m_LightCubeShader->SetConstantValue("modelMatrix", m_LightCubeMesh->transform.GetTransformMatrix());
+    m_LightCubeShader->SetConstantValue("viewMatrix", m_Scene.camera->GetViewMatrix());
+    m_LightCubeShader->SetConstantValue("projMatrix", m_Scene.camera->GetProjectionMatrix());
+    m_LightCubeShader->SetConstantValue("lightPos", Vector4(m_Scene.light->position, 1.0f));
+    m_LightCubeShader->SetConstantValue("cameraPos", Vector4(m_Scene.camera->GetPosition(), 1.0f));
+
     PGRenderer::EndScene();
 
 }

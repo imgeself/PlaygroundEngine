@@ -4,18 +4,18 @@
 
 //TODO: We implementing uniform shader data interface like DX11 constant buffer interface.
 // But this will probably be changed in the future when we support more graphics APIs. 
-class IConstantBuffer {
+class HWConstantBuffer {
 public:
-    virtual ~IConstantBuffer() = default;
+    virtual ~HWConstantBuffer() = default;
 };
 
-class IVertexBuffer {
+class HWVertexBuffer {
 public:
-    virtual ~IVertexBuffer() = default;
+    virtual ~HWVertexBuffer() = default;
 };
 
-class IIndexBuffer {
+class HWIndexBuffer {
 public:
-    virtual ~IIndexBuffer() = default;
+    virtual ~HWIndexBuffer() = default;
 };
 

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "../PGShader.h"
+#include "../HWShader.h"
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
-class DX11ShaderProgram : public IShaderProgram {
+class DX11ShaderProgram : public HWShaderProgram {
 public:
     DX11ShaderProgram(ID3D11Device* device, ShaderFileData shaderFileData);
     ~DX11ShaderProgram() override;
-    IShaderProgram& operator=(const IShaderProgram& other) override;
+    HWShaderProgram& operator=(const HWShaderProgram& other) override;
 
 
     ID3DBlob* GetVertexShaderBlob() { return m_VertexShaderBlob; }

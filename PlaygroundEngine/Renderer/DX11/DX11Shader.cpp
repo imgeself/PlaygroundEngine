@@ -78,7 +78,7 @@ ID3DBlob* DX11ShaderProgram::CompileShader(ShaderFileData source, const char* ma
                 ConstantBufferResource* shaderConstantBuffer = new ConstantBufferResource(bufferDesc.Name, i, bufferDesc.Size);
                 ConstantBufferVariable* shaderConstantBufferVariable = new ConstantBufferVariable[bufferDesc.Variables];
 
-                for (int j = 0; j < bufferDesc.Variables; ++j) {
+                for (uint32_t j = 0; j < bufferDesc.Variables; ++j) {
                     ID3D11ShaderReflectionVariable* variable = constantBuffer->GetVariableByIndex(j);
                     D3D11_SHADER_VARIABLE_DESC variableDesc;
                     variable->GetDesc(&variableDesc);
@@ -144,7 +144,7 @@ DX11ShaderProgram::~DX11ShaderProgram() {
     }
 }
 
-IShaderProgram& DX11ShaderProgram::operator=(const IShaderProgram& other) {
+HWShaderProgram& DX11ShaderProgram::operator=(const HWShaderProgram& other) {
     DX11ShaderProgram& uOther = (DX11ShaderProgram&) other;
 
     SAFE_RELEASE(m_VertexShader);

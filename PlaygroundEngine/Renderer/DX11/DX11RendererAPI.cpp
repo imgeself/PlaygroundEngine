@@ -135,14 +135,14 @@ void DX11RendererAPI::ClearScreen(const float* color) {
     m_DeviceContext->ClearDepthStencilView(m_BackbufferDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void DX11RendererAPI::Draw(IVertexBuffer* vertexBuffer) {
+void DX11RendererAPI::Draw(HWVertexBuffer* vertexBuffer) {
     DX11VertexBuffer* dx11VertexBuffer = (DX11VertexBuffer*) vertexBuffer;
     m_DeviceContext->Draw(dx11VertexBuffer->GetCount(), 0);
 }
 
-void DX11RendererAPI::DrawIndexed(IIndexBuffer* indexBuffer) {
+void DX11RendererAPI::DrawIndexed(HWIndexBuffer* indexBuffer) {
     DX11IndexBuffer* dx11IndexBuffer = (DX11IndexBuffer*)indexBuffer;
-    m_DeviceContext->DrawIndexed(dx11IndexBuffer->GetCount(), 0, 0);
+    m_DeviceContext->DrawIndexed((UINT) dx11IndexBuffer->GetCount(), 0, 0);
 }
 
 void DX11RendererAPI::Present() {
@@ -150,49 +150,49 @@ void DX11RendererAPI::Present() {
     PG_ASSERT(SUCCEEDED(result), "Error at presenting");
 }
 
-IConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size) {
+HWConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size) {
     return new DX11ConstantBuffer(m_Device, bufferData, size);
 }
 
-IVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) {
+HWVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) {
     return new DX11VertexBuffer(m_Device, bufferData, size, strideSize);
 }
 
-IIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, uint32_t count) {
+HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t count) {
     return new DX11IndexBuffer(m_Device, bufferData, count);
 }
 
-IShaderProgram* DX11RendererAPI::CreateShaderProgram(ShaderFileData shaderFileData) {
+HWShaderProgram* DX11RendererAPI::CreateShaderProgram(ShaderFileData shaderFileData) {
     return new DX11ShaderProgram(m_Device, shaderFileData);
 }
 
-IVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) {
+HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) {
     return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram);
 }
 
 
 // Bindings
-void DX11RendererAPI::SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) {
+void DX11RendererAPI::SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) {
     DX11VertexBuffer* dx11VertexBuffer = (DX11VertexBuffer*) vertexBuffer;
     ID3D11Buffer* buffer = dx11VertexBuffer->GetDXBuffer();
-    UINT strides = stride;
+    UINT strides = (UINT) stride;
     UINT offsets = 0;
     m_DeviceContext->IASetVertexBuffers(0, 1, &buffer, &strides, &offsets);
 }
 
-void DX11RendererAPI::SetIndexBuffer(IIndexBuffer* indexBuffer) {
+void DX11RendererAPI::SetIndexBuffer(HWIndexBuffer* indexBuffer) {
     DX11IndexBuffer* dx11IndexBuffer = (DX11IndexBuffer*) indexBuffer;
     ID3D11Buffer* buffer = dx11IndexBuffer->GetDXBuffer();
     m_DeviceContext->IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
-void DX11RendererAPI::SetInputLayout(IVertexInputLayout* vertexInputLayout) {
+void DX11RendererAPI::SetInputLayout(HWVertexInputLayout* vertexInputLayout) {
     DX11VertexInputLayout* dx11VertexInputLayout = (DX11VertexInputLayout*) vertexInputLayout;
     ID3D11InputLayout* inputLayout = dx11VertexInputLayout->GetDXInputLayout();
     m_DeviceContext->IASetInputLayout(inputLayout);
 }
 
-void DX11RendererAPI::SetShaderProgram(IShaderProgram* shaderProgram) {
+void DX11RendererAPI::SetShaderProgram(HWShaderProgram* shaderProgram) {
     DX11ShaderProgram* dx11ShaderProgram = (DX11ShaderProgram*) shaderProgram;
     ID3D11VertexShader* vertexShader = dx11ShaderProgram->GetDXVertexShader();
     ID3D11PixelShader* pixelShader = dx11ShaderProgram->GetDXPixelShader();
@@ -200,7 +200,7 @@ void DX11RendererAPI::SetShaderProgram(IShaderProgram* shaderProgram) {
     m_DeviceContext->PSSetShader(pixelShader, nullptr, 0);
 }
 
-void DX11RendererAPI::SetConstanBuffersVS(IConstantBuffer** constantBuffers, size_t count) {
+void DX11RendererAPI::SetConstanBuffersVS(HWConstantBuffer** constantBuffers, size_t count) {
     DX11ConstantBuffer** dx11ConstantBuffer = (DX11ConstantBuffer**) constantBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * count);
     for (size_t i = 0; i < count; ++i) {
@@ -208,10 +208,10 @@ void DX11RendererAPI::SetConstanBuffersVS(IConstantBuffer** constantBuffers, siz
         dx11ConstantBuffer++;
     }
 
-    m_DeviceContext->VSSetConstantBuffers(0, count, buffers);
+    m_DeviceContext->VSSetConstantBuffers(0, (UINT) count, buffers);
 }
 
-void DX11RendererAPI::SetConstanBuffersPS(IConstantBuffer** constantBuffers, size_t count) {
+void DX11RendererAPI::SetConstanBuffersPS(HWConstantBuffer** constantBuffers, size_t count) {
     DX11ConstantBuffer** dx11ConstantBuffer = (DX11ConstantBuffer **) constantBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer **) alloca(sizeof(ID3D11Buffer*) * count);
     for (size_t i = 0; i < count; ++i) {
@@ -219,10 +219,10 @@ void DX11RendererAPI::SetConstanBuffersPS(IConstantBuffer** constantBuffers, siz
         dx11ConstantBuffer++;
     }
 
-    m_DeviceContext->PSSetConstantBuffers(0, count, buffers);
+    m_DeviceContext->PSSetConstantBuffers(0, (UINT) count, buffers);
 }
 
-void DX11RendererAPI::SetShaderConstantBuffers(IShaderProgram* shaderProgram) {
+void DX11RendererAPI::SetShaderConstantBuffers(HWShaderProgram* shaderProgram) {
     DX11ShaderProgram* dx11ShaderProgram = (DX11ShaderProgram*)shaderProgram;
     ConstantBufferList vertexShaderConstantBuffers = dx11ShaderProgram->GetVertexShaderConstantBuffers();
     ConstantBufferList pixelShaderConstantBuffers = dx11ShaderProgram->GetPixelShaderConstantBuffers();

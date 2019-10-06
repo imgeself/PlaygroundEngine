@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../PGRendererAPI.h"
+#include "../HWRendererAPI.h"
 
 #include "DX11Buffer.h"
 #include "DX11Shader.h"
@@ -8,31 +8,31 @@
 
 #include <d3d11.h>
 
-class DX11RendererAPI : public IRendererAPI {
+class DX11RendererAPI : public HWRendererAPI {
 public:
     DX11RendererAPI(PGWindow* window);
     ~DX11RendererAPI() override;
 
     void ClearScreen(const float* color) override;
-    void Draw(IVertexBuffer* vertexBuffer) override;
-    void DrawIndexed(IIndexBuffer* indexBuffer) override;
+    void Draw(HWVertexBuffer* vertexBuffer) override;
+    void DrawIndexed(HWIndexBuffer* indexBuffer) override;
     void Present() override;
 
-    IConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
-    IVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
-    IIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, uint32_t count) override;
-    IShaderProgram* CreateShaderProgram(ShaderFileData shaderFileData) override;
-    IVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, IShaderProgram* shaderProgram) override;
+    HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
+    HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
+    HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) override;
+    HWShaderProgram* CreateShaderProgram(ShaderFileData shaderFileData) override;
+    HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) override;
 
-    void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) override;
-    void SetIndexBuffer(IIndexBuffer* indexBuffer) override;
-    void SetInputLayout(IVertexInputLayout* vertexInputLayout) override;
-    void SetShaderProgram(IShaderProgram* shaderProgram) override;
+    void SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) override;
+    void SetIndexBuffer(HWIndexBuffer* indexBuffer) override;
+    void SetInputLayout(HWVertexInputLayout* vertexInputLayout) override;
+    void SetShaderProgram(HWShaderProgram* shaderProgram) override;
 
-    void SetConstanBuffersVS(IConstantBuffer** constantBuffers, size_t count) override;
-    void SetConstanBuffersPS(IConstantBuffer** constantBuffers, size_t count) override;
+    void SetConstanBuffersVS(HWConstantBuffer** constantBuffers, size_t count) override;
+    void SetConstanBuffersPS(HWConstantBuffer** constantBuffers, size_t count) override;
 
-    void SetShaderConstantBuffers(IShaderProgram* shaderProgram) override;
+    void SetShaderConstantBuffers(HWShaderProgram* shaderProgram) override;
 
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }

@@ -9,10 +9,10 @@ struct ShaderFileData {
     size_t fileSize;
 };
 
-class PG_API IShaderProgram {
+class PG_API HWShaderProgram {
 public:
-    virtual ~IShaderProgram() = default;
-    virtual IShaderProgram& operator=(const IShaderProgram& other) = 0;
+    virtual ~HWShaderProgram() = default;
+    virtual HWShaderProgram& operator=(const HWShaderProgram& other) = 0;
 
     template<typename T>
     void SetConstantValue(const char* name, const T& data) {

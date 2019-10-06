@@ -6,13 +6,13 @@
 #include "imgui_impl_dx11.h"
 #include "../Platform/PGWindow.h"
 #include "../Platform/PGInput.h"
-#include "../Renderer/PGRendererAPI.h"
+#include "../Renderer/HWRendererAPI.h"
 
 class IMGUI_IMPL_API ImguiModule {
 public:
     ~ImguiModule();
 
-    static void Initialize(PGWindow* window, IRendererAPI* rendererAPI);
+    static void Initialize(PGWindow* window, HWRendererAPI* rendererAPI);
     static void Begin(float deltaTime);
     static void Render();
 

@@ -233,11 +233,11 @@
     <ClInclude Include="Renderer\DX11\DX11RendererAPI.h" />
     <ClInclude Include="Renderer\DX11\DX11Shader.h" />
     <ClInclude Include="Renderer\Material.h" />
-    <ClInclude Include="Renderer\PGBuffer.h" />
-    <ClInclude Include="Renderer\PGInputLayout.h" />
+    <ClInclude Include="Renderer\HWBuffer.h" />
+    <ClInclude Include="Renderer\HWInputLayout.h" />
     <ClInclude Include="Renderer\PGRenderer.h" />
-    <ClInclude Include="Renderer\PGRendererAPI.h" />
-    <ClInclude Include="Renderer\PGShader.h" />
+    <ClInclude Include="Renderer\HWRendererAPI.h" />
+    <ClInclude Include="Renderer\HWShader.h" />
     <ClInclude Include="Renderer\PGShaderLib.h" />
     <ClInclude Include="Renderer\PGShaderResources.h" />
     <ClInclude Include="Scene.h" />

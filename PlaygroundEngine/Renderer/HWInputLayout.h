@@ -28,8 +28,8 @@ struct VertexInputElement {
         : name(name), format(format), inputSlot(slot), offset(offset) {}
 };
 
-class IVertexInputLayout {
+class HWVertexInputLayout {
 public:
-    virtual ~IVertexInputLayout() = default;
+    virtual ~HWVertexInputLayout() = default;
 };
 

@@ -26,7 +26,7 @@ void Application::OnInit() {
     };
 
     PGCamera* mainCamera = new PGCamera;
-    mainCamera->SetFrustum(1280, 720, 0.001, 1000.0f, PI / 4.0f);
+    mainCamera->SetFrustum(1280, 720, 0.001f, 1000.0f, PI / 4.0f);
     mainCamera->SetView(Vector3(0.0f, 0.0f, -10.0f), Vector3(0.0f, 0.0f, 0.0f));
 
     PGShaderLib* shaderLib = m_System->GetShaderLib();

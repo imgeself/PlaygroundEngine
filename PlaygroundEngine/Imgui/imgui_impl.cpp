@@ -4,7 +4,7 @@
 
 PGWindow* ImguiModule::m_Window = nullptr;
 
-void ImguiModule::Initialize(PGWindow* window, IRendererAPI* rendererAPI) {
+void ImguiModule::Initialize(PGWindow* window, HWRendererAPI* rendererAPI) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();

@@ -4,7 +4,7 @@
 #include "../MeshUtils.h"
 #include "../Scene.h"
 #include "../Platform/PGWindow.h"
-#include "PGRendererAPI.h"
+#include "HWRendererAPI.h"
 #include "PGShaderLib.h"
 #include "../Assets/Shaders/ShaderDefinitions.h"
 
@@ -21,7 +21,7 @@ public:
     static void AddRenderObject(Mesh* renderMesh);
     static void EndScene();
 
-    static IRendererAPI* GetRendererAPI() {
+    static HWRendererAPI* GetRendererAPI() {
         return s_RendererAPI;
     }
 
@@ -32,7 +32,7 @@ public:
 private:
     PGRenderer();
 
-    static IRendererAPI* s_RendererAPI;
+    static HWRendererAPI* s_RendererAPI;
     static PGShaderLib* s_ShaderLib;
     static std::unordered_set<Mesh*> s_RenderObjects;
     static PGScene* s_ActiveSceneData;

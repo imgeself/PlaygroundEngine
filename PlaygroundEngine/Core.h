@@ -1,8 +1,11 @@
 #pragma once
 
+#pragma warning(disable:4251) // std libraries dll interface warning. We use same compiler and same configuration for the dll and application.
+
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
+
 
 #define PG_ASSERT(x, string) { if(!(x)) { printf("Assertion Failed: %s\n", string); __debugbreak(); } }
 

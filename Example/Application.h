@@ -17,8 +17,8 @@ public:
 private:
     PGSystem* m_System;
 
-    std::shared_ptr<IIndexBuffer> m_IndexBuffer;
-    std::shared_ptr<IVertexBuffer> m_VertexBuffer;
+    std::shared_ptr<HWIndexBuffer> m_IndexBuffer;
+    std::shared_ptr<HWVertexBuffer> m_VertexBuffer;
 
     ShaderRef m_CubeShader;
     ShaderRef m_LightCubeShader;

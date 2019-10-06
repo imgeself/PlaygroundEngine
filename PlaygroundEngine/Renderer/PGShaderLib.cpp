@@ -64,7 +64,7 @@ static bool GetFileLastWriteTime(const char* filepath, FILETIME* o_FileTime) {
     return true;
 }
 
-PGShaderLib::PGShaderLib(IRendererAPI* rendererAPI)
+PGShaderLib::PGShaderLib(HWRendererAPI* rendererAPI)
     : m_RendererAPI(rendererAPI) {
 }
 
@@ -86,7 +86,7 @@ ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderFilePath, boo
     }
     FILETIME shaderFileTime = {};
     ShaderFileData shaderData = ReadFile(shaderFilePath.c_str(), &shaderFileTime);
-    IShaderProgram* shaderProgramPointer = m_RendererAPI->CreateShaderProgram(shaderData);
+    HWShaderProgram* shaderProgramPointer = m_RendererAPI->CreateShaderProgram(shaderData);
     m_ShaderFileLastWriteTimeMap[shaderFilePath] = shaderFileTime;
     free(shaderData.fileData);
 

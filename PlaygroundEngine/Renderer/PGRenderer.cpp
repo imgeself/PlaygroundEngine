@@ -4,7 +4,7 @@
 
 #include <memory>
 
-IRendererAPI* PGRenderer::s_RendererAPI = nullptr;
+HWRendererAPI* PGRenderer::s_RendererAPI = nullptr;
 PGShaderLib* PGRenderer::s_ShaderLib = nullptr;
 std::unordered_set<Mesh*> PGRenderer::s_RenderObjects = std::unordered_set<Mesh*>();
 PGScene* PGRenderer::s_ActiveSceneData;
@@ -44,12 +44,12 @@ void PGRenderer::EndScene() {
     for (Mesh* renderObject : s_RenderObjects) {
         size_t vertexBufferStride = sizeof(Vertex);
         size_t vertexBufferSize = sizeof(Vertex) * renderObject->vertices.size();
-        std::shared_ptr<IVertexBuffer>vertexBuffer(s_RendererAPI->CreateVertexBuffer(renderObject->vertices.data(), vertexBufferSize, vertexBufferStride));
+        std::shared_ptr<HWVertexBuffer>vertexBuffer(s_RendererAPI->CreateVertexBuffer(renderObject->vertices.data(), vertexBufferSize, vertexBufferStride));
 
-        uint32_t indicesCount = renderObject->indices.size();
-        std::shared_ptr<IIndexBuffer> indexBuffer(s_RendererAPI->CreateIndexBuffer(renderObject->indices.data(), indicesCount));
+        size_t indicesCount = renderObject->indices.size();
+        std::shared_ptr<HWIndexBuffer> indexBuffer(s_RendererAPI->CreateIndexBuffer(renderObject->indices.data(), indicesCount));
 
-        IShaderProgram* shader = renderObject->material.shader;
+        HWShaderProgram* shader = renderObject->material.shader;
 
         //TODO: Do we want fixed input elements for all shaders?
         std::vector<VertexInputElement> inputElements = {
@@ -57,7 +57,7 @@ void PGRenderer::EndScene() {
             { "Normal", VertexDataFormat_FLOAT3, 0, 12 }
         };
 
-        std::shared_ptr<IVertexInputLayout> inputLayout(s_RendererAPI->CreateVertexInputLayout(inputElements, shader));
+        std::shared_ptr<HWVertexInputLayout> inputLayout(s_RendererAPI->CreateVertexInputLayout(inputElements, shader));
 
 
         // Bindings
@@ -81,10 +81,10 @@ void PGRenderer::EndScene() {
         ConstantBufferList pixelConstantBuffers = shader->GetPixelShaderConstantBuffers();
 
         if (vertexConstantBuffers.size() > 0) {
-            IConstantBuffer** vsConstantBuffers = (IConstantBuffer**) alloca(sizeof(IConstantBuffer*) * vertexConstantBuffers.size());
+            HWConstantBuffer** vsConstantBuffers = (HWConstantBuffer**) alloca(sizeof(HWConstantBuffer*) * vertexConstantBuffers.size());
             for (size_t i = 0; i < vertexConstantBuffers.size(); ++i) {
                 ConstantBufferResource* constantBuffer = vertexConstantBuffers[i];
-                IConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(constantBuffer->GetData(), constantBuffer->GetSize());
+                HWConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(constantBuffer->GetData(), constantBuffer->GetSize());
                 *(vsConstantBuffers + i) = vsConstantBuffer;
             }
             s_RendererAPI->SetConstanBuffersVS(vsConstantBuffers, vertexConstantBuffers.size());
@@ -94,10 +94,10 @@ void PGRenderer::EndScene() {
         }
 
         if (pixelConstantBuffers.size() > 0) {
-            IConstantBuffer** psConstantBuffers = (IConstantBuffer**) alloca(sizeof(IConstantBuffer*) * pixelConstantBuffers.size());
+            HWConstantBuffer** psConstantBuffers = (HWConstantBuffer**) alloca(sizeof(HWConstantBuffer*) * pixelConstantBuffers.size());
             for (size_t i = 0; i < pixelConstantBuffers.size(); ++i) {
                 ConstantBufferResource* constantBuffer = pixelConstantBuffers[i];
-                IConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(constantBuffer->GetData(), constantBuffer->GetSize());
+                HWConstantBuffer* vsConstantBuffer = s_RendererAPI->CreateConstantBuffer(constantBuffer->GetData(), constantBuffer->GetSize());
                 *(psConstantBuffers + i) = vsConstantBuffer;
             }
             s_RendererAPI->SetConstanBuffersPS(psConstantBuffers, pixelConstantBuffers.size());

@@ -42,10 +42,10 @@ DX11VertexBuffer::~DX11VertexBuffer() {
     SAFE_RELEASE(m_Buffer);
 }
 
-DX11IndexBuffer::DX11IndexBuffer(ID3D11Device* device, uint32_t* data, uint32_t count) 
+DX11IndexBuffer::DX11IndexBuffer(ID3D11Device* device, uint32_t* data, size_t count) 
     : m_Count(count) {
     D3D11_BUFFER_DESC vertexBufferDescriptor = {};
-    vertexBufferDescriptor.ByteWidth = count * sizeof(uint32_t);
+    vertexBufferDescriptor.ByteWidth = (UINT) (count * sizeof(uint32_t));
     vertexBufferDescriptor.Usage = D3D11_USAGE_DEFAULT;
     vertexBufferDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
     vertexBufferDescriptor.CPUAccessFlags = 0;

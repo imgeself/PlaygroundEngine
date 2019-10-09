@@ -84,18 +84,19 @@ ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderFilePath, boo
     if (shaderSearch != m_Shaders.end() && !createIfExists) {
         return shaderSearch->second;
     }
+
     FILETIME shaderFileTime = {};
-    ShaderFileData shaderData = ReadFile(shaderFilePath.c_str(), &shaderFileTime);
-    HWShaderProgram* shaderProgramPointer = m_RendererAPI->CreateShaderProgram(shaderData);
+    GetFileLastWriteTime(shaderFilePath.c_str(), &shaderFileTime);
     m_ShaderFileLastWriteTimeMap[shaderFilePath] = shaderFileTime;
-    free(shaderData.fileData);
 
     if (shaderSearch != m_Shaders.end()) {
-        *(shaderSearch->second) = *shaderProgramPointer;
+        shaderSearch->second->Reload(m_RendererAPI, shaderFilePath.c_str());
         return shaderSearch->second;
     } else {
-        m_Shaders[name] = shaderProgramPointer;
-        return shaderProgramPointer;
+        PGShader* shader = new PGShader();
+        shader->LoadFromFilename(m_RendererAPI, shaderFilePath.c_str());
+        m_Shaders[name] = shader;
+        return shader;
     }
 }
 

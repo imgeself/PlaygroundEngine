@@ -21,7 +21,8 @@ public:
     HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
     HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
     HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) override;
-    HWShaderProgram* CreateShaderProgram(ShaderFileData shaderFileData) override;
+    HWShaderProgram* CreateShaderProgramFromSource(ShaderFileData* shaderFileData) override;
+    HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) override;
     HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) override;
 
     void SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) override;
@@ -32,7 +33,9 @@ public:
     void SetConstanBuffersVS(HWConstantBuffer** constantBuffers, size_t count) override;
     void SetConstanBuffersPS(HWConstantBuffer** constantBuffers, size_t count) override;
 
-    void SetShaderConstantBuffers(HWShaderProgram* shaderProgram) override;
+    void* Map(HWConstantBuffer* resource) override;
+    void Unmap(HWConstantBuffer* resource) override;
+
 
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }

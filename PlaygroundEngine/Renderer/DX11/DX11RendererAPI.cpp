@@ -162,8 +162,12 @@ HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t c
     return new DX11IndexBuffer(m_Device, bufferData, count);
 }
 
-HWShaderProgram* DX11RendererAPI::CreateShaderProgram(ShaderFileData shaderFileData) {
+HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromSource(ShaderFileData* shaderFileData) {
     return new DX11ShaderProgram(m_Device, shaderFileData);
+}
+
+HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) {
+    return new DX11ShaderProgram(m_Device, vertexShaderFileData, pixelShaderFileData);
 }
 
 HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) {
@@ -201,32 +205,42 @@ void DX11RendererAPI::SetShaderProgram(HWShaderProgram* shaderProgram) {
 }
 
 void DX11RendererAPI::SetConstanBuffersVS(HWConstantBuffer** constantBuffers, size_t count) {
-    DX11ConstantBuffer** dx11ConstantBuffer = (DX11ConstantBuffer**) constantBuffers;
+    DX11ConstantBuffer** dx11ConstantBuffers = (DX11ConstantBuffer**) constantBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * count);
     for (size_t i = 0; i < count; ++i) {
-        *(buffers + i) = (*dx11ConstantBuffer)->GetDXBuffer();
-        dx11ConstantBuffer++;
+        DX11ConstantBuffer* dxConstantBuffer = *dx11ConstantBuffers;
+        *(buffers + i) = dxConstantBuffer ? dxConstantBuffer->GetDXBuffer() : nullptr;
+        dx11ConstantBuffers++;
     }
 
     m_DeviceContext->VSSetConstantBuffers(0, (UINT) count, buffers);
 }
 
 void DX11RendererAPI::SetConstanBuffersPS(HWConstantBuffer** constantBuffers, size_t count) {
-    DX11ConstantBuffer** dx11ConstantBuffer = (DX11ConstantBuffer **) constantBuffers;
+    DX11ConstantBuffer** dx11ConstantBuffers = (DX11ConstantBuffer **) constantBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer **) alloca(sizeof(ID3D11Buffer*) * count);
     for (size_t i = 0; i < count; ++i) {
-        *(buffers + i) = (*dx11ConstantBuffer)->GetDXBuffer();
-        dx11ConstantBuffer++;
+        DX11ConstantBuffer* dxConstantBuffer = *dx11ConstantBuffers;
+        *(buffers + i) = dxConstantBuffer ? dxConstantBuffer->GetDXBuffer() : nullptr;
+        dx11ConstantBuffers++;
     }
 
     m_DeviceContext->PSSetConstantBuffers(0, (UINT) count, buffers);
 }
 
-void DX11RendererAPI::SetShaderConstantBuffers(HWShaderProgram* shaderProgram) {
-    DX11ShaderProgram* dx11ShaderProgram = (DX11ShaderProgram*)shaderProgram;
-    ConstantBufferList vertexShaderConstantBuffers = dx11ShaderProgram->GetVertexShaderConstantBuffers();
-    ConstantBufferList pixelShaderConstantBuffers = dx11ShaderProgram->GetPixelShaderConstantBuffers();
-    //m_DeviceContext->VSSetConstantBuffers(0, vertexShaderConstantBuffers.size(), vertexShaderConstantBuffers.data())
+void* DX11RendererAPI::Map(HWConstantBuffer* resource) {
+    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*) resource;
+    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
 
+    D3D11_MAPPED_SUBRESOURCE mappedResource = {};
+    m_DeviceContext->Map(buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    return mappedResource.pData;
+}
+
+void DX11RendererAPI::Unmap(HWConstantBuffer* resource) {
+    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*)resource;
+    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
+
+    m_DeviceContext->Unmap(buffer, NULL);
 }
 

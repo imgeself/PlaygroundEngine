@@ -3,13 +3,24 @@
 #include "../Core.h"
 
 #include <vector>
+#include <string>
+
+#define BIT(x)    (1u << (x))
 
 enum ShaderType {
-    VERTEX,
-    GEOMETRY,
-    PIXEL,
-    COMPUTE
+    VERTEX   = BIT(0),
+    GEOMETRY = BIT(1),
+    PIXEL    = BIT(2),
+    COMPUTE  = BIT(3)
 };
+
+inline ShaderType operator|(ShaderType left, ShaderType right) {
+    return (ShaderType)((uint8_t)left | (uint8_t)right);
+}
+
+inline ShaderType operator&(ShaderType left, ShaderType right) {
+    return (ShaderType)((uint8_t)left & (uint8_t)right);
+}
 
 enum ShaderItemType {
     FLOAT_SCALAR,
@@ -38,15 +49,15 @@ static size_t GetShaderItemTypeSize(ShaderItemType type) {
 
 // Shader resources
 struct ConstantBufferVariable {
-    const char* name;
+    std::string name;
     ShaderItemType type;
     size_t offset;
 };
 
 class ConstantBufferResource {
 public:
-    ConstantBufferResource(const char* name, uint32_t slot, size_t size)
-        : m_Name(name), m_Slot(slot), m_Size(size), m_Data(nullptr) {
+    ConstantBufferResource(const char* name, uint32_t slot, size_t size, ShaderType shaderType)
+        : m_Name(name), m_Slot(slot), m_Size(size), m_Data(nullptr), shaderType(shaderType) {
         m_Data = (uint8_t*) malloc(size);
     }
 
@@ -64,14 +75,16 @@ public:
         memcpy(m_Data + variable->offset, &data, GetShaderItemTypeSize(variable->type));
     }
 
-    inline const char* GetName() { return m_Name; }
+    inline const std::string GetName() { return m_Name; }
     inline size_t GetSlot() { return m_Slot; }
     inline size_t GetSize() { return m_Size; }
     inline const std::vector<ConstantBufferVariable*>& GetConstantVariables() { return m_Constants; }
     inline uint8_t* GetData() { return m_Data; }
 
+    ShaderType shaderType;
+
 private:
-    const char* m_Name;
+    const std::string m_Name;
     size_t m_Slot;
     size_t m_Size;
     std::vector<ConstantBufferVariable*> m_Constants;

@@ -7,8 +7,9 @@
 #include "HWRendererAPI.h"
 #include "PGShaderLib.h"
 #include "../Assets/Shaders/ShaderDefinitions.h"
+#include "PGRenderObject.h"
 
-#include <unordered_set>
+#include <vector>
 
 class PG_API PGRenderer {
 public:
@@ -18,7 +19,7 @@ public:
     static void EndFrame();
 
     static void BeginScene(PGScene* sceneData);
-    static void AddRenderObject(Mesh* renderMesh);
+    static void AddMesh(Mesh* renderMesh);
     static void EndScene();
 
     static HWRendererAPI* GetRendererAPI() {
@@ -34,7 +35,7 @@ private:
 
     static HWRendererAPI* s_RendererAPI;
     static PGShaderLib* s_ShaderLib;
-    static std::unordered_set<Mesh*> s_RenderObjects;
+    static std::vector<PGRenderObject*> s_RenderObjects;
     static PGScene* s_ActiveSceneData;
 };
 

@@ -52,8 +52,9 @@ void Application::OnInit() {
 
     PGRenderer::BeginScene(&m_Scene);
 
-    PGRenderer::AddRenderObject(m_CubeMesh);
-    PGRenderer::AddRenderObject(m_LightCubeMesh);
+    PGRenderer::AddMesh(m_CubeMesh);
+    PGRenderer::AddMesh(m_LightCubeMesh);
+    PGRenderer::EndScene();
 }
 
 std::vector<float> frameTimes;
@@ -114,8 +115,6 @@ void Application::OnUpdate(float deltaTime) {
     m_LightCubeShader->SetConstantValue("projMatrix", m_Scene.camera->GetProjectionMatrix());
     m_LightCubeShader->SetConstantValue("lightPos", Vector4(m_Scene.light->position, 1.0f));
     m_LightCubeShader->SetConstantValue("cameraPos", Vector4(m_Scene.camera->GetPosition(), 1.0f));
-
-    PGRenderer::EndScene();
 
 }
 

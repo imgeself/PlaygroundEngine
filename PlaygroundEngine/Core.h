@@ -9,6 +9,7 @@
 
 #define PG_ASSERT(x, string) { if(!(x)) { printf("Assertion Failed: %s\n", string); __debugbreak(); } }
 
+#define SAFE_DELETE(p) { if(p) { delete p; p = nullptr; } }
 #define SAFE_RELEASE(p) { if(p) { p->Release(); } }
 
 #ifdef PLATFORM_WINDOWS

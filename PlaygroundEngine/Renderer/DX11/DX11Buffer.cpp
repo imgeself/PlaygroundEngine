@@ -3,9 +3,9 @@
 DX11ConstantBuffer::DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size) {
     D3D11_BUFFER_DESC constantBufferDescriptor = {};
     constantBufferDescriptor.ByteWidth = (UINT) size;
-    constantBufferDescriptor.Usage = D3D11_USAGE_DEFAULT;
+    constantBufferDescriptor.Usage = D3D11_USAGE_DYNAMIC;
     constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constantBufferDescriptor.CPUAccessFlags = 0;
+    constantBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     constantBufferDescriptor.MiscFlags = 0;
     constantBufferDescriptor.StructureByteStride = 0;
 

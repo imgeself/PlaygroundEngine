@@ -121,12 +121,18 @@ inline void PGShader::ReflectShader(ID3DBlob* shaderBlob, ShaderType type) {
                 const std::string bufferName(bufferDesc.Name);
                 auto searchResult = m_ShaderConstantBuffers.find(bufferName);
                 if (searchResult != m_ShaderConstantBuffers.end()) {
+                    // Same constant buffer, different shader stages
                     ConstantBufferResource* existingBuffer = searchResult->second;
                     existingBuffer->shaderType = existingBuffer->shaderType | type;
                     break;
                 }
+                if (resourceDesc.BindPoint < SystemConstantBufferSlot_Count) {
+                    // System buffers will be created in the renderer. 
+                    // Shader reflection constant buffer only for application defined constant buffer. 
+                    break;
+                }
 
-                ConstantBufferResource* shaderConstantBuffer = new ConstantBufferResource(bufferDesc.Name, i, bufferDesc.Size, type);
+                ConstantBufferResource* shaderConstantBuffer = new ConstantBufferResource(bufferDesc.Name, resourceDesc.BindPoint, bufferDesc.Size, type);
                 ConstantBufferVariable* shaderConstantBufferVariable = new ConstantBufferVariable[bufferDesc.Variables];
 
                 for (uint32_t j = 0; j < bufferDesc.Variables; ++j) {
@@ -283,4 +289,9 @@ void PGShader::SetHWConstantBufers(HWRendererAPI* rendererAPI) {
     rendererAPI->SetConstanBuffersPS(m_PixelHWConstantBuffers, MAX_CONSTANT_BUFFER_PER_SHADER);
 }
 
+void PGShader::SetSystemConstantBuffer(HWConstantBuffer* buffer, size_t index) {
+    // NOTE: For now, we bind system constant buffers to all shader stages!!
+    m_VertexHWConstantBuffers[index] = buffer;
+    m_PixelHWConstantBuffers[index] = buffer;
+}
 

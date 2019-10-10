@@ -1,6 +1,7 @@
 #include "PGRenderObject.h"
 
-PGRenderObject::PGRenderObject(Mesh* mesh, HWRendererAPI* rendererAPI) {
+PGRenderObject::PGRenderObject(Mesh* mesh, HWRendererAPI* rendererAPI)
+    : m_Mesh(mesh) {
     size_t vertexBufferStride = sizeof(Vertex);
     size_t vertexBufferSize = sizeof(Vertex) * mesh->vertices.size();
     m_VertexBuffer = rendererAPI->CreateVertexBuffer(mesh->vertices.data(), vertexBufferSize, vertexBufferStride);
@@ -18,13 +19,31 @@ PGRenderObject::PGRenderObject(Mesh* mesh, HWRendererAPI* rendererAPI) {
     };
 
     m_InputLayout = rendererAPI->CreateVertexInputLayout(inputElements, hwShader);
+
+    // Create per view constant buffer
+    PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
+    perDrawGlobalConstantBuffer.modelMatrix = mesh->transform.GetTransformMatrix();
+    m_PerDrawConstantBuffer = rendererAPI->CreateConstantBuffer(&perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer));
 }
 
 PGRenderObject::~PGRenderObject() {
     delete m_VertexBuffer;
     delete m_InputLayout;
     delete m_IndexBuffer;
+    delete m_PerDrawConstantBuffer;
 }
+
+HWConstantBuffer* PGRenderObject::UpdatePerDrawConstantBuffer(HWRendererAPI* rendererAPI) {
+    // Update transform data
+    PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
+    perDrawGlobalConstantBuffer.modelMatrix = m_Mesh->transform.GetTransformMatrix();
+
+    void* data = rendererAPI->Map(m_PerDrawConstantBuffer);
+    memcpy(data, &perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer));
+    rendererAPI->Unmap(m_PerDrawConstantBuffer);
+    return m_PerDrawConstantBuffer;
+}
+
 
 void PGRenderObject::Render(HWRendererAPI* rendererAPI) {
     size_t vertexBufferStride = sizeof(Vertex);

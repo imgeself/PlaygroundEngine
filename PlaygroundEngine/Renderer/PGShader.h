@@ -4,6 +4,7 @@
 #include "../Math/math_util.h"
 #include "HWRendererAPI.h"
 #include "PGShaderResources.h"
+#include "../Assets/Shaders/ShaderDefinitions.h"
 
 #include <d3dcompiler.h>
 
@@ -22,6 +23,7 @@ public:
     void LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* fileData);
     void Reload(HWRendererAPI* rendererAPI, const char* filename);
     void SetHWConstantBufers(HWRendererAPI* rendererAPI);
+    void SetSystemConstantBuffer(HWConstantBuffer* buffer, size_t index);
 
     template<typename T>
     void SetConstantValue(const char* name, const T& data) {

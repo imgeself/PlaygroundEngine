@@ -16,6 +16,7 @@ public:
     static bool Initialize(PGWindow* window);
     static void Uninitialize();
     static void BeginFrame();
+    static void RenderFrame();
     static void EndFrame();
 
     static void BeginScene(PGScene* sceneData);
@@ -37,5 +38,7 @@ private:
     static PGShaderLib* s_ShaderLib;
     static std::vector<PGRenderObject*> s_RenderObjects;
     static PGScene* s_ActiveSceneData;
+
+    static HWConstantBuffer* s_PerFrameGlobalConstantBuffer;
 };
 

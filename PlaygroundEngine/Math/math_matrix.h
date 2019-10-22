@@ -114,6 +114,45 @@ inline Matrix4 PerspectiveMatrix(uint32_t width, uint32_t height, float nearDist
     return result;
 }
 
+inline Matrix4 OrthoMatrixLH(uint32_t width, uint32_t height, float nearDistance, float farDistance) {
+    Matrix4 result;
+    result[0][0] = 2.0f / (float) width;
+    result[0][1] = 0.0f;
+    result[0][2] = 0.0f;
+    result[0][3] = 0.0f;
+
+    result[1][0] = 0.0f;
+    result[1][1] = 2.0f / (float) height;
+    result[1][2] = 0.0f;
+    result[1][3] = 0.0f;
+
+    result[2][0] = 0.0f;
+    result[2][1] = 0.0f;
+    result[2][2] = 1 / (farDistance - nearDistance);
+    result[2][3] = -nearDistance / (farDistance - nearDistance);
+
+    result[3][0] = 0.0f;
+    result[3][1] = 0.0f;
+    result[3][2] = 0.0f;
+    result[3][3] = 1.0f;
+
+    return result;
+}
+
+inline Matrix4 LookAtLH(const Vector3& position, const Vector3& target) {
+    Matrix4 result;
+
+    const Vector3 upVector(0.0f, 1.0f, 0.0f);
+    const Vector3 cameraZ = Normalize(target - position);
+    const Vector3 cameraX = Normalize(CrossProduct(upVector, cameraZ));
+    const Vector3 cameraY = Normalize(CrossProduct(cameraZ, cameraX));
+    result[0] = Vector4(cameraX, -DotProduct(position, cameraX));
+    result[1] = Vector4(cameraY, -DotProduct(position, cameraY));
+    result[2] = Vector4(cameraZ, -DotProduct(position, cameraZ));
+    result[3][3] = 1.0f;
+
+    return result;
+}
 
 inline Matrix4 Inverse(Matrix4& mat) {
     // Matrix inverse code copied from Doom3 source

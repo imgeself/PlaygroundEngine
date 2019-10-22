@@ -56,11 +56,32 @@ static MeshRef CreateCubeMesh() {
     return std::make_shared<Mesh>("Cube", vertices, indices, defaultMaterial, defaultTransform);
 }
 
+static MeshRef CreatePlaneMesh() {
+    const std::vector<Vertex> vertices = {
+        { { -1, 0, -1 }, { 0, 1, 0 } },
+        { { -1, 0, 1 }, { 0, 1, 0 } },
+        { { 1, 0, -1 }, { 0, 1, 0 } },
+        { { 1, 0, 1 }, { 0, 1, 0 } },
+    };
+
+    const std::vector<uint32_t> indices = {
+        0, 1, 3,
+        3, 2, 0,
+    };
+
+    Material defaultMaterial;
+    Transform defaultTransform;
+    return std::make_shared<Mesh>("Plane", vertices, indices, defaultMaterial, defaultTransform);
+}
+
 static std::unordered_map<std::string, MeshRef> LoadDefaultMeshes() {
     std::unordered_map<std::string, MeshRef> defaultMeshMap;
 
     MeshRef cubeMesh = CreateCubeMesh();
     defaultMeshMap[cubeMesh->name] = cubeMesh;
+
+    MeshRef planeMesh = CreatePlaneMesh();
+    defaultMeshMap[planeMesh->name] = planeMesh;
 
     return defaultMeshMap;
 }

@@ -8,8 +8,10 @@
 #include "PGShaderLib.h"
 #include "../Assets/Shaders/ShaderDefinitions.h"
 #include "PGRenderObject.h"
+#include "SceneRenderPass.h"
 
 #include <vector>
+#include <array>
 
 class PG_API PGRenderer {
 public:
@@ -40,5 +42,11 @@ private:
     static PGScene* s_ActiveSceneData;
 
     static HWConstantBuffer* s_PerFrameGlobalConstantBuffer;
+    static HWConstantBuffer* s_PerDrawGlobalConstantBuffer;
+
+    static std::array<HWSamplerState*, 4> s_DefaultSamplers;
+
+    static ShadowMapPass s_ShadowMapPass;
+    static SceneRenderPass s_SceneRenderPass;
 };
 

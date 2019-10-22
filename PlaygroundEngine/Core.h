@@ -6,11 +6,12 @@
 #include <stdio.h>
 #include <assert.h>
 
-
 #define PG_ASSERT(x, string) { if(!(x)) { printf("Assertion Failed: %s\n", string); __debugbreak(); } }
 
 #define SAFE_DELETE(p) { if(p) { delete p; p = nullptr; } }
 #define SAFE_RELEASE(p) { if(p) { p->Release(); } }
+
+#define BIT(x)    (1u << (x))
 
 #ifdef PLATFORM_WINDOWS
     #define DLL_EXPORT __declspec(dllexport)

@@ -10,6 +10,9 @@ DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Textu
         case DXGI_FORMAT_R32_TYPELESS:
             shaderResourceViewFormat = DXGI_FORMAT_R32_FLOAT;
             break;
+        case DXGI_FORMAT_R16_TYPELESS:
+            shaderResourceViewFormat = DXGI_FORMAT_R16_UNORM;
+            break;
         default:
             // TODO: Handle other typeless formats
             shaderResourceViewFormat = textureFormat;
@@ -17,9 +20,13 @@ DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Textu
     }
 
     D3D11_SHADER_RESOURCE_VIEW_DESC shaderResouceViewDesc = {};
-    shaderResouceViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-    shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    shaderResouceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+    shaderResouceViewDesc.Format = shaderResourceViewFormat;
+    if (textureDesc.SampleDesc.Count > 1) {
+        shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
+    } else {
+        shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        shaderResouceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+    }
 
     HRESULT result = device->CreateShaderResourceView(texture, &shaderResouceViewDesc, &m_ShaderResourceView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating shader resource view");

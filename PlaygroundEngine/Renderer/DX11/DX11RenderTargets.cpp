@@ -21,7 +21,11 @@ DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D
 
     D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc = {};
     renderTargetViewDesc.Format = renderTargetViewFormat;
-    renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    if (textureDesc.SampleDesc.Count > 1) {
+        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+    } else {
+        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    }
 
     HRESULT result = device->CreateRenderTargetView(texture, &renderTargetViewDesc, &m_RenderTargetView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating render target view");
@@ -41,6 +45,9 @@ DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D
     case DXGI_FORMAT_R32_TYPELESS:
         depthStencilViewFormat = DXGI_FORMAT_D32_FLOAT;
         break;
+    case DXGI_FORMAT_R16_TYPELESS:
+        depthStencilViewFormat = DXGI_FORMAT_D16_UNORM;
+        break;
     case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
         depthStencilViewFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
         break;
@@ -52,7 +59,11 @@ DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D
 
     CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
     depthStencilViewDesc.Format = depthStencilViewFormat;
-    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    if (textureDesc.SampleDesc.Count > 1) {
+        depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+    } else {
+        depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    }
 
     HRESULT result = device->CreateDepthStencilView(texture, &depthStencilViewDesc, &m_DepthStencilView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil view");

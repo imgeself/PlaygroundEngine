@@ -22,6 +22,7 @@ struct Texture2DInitParams {
     size_t height;
     TextureDataFormat format;
     uint32_t flags;
+    size_t sampleCount;
 
     void* data;
 };

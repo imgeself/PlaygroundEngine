@@ -75,13 +75,13 @@ PGShaderLib::~PGShaderLib() {
 }
 
 
-ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderFilePath, bool createIfExists) {
+ShaderRef PGShaderLib::LoadShaderFromDisk(const std::string& shaderFilePath, bool reloadIfExists) {
     size_t fileNameEndIndex = shaderFilePath.rfind('.');
     size_t fileNameStartIndex = shaderFilePath.rfind('/') + 1;
     const std::string name = shaderFilePath.substr(fileNameStartIndex, fileNameEndIndex - fileNameStartIndex);
 
     auto shaderSearch = m_Shaders.find(name);
-    if (shaderSearch != m_Shaders.end() && !createIfExists) {
+    if (shaderSearch != m_Shaders.end() && !reloadIfExists) {
         return shaderSearch->second;
     }
 
@@ -117,9 +117,10 @@ void PGShaderLib::ReloadShadersIfNeeded() {
 
 void PGShaderLib::LoadDefaultShaders() {
 
+    LoadShaderFromDisk("../PlaygroundEngine/Assets/Shaders/ShadowGen.hlsl");
 }
 
 ShaderRef PGShaderLib::GetDefaultShader(const std::string& name) {
-    return nullptr;
+    return m_Shaders[name];
 }
 

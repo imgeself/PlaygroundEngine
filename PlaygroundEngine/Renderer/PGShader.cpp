@@ -285,8 +285,8 @@ void PGShader::SetHWConstantBufers(HWRendererAPI* rendererAPI) {
         }
     }
 
-    rendererAPI->SetConstanBuffersVS(m_VertexHWConstantBuffers, MAX_CONSTANT_BUFFER_PER_SHADER);
-    rendererAPI->SetConstanBuffersPS(m_PixelHWConstantBuffers, MAX_CONSTANT_BUFFER_PER_SHADER);
+    rendererAPI->SetConstanBuffersVS(0, m_VertexHWConstantBuffers, MAX_CONSTANT_BUFFER_PER_SHADER);
+    rendererAPI->SetConstanBuffersPS(0, m_PixelHWConstantBuffers, MAX_CONSTANT_BUFFER_PER_SHADER);
 }
 
 void PGShader::SetSystemConstantBuffer(HWConstantBuffer* buffer, size_t index) {

@@ -5,9 +5,7 @@
 #include <vector>
 #include <string>
 
-#define BIT(x)    (1u << (x))
-
-enum ShaderType {
+enum ShaderType : uint8_t {
     VERTEX   = BIT(0),
     GEOMETRY = BIT(1),
     PIXEL    = BIT(2),

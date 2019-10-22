@@ -9,19 +9,15 @@ public:
     PGRenderObject(Mesh* mesh, HWRendererAPI* rendererAPI);
     ~PGRenderObject();
 
-    HWConstantBuffer* UpdatePerDrawConstantBuffer(HWRendererAPI* rendererAPI);
-    void Render(HWRendererAPI* rendererAPI);
+    void UpdatePerDrawConstantBuffer(HWRendererAPI* rendererAPI);
 
-    inline PGShader* GetShader() { return m_Shader; }
-    inline HWConstantBuffer* GetPerDrawConstantBuffer() { return m_PerDrawConstantBuffer; }
+    HWVertexBuffer* vertexBuffer = nullptr;
+    HWIndexBuffer* indexBuffer = nullptr;
+    HWVertexInputLayout* inputLayout = nullptr;
+    PGShader* shader = nullptr;
+    Mesh* mesh = nullptr;
 
-private:
-    HWVertexBuffer* m_VertexBuffer = nullptr;
-    HWIndexBuffer* m_IndexBuffer = nullptr;
-    HWVertexInputLayout* m_InputLayout = nullptr;
-    PGShader* m_Shader = nullptr;
-    Mesh* m_Mesh = nullptr;
+    HWConstantBuffer* perDrawConstantBuffer = nullptr;
 
-    HWConstantBuffer* m_PerDrawConstantBuffer = nullptr;
 };
 

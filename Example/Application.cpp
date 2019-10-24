@@ -38,7 +38,9 @@ void Application::OnInit() {
     Vector3 lightPosition(2.0f, 24.0f, -5.0f);
     lightCubeTransform.Translate(lightPosition);
     lightCubeTransform.Scale(Vector3(0.3f, 0.3f, 0.3f));
-    m_LightCubeMesh = m_System->GetDefaultMeshInstance("Cube", lightCubeMaterial, lightCubeTransform);
+    MeshRef lightCubeMesh = m_System->GetDefaultMeshInstance("Cube");
+    lightCubeMesh->material = lightCubeMaterial;
+    lightCubeMesh->transform = lightCubeTransform;
 
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
@@ -54,15 +56,33 @@ void Application::OnInit() {
         Transform cubeTransform;
         float random = RandomBilateral(&randomSeed) * 5;
         cubeTransform.Translate(Vector3(-8.0f + i * 4, 1.0f, 2.0f+random));
-        Mesh* mesh = m_System->GetDefaultMeshInstance("Cube", cubeMaterial, cubeTransform);
-        PGRenderer::AddMesh(mesh);
-        m_CubeMesh = mesh;
+        MeshRef cubeMesh = m_System->GetDefaultMeshInstance("Cube");
+        cubeMesh->material = cubeMaterial;
+        cubeMesh->transform = cubeTransform;
+        PGRenderer::AddMesh(cubeMesh);
     }
+
+    MeshRef monkeyMesh = LoadMeshFromOBJFile("./monkey.obj");
+    monkeyMesh->material = cubeMaterial;
+    Transform monkeyTransform;
+    monkeyTransform.Translate(Vector3(0.0f, 3.0f, 0.0f));
+    //monkeyTransform.RotateYAxis(PI);
+    monkeyMesh->transform = monkeyTransform;
+
+    MeshRef sphereMesh = LoadMeshFromOBJFile("./uvsphere.obj");
+    sphereMesh->material = cubeMaterial;
+    Transform sphereTransform;
+    sphereTransform.Translate(Vector3(3.0f, 3.0f, 1.0f));
+    sphereMesh->transform = sphereTransform;
 
     Transform planeTransform;
     planeTransform.Scale(Vector3(100.0f, 1.0f, 100.0f));
-    Mesh* planeMesh = m_System->GetDefaultMeshInstance("Plane", cubeMaterial, planeTransform);
+    MeshRef planeMesh = m_System->GetDefaultMeshInstance("Plane");
+    planeMesh->material = cubeMaterial;
+    planeMesh->transform = planeTransform;
     PGRenderer::AddMesh(planeMesh);
+    PGRenderer::AddMesh(monkeyMesh);
+    PGRenderer::AddMesh(sphereMesh);
     //PGRenderer::AddMesh(m_LightCubeMesh);
     PGRenderer::EndScene();
 }
@@ -108,11 +128,6 @@ void Application::OnUpdate(float deltaTime) {
     }
     m_Scene.light->position = lightPos;
 
-    //float seed = 2.0f * deltaTime;
-    //m_CubeMesh->transform.RotateXAxis(seed);
-    //m_CubeMesh->transform.RotateYAxis(seed);
-
-    m_LightCubeMesh->transform.SetPosition(lightPos);
 }
 
 void Application::OnUIRender() {

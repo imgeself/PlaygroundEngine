@@ -23,9 +23,6 @@ private:
     ShaderRef m_CubeShader;
     ShaderRef m_LightCubeShader;
 
-    Mesh* m_CubeMesh;
-    Mesh* m_LightCubeMesh;
-
     PGScene m_Scene;
 
 };

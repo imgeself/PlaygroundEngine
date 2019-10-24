@@ -1,6 +1,6 @@
 #include "PGRenderObject.h"
 
-PGRenderObject::PGRenderObject(Mesh* mesh, HWRendererAPI* rendererAPI)
+PGRenderObject::PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI)
     : mesh(mesh) {
     size_t vertexBufferStride = sizeof(Vertex);
     size_t vertexBufferSize = sizeof(Vertex) * mesh->vertices.size();

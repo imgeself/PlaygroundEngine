@@ -6,7 +6,7 @@
 
 class PGRenderObject {
 public:
-    PGRenderObject(Mesh* mesh, HWRendererAPI* rendererAPI);
+    PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI);
     ~PGRenderObject();
 
     void UpdatePerDrawConstantBuffer(HWRendererAPI* rendererAPI);
@@ -15,7 +15,7 @@ public:
     HWIndexBuffer* indexBuffer = nullptr;
     HWVertexInputLayout* inputLayout = nullptr;
     PGShader* shader = nullptr;
-    Mesh* mesh = nullptr;
+    MeshRef mesh;
 
     HWConstantBuffer* perDrawConstantBuffer = nullptr;
 

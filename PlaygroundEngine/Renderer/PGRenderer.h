@@ -22,7 +22,7 @@ public:
     static void EndFrame();
 
     static void BeginScene(PGScene* sceneData);
-    static void AddMesh(Mesh* renderMesh);
+    static void AddMesh(const MeshRef& renderMesh);
     static void EndScene();
 
     static HWRendererAPI* GetRendererAPI() {

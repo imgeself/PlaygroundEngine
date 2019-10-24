@@ -116,7 +116,7 @@ void PGRenderer::BeginScene(PGScene* sceneData) {
     s_ActiveSceneData = sceneData;
 }
 
-void PGRenderer::AddMesh(Mesh* renderMesh) {
+void PGRenderer::AddMesh(const MeshRef& renderMesh) {
     PGRenderObject* object = new PGRenderObject(renderMesh, s_RendererAPI);
     object->perDrawConstantBuffer = s_PerDrawGlobalConstantBuffer;
     s_RenderObjects.push_back(object);

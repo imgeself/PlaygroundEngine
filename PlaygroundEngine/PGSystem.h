@@ -23,9 +23,10 @@ public:
     virtual void OnSystemEvent(SystemEvent event) override;
 
     static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return s_systemEventDispatcher; };
-    Mesh* GetDefaultMeshInstance(const std::string& name, const Material& material, const Transform& transform) { 
+
+    MeshRef GetDefaultMeshInstance(const std::string& name) { 
         MeshRef ref = m_DefaultMeshMap[name];
-        return new Mesh(ref->name, ref->vertices, ref->indices, material, transform);
+        return std::make_shared<Mesh>(ref->name, ref->vertices, ref->indices);
     }
 
     inline PGShaderLib* GetShaderLib() {

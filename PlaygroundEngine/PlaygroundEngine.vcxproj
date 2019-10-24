@@ -207,6 +207,7 @@
     <ClCompile Include="Renderer\PGShaderLib.cpp" />
     <ClCompile Include="Renderer\SceneRenderPass.cpp" />
     <ClCompile Include="Renderer\ShadowMapPass.cpp" />
+    <ClCompile Include="Utility\tiny_obj_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assets\Shaders\ShaderDefinitions.h" />
@@ -262,6 +263,7 @@
     <ClInclude Include="Renderer\ShadowMapPass.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Utility\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Imgui\LICENSE.txt" />

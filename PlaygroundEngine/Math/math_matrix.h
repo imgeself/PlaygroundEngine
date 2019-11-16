@@ -58,6 +58,16 @@ inline Vector4 operator*(Matrix4& left, Vector4& right) {
     return result;
 }
 
+inline Vector4 operator*(const Matrix4& left, const Vector4& right) {
+    Vector4 result;
+    result.x = DotProduct(left.data[0], right);
+    result.y = DotProduct(left.data[1], right);
+    result.z = DotProduct(left.data[2], right);
+    result.w = DotProduct(left.data[3], right);
+
+    return result;
+}
+
 inline Matrix4 operator*(Matrix4 left, Matrix4 right) {
     Matrix4 result;
     for (uint32_t row = 0; row < 4; ++row) {
@@ -83,13 +93,14 @@ inline Matrix4 Transpose(Matrix4& mat) {
     return result;
 }
 
-inline Matrix4 PerspectiveMatrix(uint32_t width, uint32_t height, float nearDistance, float farDistance, float fov) {
+inline Matrix4 PerspectiveMatrixLH(uint32_t width, uint32_t height, float nearDistance, float farDistance, float fov) {
     Matrix4 result;
     const float ar = (float) width / (float) height;
     const float zNear = nearDistance;
     const float zFar = farDistance;
     const float zRange = zNear - zFar;
     const float tanHalfFOV = tanf(fov / 2.0f);
+    const float fRange = zFar / (zFar - zNear);
 
     result[0][0] = 1.0f / (tanHalfFOV * ar);
     result[0][1] = 0.0f;
@@ -103,8 +114,8 @@ inline Matrix4 PerspectiveMatrix(uint32_t width, uint32_t height, float nearDist
 
     result[2][0] = 0.0f;
     result[2][1] = 0.0f;
-    result[2][2] = (-zNear - zFar) / zRange;
-    result[2][3] = 2.0f * zFar * zNear / zRange;
+    result[2][2] = fRange;
+    result[2][3] = -fRange * zNear;
 
     result[3][0] = 0.0f;
     result[3][1] = 0.0f;
@@ -139,10 +150,36 @@ inline Matrix4 OrthoMatrixLH(uint32_t width, uint32_t height, float nearDistance
     return result;
 }
 
-inline Matrix4 LookAtLH(const Vector3& position, const Vector3& target) {
+inline Matrix4 OrthoMatrixOffCenterLH(float left, float right, float top, float bottom, float nearDistance, float farDistance) {
+    float width = right - left;
+    float height = top - bottom;
+    Matrix4 result;
+    result[0][0] = 2.0f / (float)width;
+    result[0][1] = 0.0f;
+    result[0][2] = 0.0f;
+    result[0][3] = (left + right) / (left - right);
+
+    result[1][0] = 0.0f;
+    result[1][1] = 2.0f / (float)height;
+    result[1][2] = 0.0f;
+    result[1][3] = (top + bottom) / (bottom - top);
+
+    result[2][0] = 0.0f;
+    result[2][1] = 0.0f;
+    result[2][2] = 1 / (farDistance - nearDistance);
+    result[2][3] = nearDistance / (nearDistance - farDistance);
+
+    result[3][0] = 0.0f;
+    result[3][1] = 0.0f;
+    result[3][2] = 0.0f;
+    result[3][3] = 1.0f;
+
+    return result;
+}
+
+inline Matrix4 LookAtLH(const Vector3& position, const Vector3& target, const Vector3& upVector) {
     Matrix4 result;
 
-    const Vector3 upVector(0.0f, 1.0f, 0.0f);
     const Vector3 cameraZ = Normalize(target - position);
     const Vector3 cameraX = Normalize(CrossProduct(upVector, cameraZ));
     const Vector3 cameraY = Normalize(CrossProduct(cameraZ, cameraX));

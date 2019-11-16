@@ -126,11 +126,12 @@ inline void PGShader::ReflectShader(ID3DBlob* shaderBlob, ShaderType type) {
                     existingBuffer->shaderType = existingBuffer->shaderType | type;
                     break;
                 }
+                /*
                 if (resourceDesc.BindPoint < SystemConstantBufferSlot_Count) {
                     // System buffers will be created in the renderer. 
                     // Shader reflection constant buffer only for application defined constant buffer. 
                     break;
-                }
+                }*/
 
                 ConstantBufferResource* shaderConstantBuffer = new ConstantBufferResource(bufferDesc.Name, resourceDesc.BindPoint, bufferDesc.Size, type);
                 ConstantBufferVariable* shaderConstantBufferVariable = new ConstantBufferVariable[bufferDesc.Variables];
@@ -176,6 +177,7 @@ void PGShader::LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename
 
     m_HWShader = rendererAPI->CreateShaderProgramFromBinarySource(&vertexShaderData, &pixelShaderData);
 
+    /*
     ReflectShader(vertexShaderBlob, ShaderType::VERTEX);
     ReflectShader(pixelShaderBlob, ShaderType::PIXEL);
 
@@ -190,7 +192,7 @@ void PGShader::LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename
         if (constantBuffer->shaderType & ShaderType::PIXEL) {
             m_PixelHWConstantBuffers[constantBuffer->GetSlot()] = hwConstantBuffer;
         }
-    }
+    }*/
 
     SAFE_RELEASE(vertexShaderBlob);
     SAFE_RELEASE(pixelShaderBlob);
@@ -209,6 +211,7 @@ void PGShader::LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* file
 
     m_HWShader = rendererAPI->CreateShaderProgramFromBinarySource(&vertexShaderData, &pixelShaderData);
 
+    /*
     ReflectShader(vertexShaderBlob, ShaderType::VERTEX);
     ReflectShader(pixelShaderBlob, ShaderType::PIXEL);
 
@@ -223,7 +226,7 @@ void PGShader::LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* file
         if (constantBuffer->shaderType & ShaderType::PIXEL) {
             m_PixelHWConstantBuffers[constantBuffer->GetSlot()] = hwConstantBuffer;
         }
-    }
+    }*/
 
     SAFE_RELEASE(vertexShaderBlob);
     SAFE_RELEASE(pixelShaderBlob);

@@ -11,17 +11,25 @@ public:
     void SetFrustum(uint32_t imageWidth, uint32_t imageHeight, float nearPlaneDistance, float farPlaneDistance, float fovRadians);
     void SetView(Vector3 cameraPosition, Vector3 targetPoint);
 
-    Vector3 GetPosition() {
+    inline Vector3 GetPosition() {
         return m_Position;
     }
-    Matrix4 GetProjectionMatrix() {
+
+    inline Matrix4 GetProjectionMatrix() {
         return m_ProjectionMatrix;
     }
-    Matrix4 GetViewMatrix() {
+
+    inline Matrix4 GetViewMatrix() {
         return m_ViewMatrix;
     }
-    Matrix4 GetProjectionViewMatrix() {
+
+    inline Matrix4 GetProjectionViewMatrix() {
         return m_ProjectionMatrix * m_ViewMatrix;
+    }
+
+    inline Matrix4 GetInverseProjectionViewMatrix() {
+        Matrix4 projectionViewMatrix = GetProjectionViewMatrix();
+        return Inverse(projectionViewMatrix);
     }
 private:
     Matrix4 m_ProjectionMatrix;

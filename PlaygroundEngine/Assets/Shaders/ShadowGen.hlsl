@@ -5,7 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////
 float4 VSMain(float3 pos : Position, float3 normal : Normal) : SV_Position
 {
-    return mul(lightProjMatrix, mul(lightViewMatrix, mul(modelMatrix, float4(pos, 1.0f))));
+    return mul(lightProjMatrix[g_ShadowGenCascadeIndex], mul(lightViewMatrix, mul(modelMatrix, float4(pos, 1.0f))));
 }
 
 ///////////////////////////////////////////////////////////////////////////

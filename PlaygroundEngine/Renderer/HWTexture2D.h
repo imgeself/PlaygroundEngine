@@ -23,6 +23,7 @@ struct Texture2DInitParams {
     TextureDataFormat format;
     uint32_t flags;
     size_t sampleCount;
+    size_t arraySize;
 
     void* data;
 };

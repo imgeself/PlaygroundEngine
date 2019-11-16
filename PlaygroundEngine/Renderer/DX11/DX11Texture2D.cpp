@@ -25,12 +25,12 @@ static inline D3D11_CPU_ACCESS_FLAG GetCPUAccessFlagFromResourceFlags(uint32_t r
 
 DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DInitParams* initParams) {
     D3D11_TEXTURE2D_DESC shadowMapTextureDesc = {};
-    shadowMapTextureDesc.Width = initParams->width;
-    shadowMapTextureDesc.Height = initParams->height;
+    shadowMapTextureDesc.Width = (UINT) initParams->width;
+    shadowMapTextureDesc.Height = (UINT) initParams->height;
     shadowMapTextureDesc.MipLevels = 1;
-    shadowMapTextureDesc.ArraySize = 1;
+    shadowMapTextureDesc.ArraySize = (UINT) initParams->arraySize;
     shadowMapTextureDesc.Format = initParams->format;
-    shadowMapTextureDesc.SampleDesc.Count = initParams->sampleCount;
+    shadowMapTextureDesc.SampleDesc.Count = (UINT) initParams->sampleCount;
     shadowMapTextureDesc.SampleDesc.Quality = 0;
     shadowMapTextureDesc.Usage = GetUsageFromResourceFlags(initParams->flags);
     shadowMapTextureDesc.BindFlags = GetBindFlagsFromResourceFlags(initParams->flags);

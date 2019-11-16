@@ -160,6 +160,10 @@ inline Vector2 Normalize(const Vector2 v) {
     return Vector2(v.x * factor, v.y * factor);
 }
 
+inline Vector2 Floor(const Vector2& v) {
+    return Vector2(floorf(v.x), floorf(v.y));
+}
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 struct PG_API Vector3 {
@@ -168,6 +172,8 @@ struct PG_API Vector3 {
     Vector3();
     Vector3(float x, float y, float z);
     Vector3(const Vector3 &v);
+
+    Vector2 xy();
     
     float& operator[](const uint32_t index);
     Vector3 operator-();
@@ -207,6 +213,10 @@ inline Vector3::Vector3(const Vector3 &v) {
     this->x = v.x;
     this->y = v.y;
     this->z = v.z;
+}
+
+inline Vector2 Vector3::xy() {
+    return Vector2(this->x, this->y);
 }
 
 inline float& Vector3::operator[](const uint32_t index) {
@@ -326,6 +336,10 @@ inline Vector3 Normalize(const Vector3 v) {
     const float dot = DotProduct(v, v);
     const float factor = 1 / sqrtf(dot);
     return Vector3(v.x * factor, v.y * factor, v.z * factor);
+}
+
+inline Vector3 Floor(const Vector3& v) {
+    return Vector3(floorf(v.x), floorf(v.y), floorf(v.z));
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -509,6 +523,10 @@ inline Vector4 Normalize(const Vector4 v) {
     const float dot = DotProduct(v, v);
     const float factor = 1 / sqrtf(dot);
     return Vector4(v.x * factor, v.y * factor, v.z * factor, v.w * factor);
+}
+
+inline Vector4 Floor(const Vector4& v) {
+    return Vector4(floorf(v.x), floorf(v.y), floorf(v.z), floorf(v.w));
 }
 
 #endif

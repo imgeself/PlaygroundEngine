@@ -24,8 +24,14 @@ DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Textu
     if (textureDesc.SampleDesc.Count > 1) {
         shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
     } else {
-        shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        shaderResouceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+        if (textureDesc.ArraySize > 1) {
+            shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+            shaderResouceViewDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
+            shaderResouceViewDesc.Texture2DArray.MipLevels = textureDesc.MipLevels;
+        } else {
+            shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            shaderResouceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+        }
     }
 
     HRESULT result = device->CreateShaderResourceView(texture, &shaderResouceViewDesc, &m_ShaderResourceView);

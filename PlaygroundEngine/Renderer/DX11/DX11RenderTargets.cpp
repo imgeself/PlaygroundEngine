@@ -1,6 +1,6 @@
 #include "DX11RenderTargets.h"
 
-DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture) {
+DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -35,7 +35,7 @@ DX11RenderTargetView::~DX11RenderTargetView() {
     SAFE_RELEASE(m_RenderTargetView);
 }
 
-DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture) {
+DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -57,12 +57,20 @@ DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D
         break;
     }
 
-    CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+    D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
     depthStencilViewDesc.Format = depthStencilViewFormat;
     if (textureDesc.SampleDesc.Count > 1) {
         depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
     } else {
-        depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        if (textureDesc.ArraySize > 1) {
+            depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+            depthStencilViewDesc.Texture2DArray.ArraySize = sliceCount;
+            depthStencilViewDesc.Texture2DArray.FirstArraySlice = firstSlice;
+            depthStencilViewDesc.Texture2DArray.MipSlice = firstMip;
+        } else {
+            depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+            depthStencilViewDesc.Texture2D.MipSlice = firstMip;
+        }
     }
 
     HRESULT result = device->CreateDepthStencilView(texture, &depthStencilViewDesc, &m_DepthStencilView);

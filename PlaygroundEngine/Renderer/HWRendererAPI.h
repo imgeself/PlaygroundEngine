@@ -14,10 +14,10 @@
 #include <vector>
 
 struct HWViewport {
-    int32_t topLeftX;
-    int32_t topLeftY;
-    int32_t width;
-    int32_t height;
+    float topLeftX;
+    float topLeftY;
+    float width;
+    float height;
 };
 
 class HWRendererAPI {
@@ -40,8 +40,8 @@ public:
     virtual HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) = 0;
     virtual HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) = 0;
     virtual HWTexture2D* CreateTexture2D(Texture2DInitParams* initParams) = 0;
-    virtual HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture) = 0;
-    virtual HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture) = 0;
+    virtual HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1) = 0;
+    virtual HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1) = 0;
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture) = 0;
     virtual HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams) = 0;
 

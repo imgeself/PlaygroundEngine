@@ -20,7 +20,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
 
     // Antialiasing descriptor
     DXGI_SAMPLE_DESC sampleDescriptor = {};
-    sampleDescriptor.Count = 4;
+    sampleDescriptor.Count = 1;
     sampleDescriptor.Quality = 0;
 
     DXGI_SWAP_CHAIN_DESC swapChainDescriptor = {};
@@ -60,7 +60,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     result = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &backbuffer);
     PG_ASSERT(SUCCEEDED(result), "Couldn't get the backbuffer");
 
-    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer);
+    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, 0, 1, 0, swapChainDescriptor.SampleDesc.Count);
     backbuffer->Release();
 
     Texture2DInitParams initParams = {};
@@ -68,10 +68,11 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     initParams.height = height;
     initParams.format = DXGI_FORMAT_D32_FLOAT;
     initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL;
-    initParams.sampleCount = 4;
+    initParams.sampleCount = 1;
+    initParams.arraySize = 1;
     DX11Texture2D depthTexture = DX11Texture2D(m_Device, &initParams);
 
-    m_BackbufferDepthStencilView = new DX11DepthStencilView(m_Device, depthTexture.GetDXTexture2D());
+    m_BackbufferDepthStencilView = new DX11DepthStencilView(m_Device, depthTexture.GetDXTexture2D(), 0, 1, 0, (uint32_t) initParams.sampleCount);
 
     m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -180,14 +181,14 @@ HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DInitParams* initParams) {
     return new DX11Texture2D(m_Device, initParams);
 }
 
-HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture) {
+HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11RenderTargetView(m_Device, dxTexture2D->GetDXTexture2D());
+    return new DX11RenderTargetView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount);
 }
 
-HWDepthStencilView* DX11RendererAPI::CreateDepthStencilView(HWTexture2D* texture) {
+HWDepthStencilView* DX11RendererAPI::CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11DepthStencilView(m_Device, dxTexture2D->GetDXTexture2D());
+    return new DX11DepthStencilView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount);
 }
 
 HWShaderResourceView* DX11RendererAPI::CreateShaderResourceView(HWTexture2D* texture) {
@@ -217,9 +218,13 @@ void DX11RendererAPI::SetIndexBuffer(HWIndexBuffer* indexBuffer) {
 }
 
 void DX11RendererAPI::SetInputLayout(HWVertexInputLayout* vertexInputLayout) {
-    DX11VertexInputLayout* dx11VertexInputLayout = (DX11VertexInputLayout*) vertexInputLayout;
-    ID3D11InputLayout* inputLayout = dx11VertexInputLayout->GetDXInputLayout();
-    m_DeviceContext->IASetInputLayout(inputLayout);
+    if (vertexInputLayout) {
+        DX11VertexInputLayout* dx11VertexInputLayout = (DX11VertexInputLayout*)vertexInputLayout;
+        ID3D11InputLayout* inputLayout = dx11VertexInputLayout->GetDXInputLayout();
+        m_DeviceContext->IASetInputLayout(inputLayout);
+    } else {
+        m_DeviceContext->IASetInputLayout(nullptr);
+    }
 }
 
 void DX11RendererAPI::SetShaderProgram(HWShaderProgram* shaderProgram) {
@@ -240,7 +245,8 @@ void DX11RendererAPI::SetRenderTargets(HWRenderTargetView** renderTargets, size_
         dxRenderTargetViews++;
     }
 
-    m_DeviceContext->OMSetRenderTargets((UINT) renderTargetCount, destRenderTargetViews, dxDepthStencilView->GetDXDepthStencilView());
+    ID3D11DepthStencilView* destDepthStencilView = dxDepthStencilView ? dxDepthStencilView->GetDXDepthStencilView() : nullptr;
+    m_DeviceContext->OMSetRenderTargets((UINT) renderTargetCount, destRenderTargetViews, destDepthStencilView);
 }
 
 

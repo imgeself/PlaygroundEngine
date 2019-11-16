@@ -34,8 +34,8 @@ public:
     HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) override;
     HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) override;
     HWTexture2D* CreateTexture2D(Texture2DInitParams* initParams) override;
-    HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture) override;
-    HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture) override;
+    HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) override;
+    HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) override;
     HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams) override;
 

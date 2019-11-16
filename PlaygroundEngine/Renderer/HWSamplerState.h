@@ -3,6 +3,7 @@
 #include "../Core.h"
 
 enum SamplerStateTextureAddressMode {
+    TextureAddressMode_NONE,
     TextureAddressMode_WRAP,
     TextureAddressMode_MIRROR,
     TextureAddressMode_CLAMP,
@@ -10,15 +11,29 @@ enum SamplerStateTextureAddressMode {
 };
 
 enum SamplerStateTextureFilterMode {
-    TextureFilterMode_LINEAR,
-    TextureFilterMode_POINT
+    TextureFilterMode_MIN_MAG_MIP_LINEAR,
+    TextureFilterMode_MIN_MAG_MIP_POINT,
+    TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT
+};
+
+enum ComparisonFunction {
+    NONE,
+    NEVER,
+    LESS,
+    EQUAL,
+    LESS_EQUAL,
+    GREATER,
+    NOT_EQUAL,
+    GREATER_EQUAL,
+    ALWAYS
 };
 
 struct SamplerStateInitParams {
     SamplerStateTextureFilterMode filterMode;
-    SamplerStateTextureAddressMode AddressModeU;
-    SamplerStateTextureAddressMode AddressModeV;
-    SamplerStateTextureAddressMode AddressModeW;
+    SamplerStateTextureAddressMode addressModeU;
+    SamplerStateTextureAddressMode addressModeV;
+    SamplerStateTextureAddressMode addressModeW;
+    ComparisonFunction comparisonFunction;
     float borderColor[4];
 };
 

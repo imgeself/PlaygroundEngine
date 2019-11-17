@@ -1,4 +1,5 @@
 #include "../PlaygroundEngine/Assets/Shaders/ShaderDefinitions.h"
+#include "../PlaygroundEngine/Assets/Shaders/ShadowUtils.hlsli"
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -23,7 +24,7 @@ VSOut VSMain(float3 pos : Position, float3 normal : Normal)
     vertexOut.worldPos = (float3) mul(modelMatrix, float4(pos, 1.0f));
     vertexOut.lightPos = (float3) lightPos;
     vertexOut.cameraPos = (float3) cameraPos;
-    vertexOut.worldPosLightSpace = mul(lightProjMatrix, mul(lightViewMatrix, mul(modelMatrix, float4(pos, 1.0f))));
+    vertexOut.worldPosLightSpace = mul(lightProjMatrix[0], mul(lightViewMatrix, mul(modelMatrix, float4(pos, 1.0f))));
 
     return vertexOut;
 }
@@ -32,7 +33,6 @@ VSOut VSMain(float3 pos : Position, float3 normal : Normal)
 ///////////////////////////////////////////////////////////////////////////
 /////// FRAGMENT SHADER
 ///////////////////////////////////////////////////////////////////////////
-
 float4 PSMain(VSOut input, uint pid : SV_PrimitiveID) : SV_Target
 {
     float4 colors[6] = {
@@ -59,15 +59,21 @@ float4 PSMain(VSOut input, uint pid : SV_PrimitiveID) : SV_Target
     specular = pow(specular, 32);
     specular *= specularStrenght;
 
-    // ShadowCoordinates
-    float3 shadowCoord = input.worldPosLightSpace.xyz / input.worldPosLightSpace.w;
-    shadowCoord.x = shadowCoord.x * 0.5f + 0.5f;
-    shadowCoord.y = shadowCoord.y * -0.5f + 0.5f;
+    uint hitCascadeIndex;
+    float shadowFactor = CalculateShadowValue(input.worldPos, hitCascadeIndex);
 
-    float sampleDepth = g_ShadowMapTexture.Sample(g_PointBorderSampler, shadowCoord.xy).r;
-    float bias = 0.0004f;
-    float shadowFactor = sampleDepth < shadowCoord.z - bias ? 0.2f : 1.0f;
+    // Visualize cascades
+    float3 cascadeVisualizeColors[4] = {
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 1.0f,
+    };
+
+    float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
     return float4((color * shadowFactor * (diffuse + specular)), 1.0f);
 }
+
+
 

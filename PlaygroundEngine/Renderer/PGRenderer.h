@@ -43,6 +43,7 @@ private:
 
     static HWConstantBuffer* s_PerFrameGlobalConstantBuffer;
     static HWConstantBuffer* s_PerDrawGlobalConstantBuffer;
+    static HWConstantBuffer* s_RendererVarsConstantBuffer;
 
     static std::array<HWSamplerState*, 4> s_DefaultSamplers;
 

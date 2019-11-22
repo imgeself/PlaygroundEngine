@@ -20,6 +20,8 @@ private:
     std::shared_ptr<HWIndexBuffer> m_IndexBuffer;
     std::shared_ptr<HWVertexBuffer> m_VertexBuffer;
 
+    Material* m_CubeMaterial;
+
     ShaderRef m_CubeShader;
     ShaderRef m_LightCubeShader;
 

@@ -15,33 +15,14 @@ Application::~Application() {
 void Application::OnInit() {
     printf("init \n");
 
-
-    float colors[] = {
-        1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f,
-        0.0f, 1.0f, 0.0f, 1.0f,
-        0.0f, 1.0f, 1.0f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 1.0f,
-    };
-
     PGCamera* mainCamera = new PGCamera;
-    mainCamera->SetFrustum(1280, 720, 0.001f, 100.0f, PI / 4.0f);
-    mainCamera->SetView(Vector3(0.0f, 1.0f, -10.0f), Vector3(0.0f, 0.0f, 0.0f));
+    mainCamera->SetFrustum(1280, 720, 0.01f, 100.0f, PI / 4.0f);
+    mainCamera->SetView(Vector3(0.0f, 1.0f, -10.0f), Vector3(0.0f, 0.0f, 1.0f));
 
     PGShaderLib* shaderLib = m_System->GetShaderLib();
-    m_CubeShader = shaderLib->LoadShaderFromDisk("Shaders/PhongShader.hlsl");
+    m_CubeShader = shaderLib->GetDefaultShader("PBRForward");
 
-    m_LightCubeShader = shaderLib->LoadShaderFromDisk("Shaders/LightCube.hlsl");
-    Material lightCubeMaterial = { m_LightCubeShader };
-    Transform lightCubeTransform;
     Vector3 lightPosition(2.0f, 24.0f, -5.0f);
-    lightCubeTransform.Translate(lightPosition);
-    lightCubeTransform.Scale(Vector3(0.3f, 0.3f, 0.3f));
-    MeshRef lightCubeMesh = m_System->GetDefaultMeshInstance("Cube");
-    lightCubeMesh->material = lightCubeMaterial;
-    lightCubeMesh->transform = lightCubeTransform;
-
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
 
@@ -50,37 +31,48 @@ void Application::OnInit() {
 
     PGRenderer::BeginScene(&m_Scene);
 
-    Material cubeMaterial = { m_CubeShader };
+    m_CubeMaterial = new Material;
+    m_CubeMaterial->diffuseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_CubeMaterial->emissiveColor = Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+    m_CubeMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
+    m_CubeMaterial->opacity = 1.0f;
+    m_CubeMaterial->indexOfRefraction = 1.0f;
+    m_CubeMaterial->roughness = 0.3f;
+    m_CubeMaterial->metallic = 0.2f;
+    m_CubeMaterial->shader = m_CubeShader;
+
+    Transform planeTransform;
+    planeTransform.Scale(Vector3(100.0f, 1.0f, 100.0f));
+    MeshRef planeMesh = m_System->GetDefaultMeshInstance("Plane");
+    planeMesh->material = m_CubeMaterial;
+    planeMesh->transform = planeTransform;
+    PGRenderer::AddMesh(planeMesh);
+
+    
     uint32_t randomSeed = 38689 * 643 / 6 + 4;
     for (int i = 0; i < 5; ++i) {
         Transform cubeTransform;
         float random = RandomBilateral(&randomSeed) * 5;
         cubeTransform.Translate(Vector3(-8.0f + i * 4, 1.0f, 2.0f+random));
         MeshRef cubeMesh = m_System->GetDefaultMeshInstance("Cube");
-        cubeMesh->material = cubeMaterial;
+        cubeMesh->material = m_CubeMaterial;
         cubeMesh->transform = cubeTransform;
         PGRenderer::AddMesh(cubeMesh);
     }
 
-    MeshRef monkeyMesh = LoadMeshFromOBJFile("./monkey.obj");
-    monkeyMesh->material = cubeMaterial;
+    MeshRef monkeyMesh = LoadMeshFromOBJFile("./assets/monkey/monkey.obj");
+    monkeyMesh->material = m_CubeMaterial;
     Transform monkeyTransform;
     monkeyTransform.Translate(Vector3(0.0f, 3.0f, 0.0f));
     //monkeyTransform.RotateYAxis(PI);
     monkeyMesh->transform = monkeyTransform;
 
-    MeshRef sphereMesh = LoadMeshFromOBJFile("./uvsphere.obj");
-    sphereMesh->material = cubeMaterial;
+    MeshRef sphereMesh = LoadMeshFromOBJFile("./assets/uvsphere.obj");
+    sphereMesh->material = m_CubeMaterial;
     Transform sphereTransform;
     sphereTransform.Translate(Vector3(3.0f, 3.0f, 1.0f));
     sphereMesh->transform = sphereTransform;
 
-    Transform planeTransform;
-    planeTransform.Scale(Vector3(100.0f, 1.0f, 100.0f));
-    MeshRef planeMesh = m_System->GetDefaultMeshInstance("Plane");
-    planeMesh->material = cubeMaterial;
-    planeMesh->transform = planeTransform;
-    PGRenderer::AddMesh(planeMesh);
     PGRenderer::AddMesh(monkeyMesh);
     PGRenderer::AddMesh(sphereMesh);
     //PGRenderer::AddMesh(m_LightCubeMesh);
@@ -134,6 +126,11 @@ void Application::OnUIRender() {
     ImGui::Begin("Performance");
     ImGui::PlotLines("", frameTimes.data(), frameTimes.size(), 0, "Frame Time", 0.0f, 0.038f, ImVec2(0, 80));
     ImGui::Text("Frame %.3f ms", frameTimes.back() * 1000.0f);
+    ImGui::End();
+
+    ImGui::Begin("Material");
+    ImGui::SliderFloat("Roughness", &m_CubeMaterial->roughness, 0.0f, 1.0f);
+    ImGui::SliderFloat("Metallic", &m_CubeMaterial->metallic, 0.0f, 1.0f);
     ImGui::End();
 }
 

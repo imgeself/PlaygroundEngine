@@ -10,7 +10,7 @@ inline float PCFShadowMap(float3 shadowCoord, uint cascadeIndex, float bias) {
         [unroll]
         for (int j = -index; j <= index; ++j) {
             float sampleDepth = g_ShadowMapTexture.SampleCmpLevelZero(g_ShadowMapSampler, float3(shadowCoord.xy + float2(i, j) * texelSize, cascadeIndex), compareValue);
-            shadowValue += saturate(sampleDepth + 0.5f);
+            shadowValue += sampleDepth;
         }
     }
     shadowValue /= pow(kernelSize, 2);
@@ -22,7 +22,7 @@ inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex
     float3 visualizeColor = float3(1.0f, 1.0f, 1.0f);
     for (uint cascadeIndex = 0; cascadeIndex < g_ShadowCascadeCount; ++cascadeIndex) {
         // ShadowCoordinates
-        float4 worldPosLightSpace = mul(lightProjMatrix[cascadeIndex], mul(lightViewMatrix, float4(worldSpacePos, 1.0f)));
+        float4 worldPosLightSpace = mul(g_LightProjMatrices[cascadeIndex], mul(g_LightViewMatrix, float4(worldSpacePos, 1.0f)));
         float3 shadowCoord = worldPosLightSpace.xyz / worldPosLightSpace.w;
         shadowCoord.x = shadowCoord.x * 0.5f + 0.5f;
         shadowCoord.y = shadowCoord.y * -0.5f + 0.5f;

@@ -183,16 +183,16 @@ void PGRenderer::RenderFrame() {
 
     //TODO: This function should be create gpu commands and pass them to render thread.
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
-    perFrameGlobalConstantBuffer.viewMatrix = s_ActiveSceneData->camera->GetViewMatrix();
-    perFrameGlobalConstantBuffer.projMatrix = s_ActiveSceneData->camera->GetProjectionMatrix();
-    perFrameGlobalConstantBuffer.cameraPos = Vector4(s_ActiveSceneData->camera->GetPosition(), 1.0f);
+    perFrameGlobalConstantBuffer.g_ViewMatrix = s_ActiveSceneData->camera->GetViewMatrix();
+    perFrameGlobalConstantBuffer.g_ProjMatrix = s_ActiveSceneData->camera->GetProjectionMatrix();
+    perFrameGlobalConstantBuffer.g_CameraPos = Vector4(s_ActiveSceneData->camera->GetPosition(), 1.0f);
     perFrameGlobalConstantBuffer.g_InverseViewProjMatrix = s_ActiveSceneData->camera->GetInverseProjectionViewMatrix();
 
-    perFrameGlobalConstantBuffer.lightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
+    perFrameGlobalConstantBuffer.g_LightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
     Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), Normalize(-s_ActiveSceneData->light->position), Vector3(0.0f, 0.0f, 1.0f));
-    perFrameGlobalConstantBuffer.lightViewMatrix = lightView;
+    perFrameGlobalConstantBuffer.g_LightViewMatrix = lightView;
     CalculateCascadeProjMatrices(s_ActiveSceneData->camera, lightView, SHADOW_MAP_SIZE,
-                                 perFrameGlobalConstantBuffer.lightProjMatrix);
+                                 perFrameGlobalConstantBuffer.g_LightProjMatrices);
 
     void* data = s_RendererAPI->Map(s_PerFrameGlobalConstantBuffer);
     memcpy(data, &perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer));

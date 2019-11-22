@@ -35,18 +35,31 @@
 #include "../../Math/math_util.h"
 #endif
 
+struct DrawMaterial {
+    Vector4 ambientColor;
+    Vector4 emissiveColor;
+    Vector4 diffuseColor;
+
+    float roughness;
+    float metallic;
+    float indexOfRefraction;
+    float opacity;
+
+};
+
 ///////////// Constant buffers
 CBUFFER(PerDrawGlobalConstantBuffer, PER_DRAW_CBUFFER_SLOT) {
-    Matrix4 modelMatrix;
+    Matrix4 g_ModelMatrix;
+    DrawMaterial g_Material;
 };
 
 CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) { // SystemConstantBufferSlot_PerFrame = 1
-    Matrix4 viewMatrix;
-    Matrix4 projMatrix;
-    Vector4 cameraPos;
-    Vector4 lightPos;
-    Matrix4 lightViewMatrix;
-    Matrix4 lightProjMatrix[MAX_SHADOW_CASCADE_COUNT];
+    Matrix4 g_ViewMatrix;
+    Matrix4 g_ProjMatrix;
+    Vector4 g_CameraPos;
+    Vector4 g_LightPos;
+    Matrix4 g_LightViewMatrix;
+    Matrix4 g_LightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
 
     Matrix4 g_InverseViewProjMatrix;
     Vector4 g_ScreenDimensions;

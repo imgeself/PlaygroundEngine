@@ -5,7 +5,7 @@
 
 #include <memory>
 
-struct Material {
+struct Material : DrawMaterial {
     ShaderRef shader;
 };
 

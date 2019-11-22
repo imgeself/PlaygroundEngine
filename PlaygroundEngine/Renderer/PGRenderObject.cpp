@@ -9,7 +9,7 @@ PGRenderObject::PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI)
     size_t indicesCount = mesh->indices.size();
     indexBuffer= rendererAPI->CreateIndexBuffer(mesh->indices.data(), indicesCount);
 
-    shader = mesh->material.shader;
+    shader = mesh->material->shader;
     HWShaderProgram* hwShader = shader->GetHWShader();
 
     //TODO: Do we want fixed input elements for all shaders?
@@ -30,7 +30,8 @@ PGRenderObject::~PGRenderObject() {
 void PGRenderObject::UpdatePerDrawConstantBuffer(HWRendererAPI* rendererAPI) {
     // Update transform data
     PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
-    perDrawGlobalConstantBuffer.modelMatrix = mesh->transform.GetTransformMatrix();
+    perDrawGlobalConstantBuffer.g_ModelMatrix = mesh->transform.GetTransformMatrix();
+    memcpy(&perDrawGlobalConstantBuffer.g_Material, mesh->material, sizeof(DrawMaterial));
 
     void* data = rendererAPI->Map(perDrawConstantBuffer);
     memcpy(data, &perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer));

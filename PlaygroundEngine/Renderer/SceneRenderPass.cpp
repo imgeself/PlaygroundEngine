@@ -59,5 +59,8 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
             rendererAPI->Draw(renderObject->vertexBuffer);
         }
     }
+
+    HWShaderResourceView* nullView = nullptr;
+    rendererAPI->SetShaderResourcesPS(SHADOW_MAP_TEXTURE2D_SLOT, &nullView, 1);
 }
 

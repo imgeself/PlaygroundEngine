@@ -11,6 +11,7 @@
 
 #define SHADOW_SAMPLER_COMPARISON_STATE_SLOT 0
 #define POINT_CLAMP_SAMPLER_STATE_SLOT 1
+#define LINEAR_WRAP_SAMPLER_STATE_SLOT 2
 
 // Variable defines
 #define MAX_SHADOW_CASCADE_COUNT 5
@@ -45,6 +46,10 @@ struct DrawMaterial {
     float indexOfRefraction;
     float opacity;
 
+    uint32_t hasAlbedoTexture;
+    uint32_t hasRoughnessTexture;
+    uint32_t hasMetallicTexture;
+    uint32_t hasAOTexture;
 };
 
 ///////////// Constant buffers
@@ -53,7 +58,7 @@ CBUFFER(PerDrawGlobalConstantBuffer, PER_DRAW_CBUFFER_SLOT) {
     DrawMaterial g_Material;
 };
 
-CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) { // SystemConstantBufferSlot_PerFrame = 1
+CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
     Matrix4 g_ViewMatrix;
     Matrix4 g_ProjMatrix;
     Vector4 g_CameraPos;
@@ -79,9 +84,14 @@ CBUFFER(RendererVariablesConstantBuffer, RENDERER_VARIABLES_CBUFFER_SLOT) {
 /////////// Textures
 TEXTURE2DARRAY(g_ShadowMapTexture, SHADOW_MAP_TEXTURE2D_SLOT);
 
+TEXTURE2D(g_AlbedoTexture, 1);
+TEXTURE2D(g_RoughnessTexture, 2);
+TEXTURE2D(g_MetallicTexture, 3);
+TEXTURE2D(g_AOTexture, 4);
+
 /////////// Samplers
 SAMPLER_COMPARISON_STATE(g_ShadowMapSampler, SHADOW_SAMPLER_COMPARISON_STATE_SLOT);
 SAMPLER_STATE(g_PointClampSampler, POINT_CLAMP_SAMPLER_STATE_SLOT);
-
+SAMPLER_STATE(g_LinearWrapSampler, LINEAR_WRAP_SAMPLER_STATE_SLOT);
 
 #endif

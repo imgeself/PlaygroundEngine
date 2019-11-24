@@ -99,6 +99,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,6 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,6 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -165,6 +168,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PLATFORM_WINDOWS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -187,6 +191,7 @@
     <ClCompile Include="Imgui\imgui_widgets.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PGCamera.cpp" />
+    <ClCompile Include="PGResourceManager.cpp" />
     <ClCompile Include="PGSystem.cpp" />
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
     <ClCompile Include="Platform\Win32\PGInputWin32.cpp" />
@@ -205,6 +210,7 @@
     <ClCompile Include="Renderer\PGRenderObject.cpp" />
     <ClCompile Include="Renderer\PGShader.cpp" />
     <ClCompile Include="Renderer\PGShaderLib.cpp" />
+    <ClCompile Include="Renderer\PGTexture.cpp" />
     <ClCompile Include="Renderer\SceneRenderPass.cpp" />
     <ClCompile Include="Renderer\ShadowMapPass.cpp" />
     <ClCompile Include="Utility\tiny_obj_loader.cpp" />
@@ -228,6 +234,7 @@
     <ClInclude Include="MeshUtils.h" />
     <ClInclude Include="PGApplication.h" />
     <ClInclude Include="PGCamera.h" />
+    <ClInclude Include="PGResouceManager.h" />
     <ClInclude Include="PGSystem.h" />
     <ClInclude Include="Events\PGSystemEventDispatcher.h" />
     <ClInclude Include="Platform\PGInput.h" />
@@ -259,10 +266,12 @@
     <ClInclude Include="Renderer\HWShader.h" />
     <ClInclude Include="Renderer\PGShaderLib.h" />
     <ClInclude Include="Renderer\PGShaderResources.h" />
+    <ClInclude Include="Renderer\PGTexture.h" />
     <ClInclude Include="Renderer\SceneRenderPass.h" />
     <ClInclude Include="Renderer\ShadowMapPass.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Utility\stb_image.h" />
     <ClInclude Include="Utility\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>

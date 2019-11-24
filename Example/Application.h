@@ -20,10 +20,9 @@ private:
     std::shared_ptr<HWIndexBuffer> m_IndexBuffer;
     std::shared_ptr<HWVertexBuffer> m_VertexBuffer;
 
-    Material* m_CubeMaterial;
+    Material* m_DefaultMaterial;
 
-    ShaderRef m_CubeShader;
-    ShaderRef m_LightCubeShader;
+    ShaderRef m_PBRShader;
 
     PGScene m_Scene;
 

@@ -20,7 +20,7 @@ void Application::OnInit() {
     mainCamera->SetView(Vector3(0.0f, 1.0f, -10.0f), Vector3(0.0f, 0.0f, 1.0f));
 
     PGShaderLib* shaderLib = m_System->GetShaderLib();
-    m_CubeShader = shaderLib->GetDefaultShader("PBRForward");
+    m_PBRShader = shaderLib->GetDefaultShader("PBRForward");
 
     Vector3 lightPosition(2.0f, 24.0f, -5.0f);
     PGLight* mainLight = new PGLight;
@@ -29,46 +29,72 @@ void Application::OnInit() {
     m_Scene.camera = mainCamera;
     m_Scene.light = mainLight;
 
+    PGTexture* albedoTexture = (PGTexture*) PGResourceManager::CreateResource("./assets/monkey/albedo.png");
+    PGTexture* roughnessTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/roughness.png");
+    PGTexture* metallicTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/metallic.png");
+    PGTexture* aoTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/ao.png");
+
     PGRenderer::BeginScene(&m_Scene);
 
-    m_CubeMaterial = new Material;
-    m_CubeMaterial->diffuseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-    m_CubeMaterial->emissiveColor = Vector4(0.0f, 0.0f, 0.0f, 0.0f);
-    m_CubeMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
-    m_CubeMaterial->opacity = 1.0f;
-    m_CubeMaterial->indexOfRefraction = 1.0f;
-    m_CubeMaterial->roughness = 0.3f;
-    m_CubeMaterial->metallic = 0.2f;
-    m_CubeMaterial->shader = m_CubeShader;
+    Material* monkeyMaterial = new Material;
+    memset(monkeyMaterial, 0, sizeof(Material));
+    monkeyMaterial->emissiveColor = Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+    monkeyMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
+    monkeyMaterial->opacity = 1.0f;
+    monkeyMaterial->indexOfRefraction = 1.0f;
+    monkeyMaterial->shader = m_PBRShader;
+
+    monkeyMaterial->albedoTexture = albedoTexture;
+    monkeyMaterial->roughnessTexture = roughnessTexture;
+    monkeyMaterial->metallicTexture = metallicTexture;
+    monkeyMaterial->aoTexture = aoTexture;
+
+    monkeyMaterial->hasAlbedoTexture = 1;
+    monkeyMaterial->hasRoughnessTexture = 1;
+    monkeyMaterial->hasMetallicTexture = 1;
+    monkeyMaterial->hasAOTexture = 1;
+
+    m_DefaultMaterial = new Material;
+    memset(m_DefaultMaterial, 0, sizeof(Material));
+    m_DefaultMaterial->diffuseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_DefaultMaterial->emissiveColor = Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+    m_DefaultMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
+    m_DefaultMaterial->opacity = 1.0f;
+    m_DefaultMaterial->indexOfRefraction = 1.0f;
+    m_DefaultMaterial->roughness = 0.3f;
+    m_DefaultMaterial->metallic = 0.2f;
+    m_DefaultMaterial->shader = m_PBRShader;
 
     Transform planeTransform;
     planeTransform.Scale(Vector3(100.0f, 1.0f, 100.0f));
     MeshRef planeMesh = m_System->GetDefaultMeshInstance("Plane");
-    planeMesh->material = m_CubeMaterial;
+    planeMesh->material = m_DefaultMaterial;
     planeMesh->transform = planeTransform;
     PGRenderer::AddMesh(planeMesh);
 
     
     uint32_t randomSeed = 38689 * 643 / 6 + 4;
+    MeshRef cubeMesh = LoadMeshFromOBJFile("./assets/cube.obj");
     for (int i = 0; i < 5; ++i) {
         Transform cubeTransform;
         float random = RandomBilateral(&randomSeed) * 5;
         cubeTransform.Translate(Vector3(-8.0f + i * 4, 1.0f, 2.0f+random));
-        MeshRef cubeMesh = m_System->GetDefaultMeshInstance("Cube");
-        cubeMesh->material = m_CubeMaterial;
-        cubeMesh->transform = cubeTransform;
-        PGRenderer::AddMesh(cubeMesh);
+        MeshRef cubeMeshInstance = std::make_shared<Mesh>();
+        *cubeMeshInstance = *cubeMesh;
+        cubeMeshInstance->material = m_DefaultMaterial;
+        cubeMeshInstance->transform = cubeTransform;
+        PGRenderer::AddMesh(cubeMeshInstance);
     }
 
     MeshRef monkeyMesh = LoadMeshFromOBJFile("./assets/monkey/monkey.obj");
-    monkeyMesh->material = m_CubeMaterial;
+    monkeyMesh->material = monkeyMaterial;
     Transform monkeyTransform;
     monkeyTransform.Translate(Vector3(0.0f, 3.0f, 0.0f));
     //monkeyTransform.RotateYAxis(PI);
     monkeyMesh->transform = monkeyTransform;
 
     MeshRef sphereMesh = LoadMeshFromOBJFile("./assets/uvsphere.obj");
-    sphereMesh->material = m_CubeMaterial;
+    sphereMesh->material = m_DefaultMaterial;
     Transform sphereTransform;
     sphereTransform.Translate(Vector3(3.0f, 3.0f, 1.0f));
     sphereMesh->transform = sphereTransform;
@@ -129,8 +155,8 @@ void Application::OnUIRender() {
     ImGui::End();
 
     ImGui::Begin("Material");
-    ImGui::SliderFloat("Roughness", &m_CubeMaterial->roughness, 0.0f, 1.0f);
-    ImGui::SliderFloat("Metallic", &m_CubeMaterial->metallic, 0.0f, 1.0f);
+    ImGui::SliderFloat("Roughness", &m_DefaultMaterial->roughness, 0.0f, 1.0f);
+    ImGui::SliderFloat("Metallic", &m_DefaultMaterial->metallic, 0.0f, 1.0f);
     ImGui::End();
 }
 

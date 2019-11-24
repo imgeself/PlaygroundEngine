@@ -20,6 +20,7 @@ inline float PCFShadowMap(float3 shadowCoord, uint cascadeIndex, float bias) {
 inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex) {
     float shadowFactor = 1;
     float3 visualizeColor = float3(1.0f, 1.0f, 1.0f);
+    
     for (uint cascadeIndex = 0; cascadeIndex < g_ShadowCascadeCount; ++cascadeIndex) {
         // ShadowCoordinates
         float4 worldPosLightSpace = mul(g_LightProjMatrices[cascadeIndex], mul(g_LightViewMatrix, float4(worldSpacePos, 1.0f)));
@@ -28,8 +29,9 @@ inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex
         shadowCoord.y = shadowCoord.y * -0.5f + 0.5f;
 
         [branch]
+        float bias = 0.0015f;
         if (all(saturate(shadowCoord) == shadowCoord)) {
-            float bias = 0.004f;
+            bias += (0.001f * cascadeIndex);
             float shadowValue = PCFShadowMap(shadowCoord, cascadeIndex, bias);
             shadowFactor = shadowValue;
             hitCascadeIndex = cascadeIndex;

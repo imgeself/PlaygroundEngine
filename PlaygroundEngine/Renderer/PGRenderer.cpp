@@ -159,6 +159,13 @@ bool PGRenderer::Initialize(PGWindow* window) {
     shadowSamplerStateInitParams.comparisonFunction = ComparisonFunction::NONE;
     s_DefaultSamplers[POINT_CLAMP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&shadowSamplerStateInitParams);
 
+    SamplerStateInitParams linearWrapSamplerStateInitParams = {};
+    linearWrapSamplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT;
+    linearWrapSamplerStateInitParams.addressModeU = TextureAddressMode_WRAP;
+    linearWrapSamplerStateInitParams.addressModeV = TextureAddressMode_WRAP;
+    linearWrapSamplerStateInitParams.addressModeW = TextureAddressMode_WRAP;
+    s_DefaultSamplers[LINEAR_WRAP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&shadowSamplerStateInitParams);
+
     // Bind default sampler states
     s_RendererAPI->SetSamplerStatesPS(0, s_DefaultSamplers.data(), s_DefaultSamplers.max_size());
 

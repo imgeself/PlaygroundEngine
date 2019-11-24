@@ -14,8 +14,9 @@ PGRenderObject::PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI)
 
     //TODO: Do we want fixed input elements for all shaders?
     std::vector<VertexInputElement> inputElements = {
-        { "Position", VertexDataFormat_FLOAT3, 0, 0 },
-        { "Normal", VertexDataFormat_FLOAT3, 0, 12 }
+        { "POSITION", VertexDataFormat_FLOAT3, 0, 0 },
+        { "NORMAL", VertexDataFormat_FLOAT3, 0, 12 },
+        { "TEXCOORD", VertexDataFormat_FLOAT2, 0, 24 }
     };
 
     inputLayout = rendererAPI->CreateVertexInputLayout(inputElements, hwShader);

@@ -9,6 +9,7 @@
 #include "Imgui/imgui_impl.h"
 #include "PGApplication.h"
 #include "MeshUtils.h"
+#include "PGResouceManager.h"
 
 #include <memory>
 

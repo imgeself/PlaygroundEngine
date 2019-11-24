@@ -48,6 +48,18 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
     for (PGRenderObject* renderObject : m_RenderObjects) {
         renderObject->UpdatePerDrawConstantBuffer(rendererAPI);
 
+        PGTexture* albedoTexture = renderObject->mesh->material->albedoTexture;
+        PGTexture* roughnessTexture = renderObject->mesh->material->roughnessTexture;
+        PGTexture* metallicTexture = renderObject->mesh->material->metallicTexture;
+        PGTexture* aoTexture = renderObject->mesh->material->aoTexture;
+        HWShaderResourceView* textureResources[] = {
+            albedoTexture ? albedoTexture->GetHWResourceView() : nullptr,
+            roughnessTexture ? roughnessTexture->GetHWResourceView() : nullptr,
+            metallicTexture ? metallicTexture->GetHWResourceView() : nullptr,
+            aoTexture ? aoTexture->GetHWResourceView() : nullptr,
+        };
+        rendererAPI->SetShaderResourcesPS(1, textureResources, ARRAYSIZE(textureResources));
+
         size_t vertexBufferStride = sizeof(Vertex);
         rendererAPI->SetVertexBuffer(renderObject->vertexBuffer, vertexBufferStride);
         rendererAPI->SetIndexBuffer(renderObject->indexBuffer);

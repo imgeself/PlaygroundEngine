@@ -44,11 +44,13 @@ inline float DisneyDiffuse(float3 lightVector, float3 halfwayVector, float3 norm
     float NdotL = saturate(dot(lightVector, normalVector));
     float NdotV = saturate(dot(viewVector, normalVector));
 
+    float energyBias = lerp(0, 0.5, roughness);
+    float energyFactor = lerp(1.0, 1.0 / 1.51, roughness);
     float3 f0 = float3(1.0f, 1.0f, 1.0f);
-    float f90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
+    float f90 = energyBias + 2.0 * roughness * LdotH * LdotH;
     float lightScatter = FresnelSchlick(NdotL, f0, f90).r;
     float viewScatter = FresnelSchlick(NdotV, f0, f90).r;
-    return lightScatter * viewScatter * (1.0 / PI);
+    return lightScatter * viewScatter * energyFactor * (1.0 / PI);
 }
 
 float3 BRDF(float3 lightVector, float3 normalVector, float3 viewVector, float3 albedo, float roughness, float metallic) {
@@ -62,16 +64,13 @@ float3 BRDF(float3 lightVector, float3 normalVector, float3 viewVector, float3 a
     float VdotH = saturate(dot(viewVector, halfwayVector));
     float3 F = FresnelSchlick(VdotH, f0, 1.0f);
 
-    float3 kS = F;
-    float3 kD = (float3) 1.0f - kS;
-
     float NdotL = saturate(dot(normalVector, lightVector));
 
     float3 numerator = D * G * F;
     float3 denom = 4.0f * saturate(dot(normalVector, viewVector)) * NdotL;
     float3 specularBRDF = numerator / max(denom, 0.001f);
 
-    float3 diffuseBRDF = kD * albedo * DisneyDiffuse(lightVector, halfwayVector, normalVector, viewVector, roughness);
+    float3 diffuseBRDF = albedo * DisneyDiffuse(lightVector, halfwayVector, normalVector, viewVector, roughness);
 
     float3 brdf = diffuseBRDF + specularBRDF;
     float3 Lo = brdf * NdotL;

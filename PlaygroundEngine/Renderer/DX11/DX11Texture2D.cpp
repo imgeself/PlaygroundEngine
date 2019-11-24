@@ -23,6 +23,17 @@ static inline D3D11_CPU_ACCESS_FLAG GetCPUAccessFlagFromResourceFlags(uint32_t r
     );
 }
 
+static inline size_t GetByteSizeFromFormat(DXGI_FORMAT format) {
+    // TODO: More formats
+    switch (format)
+    {
+        case DXGI_FORMAT_R8G8B8A8_UNORM:
+            return 4;
+        default:
+            return 0;
+    }
+}
+
 DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DInitParams* initParams) {
     D3D11_TEXTURE2D_DESC shadowMapTextureDesc = {};
     shadowMapTextureDesc.Width = (UINT) initParams->width;
@@ -41,6 +52,7 @@ DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DInitParams* initPara
         // TODO: Calculate pitch using format and width;
         D3D11_SUBRESOURCE_DATA subresourceData = {};
         subresourceData.pSysMem = initParams->data;
+        subresourceData.SysMemPitch = initParams->width * GetByteSizeFromFormat(initParams->format);
 
         HRESULT result = device->CreateTexture2D(&shadowMapTextureDesc, &subresourceData, &m_Texture);
         PG_ASSERT(SUCCEEDED(result), "Error at creating texture");

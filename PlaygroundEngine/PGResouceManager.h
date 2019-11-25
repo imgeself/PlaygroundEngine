@@ -6,11 +6,12 @@
 #include <string>
 #include <unordered_map>
 
-typedef std::unordered_map<std::string, void*> ResourcePool;
+typedef std::unordered_map<std::string, IResource*> ResourcePool;
 
 class PG_API PGResourceManager {
 public:
-    static void* CreateResource(const std::string& resourceFilePath);
+    static void ReleaseResourcePool();
+    static IResource* CreateResource(const std::string& resourceFilePath);
 
 private:
     PGResourceManager();

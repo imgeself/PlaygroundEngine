@@ -235,6 +235,7 @@
     <ClInclude Include="PGApplication.h" />
     <ClInclude Include="PGCamera.h" />
     <ClInclude Include="PGResouceManager.h" />
+    <ClInclude Include="PGResource.h" />
     <ClInclude Include="PGSystem.h" />
     <ClInclude Include="Events\PGSystemEventDispatcher.h" />
     <ClInclude Include="Platform\PGInput.h" />

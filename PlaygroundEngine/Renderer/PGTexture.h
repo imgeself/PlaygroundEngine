@@ -1,11 +1,12 @@
 #pragma once
 
 #include "HWRendererAPI.h"
+#include "../PGResource.h"
 
 #include <unordered_map>
 #include <string>
 
-class PGTexture {
+class PGTexture : public IResource {
 public:
     PGTexture(const std::string& filepath);
     ~PGTexture();

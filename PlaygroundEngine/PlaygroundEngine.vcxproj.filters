@@ -287,6 +287,9 @@
     <ClInclude Include="Utility\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PGResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Imgui\LICENSE.txt" />

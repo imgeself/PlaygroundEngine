@@ -12,12 +12,13 @@ PGScene* PGRenderer::s_ActiveSceneData = nullptr;
 HWConstantBuffer* PGRenderer::s_PerFrameGlobalConstantBuffer = nullptr;
 HWConstantBuffer* PGRenderer::s_PerDrawGlobalConstantBuffer = nullptr;
 HWConstantBuffer* PGRenderer::s_RendererVarsConstantBuffer = nullptr;
-
+HWConstantBuffer* PGRenderer::s_PostProcessConstantBuffer = nullptr;
 
 std::array<HWSamplerState*, 4> PGRenderer::s_DefaultSamplers = std::array<HWSamplerState*, 4>();
 
 ShadowMapPass PGRenderer::s_ShadowMapPass = ShadowMapPass();
 SceneRenderPass PGRenderer::s_SceneRenderPass = SceneRenderPass();
+TonemapPass PGRenderer::s_PostProcessPass = TonemapPass();
 
 const size_t SHADOW_MAP_SIZE = 1024;
 
@@ -25,6 +26,7 @@ void PGRenderer::Uninitialize() {
     delete s_PerFrameGlobalConstantBuffer;
     delete s_PerDrawGlobalConstantBuffer;
     delete s_RendererVarsConstantBuffer;
+    delete s_PostProcessConstantBuffer;
     for (HWSamplerState* samplerState : s_DefaultSamplers) {
         if (samplerState) {
             delete samplerState;
@@ -135,6 +137,11 @@ bool PGRenderer::Initialize(PGWindow* window) {
     PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
     s_PerDrawGlobalConstantBuffer = s_RendererAPI->CreateConstantBuffer(&perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer));
 
+    PostProcessConstantBuffer postProcessConstantBuffer = {};
+    postProcessConstantBuffer.g_PPExposure = 1.0f;
+    postProcessConstantBuffer.g_PPGamma = 2.2f;
+    s_PostProcessConstantBuffer = s_RendererAPI->CreateConstantBuffer(&postProcessConstantBuffer, sizeof(PostProcessConstantBuffer));
+
     RendererVariablesConstantBuffer rendererVariablesConstantBuffer = {};
     rendererVariablesConstantBuffer.g_ShadowCascadeCount = CASCADE_COUNT;
     rendererVariablesConstantBuffer.g_ShadowMapSize = SHADOW_MAP_SIZE;
@@ -144,6 +151,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     constantBuffers[PER_DRAW_CBUFFER_SLOT] = s_PerDrawGlobalConstantBuffer;
     constantBuffers[PER_FRAME_CBUFFER_SLOT] = s_PerFrameGlobalConstantBuffer;
     constantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = s_RendererVarsConstantBuffer;
+    constantBuffers[POST_PROCESS_CBUFFER_SLOT] = s_PostProcessConstantBuffer;
     s_RendererAPI->SetConstanBuffersVS(0, constantBuffers, ARRAYSIZE(constantBuffers));
     s_RendererAPI->SetConstanBuffersPS(0, constantBuffers, ARRAYSIZE(constantBuffers));
 
@@ -169,13 +177,33 @@ bool PGRenderer::Initialize(PGWindow* window) {
     // Bind default sampler states
     s_RendererAPI->SetSamplerStatesPS(0, s_DefaultSamplers.data(), s_DefaultSamplers.max_size());
 
-    s_SceneRenderPass.SetRenderTarget(0, s_RendererAPI->GetBackbufferRenderTargetView());
+    // HDR mainbuffer
+    Texture2DInitParams hdrBufferInitParams = {};
+    hdrBufferInitParams.arraySize = 1;
+    hdrBufferInitParams.format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    hdrBufferInitParams.width = s_RendererAPI->GetWidth();
+    hdrBufferInitParams.height = s_RendererAPI->GetHeight();
+    hdrBufferInitParams.sampleCount = 1;
+    hdrBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
+
+    // TODO: release this resources
+    HWTexture2D* HDRTexture = s_RendererAPI->CreateTexture2D(&hdrBufferInitParams);
+    HWRenderTargetView* HDRBuffer = s_RendererAPI->CreateRenderTargetView(HDRTexture, 0, 1);
+    HWShaderResourceView* HDRBufferResourceView = s_RendererAPI->CreateShaderResourceView(HDRTexture);
+    delete HDRTexture;
+
+    // Render passes
+    s_SceneRenderPass.SetRenderTarget(0, HDRBuffer);
     s_SceneRenderPass.SetDepthStencilTarget(s_RendererAPI->GetBackbufferDepthStencilView());
     HWViewport defaultViewport = s_RendererAPI->GetDefaultViewport();
     s_SceneRenderPass.SetViewport(defaultViewport);
 
     s_ShadowMapPass.Initialize(s_RendererAPI, s_ShaderLib, SHADOW_MAP_SIZE);
     s_SceneRenderPass.SetShadowMapPass(&s_ShadowMapPass);
+
+    s_PostProcessPass.SetRenderTarget(0, s_RendererAPI->GetBackbufferRenderTargetView());
+    s_PostProcessPass.SetViewport(defaultViewport);
+    s_PostProcessPass.SetHDRBufferResourceView(HDRBufferResourceView);
 
     return true;
 }
@@ -206,6 +234,14 @@ void PGRenderer::RenderFrame() {
     s_RendererAPI->Unmap(s_PerFrameGlobalConstantBuffer);
 
     s_SceneRenderPass.Execute(s_RendererAPI);
+
+    // PostProcess
+    s_PostProcessPass.Execute(s_RendererAPI, s_ShaderLib);
+
+
+    // Clear all texture slots
+    HWShaderResourceView* nullView[16] = { 0 };
+    s_RendererAPI->SetShaderResourcesPS(0, nullView, ARRAYSIZE(nullView));
 }
 
 void PGRenderer::EndFrame() {

@@ -37,7 +37,9 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
     rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, m_DepthStencilView);
     float color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     rendererAPI->ClearRenderTarget(m_RenderTargets[0], color);
-    rendererAPI->ClearDepthStencilView(m_DepthStencilView, false, 1.0f, 0);
+    if (m_DepthStencilView) {
+        rendererAPI->ClearDepthStencilView(m_DepthStencilView, false, 1.0f, 0);
+    }
     rendererAPI->SetViewport(&m_Viewport);
 
     if (m_ShadowMapPass) {
@@ -71,8 +73,5 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
             rendererAPI->Draw(renderObject->vertexBuffer);
         }
     }
-
-    HWShaderResourceView* nullView = nullptr;
-    rendererAPI->SetShaderResourcesPS(SHADOW_MAP_TEXTURE2D_SLOT, &nullView, 1);
 }
 

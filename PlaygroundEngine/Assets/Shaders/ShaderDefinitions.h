@@ -4,10 +4,18 @@
 #define PER_DRAW_CBUFFER_SLOT 0
 #define PER_FRAME_CBUFFER_SLOT 1
 #define PER_SHADOWGEN_CBUFFER_SLOT 2
+#define POST_PROCESS_CBUFFER_SLOT 3
 
 #define RENDERER_VARIABLES_CBUFFER_SLOT 7
 
 #define SHADOW_MAP_TEXTURE2D_SLOT 0
+
+#define ALBEDO_TEXTURE2D_SLOT 1
+#define ROUGHNESS_TEXTURE2D_SLOT 2
+#define METALLIC_TEXTURE2D_SLOT 3
+#define AO_TEXTURE2D_SLOT 4
+
+#define POST_PROCESS_TEXTURE0_SLOT 5
 
 #define SHADOW_SAMPLER_COMPARISON_STATE_SLOT 0
 #define POINT_CLAMP_SAMPLER_STATE_SLOT 1
@@ -75,6 +83,12 @@ CBUFFER(PerShadowGenConstantBuffer, PER_SHADOWGEN_CBUFFER_SLOT) {
     Vector3 pad00000001;
 };
 
+CBUFFER(PostProcessConstantBuffer, POST_PROCESS_CBUFFER_SLOT) {
+    float g_PPExposure;
+    float g_PPGamma;
+    Vector2 pad0003;
+};
+
 CBUFFER(RendererVariablesConstantBuffer, RENDERER_VARIABLES_CBUFFER_SLOT) {
     uint32_t g_ShadowCascadeCount;
     uint32_t g_ShadowMapSize;
@@ -84,10 +98,14 @@ CBUFFER(RendererVariablesConstantBuffer, RENDERER_VARIABLES_CBUFFER_SLOT) {
 /////////// Textures
 TEXTURE2DARRAY(g_ShadowMapTexture, SHADOW_MAP_TEXTURE2D_SLOT);
 
-TEXTURE2D(g_AlbedoTexture, 1);
-TEXTURE2D(g_RoughnessTexture, 2);
-TEXTURE2D(g_MetallicTexture, 3);
-TEXTURE2D(g_AOTexture, 4);
+// PBR textures
+TEXTURE2D(g_AlbedoTexture, ALBEDO_TEXTURE2D_SLOT);
+TEXTURE2D(g_RoughnessTexture, ROUGHNESS_TEXTURE2D_SLOT);
+TEXTURE2D(g_MetallicTexture, METALLIC_TEXTURE2D_SLOT);
+TEXTURE2D(g_AOTexture, AO_TEXTURE2D_SLOT);
+
+// Post process textures
+TEXTURE2D(g_PostProcessTexture0, POST_PROCESS_TEXTURE0_SLOT);
 
 /////////// Samplers
 SAMPLER_COMPARISON_STATE(g_ShadowMapSampler, SHADOW_SAMPLER_COMPARISON_STATE_SLOT);

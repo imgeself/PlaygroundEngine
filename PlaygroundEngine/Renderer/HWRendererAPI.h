@@ -26,6 +26,7 @@ public:
 
     virtual void ClearScreen(const float* color) = 0;
     virtual void Draw(HWVertexBuffer* indexBuffer) = 0;
+    virtual void Draw(size_t vertexCount, size_t vertexBaseLocation) = 0;
     virtual void DrawIndexed(HWIndexBuffer* indexBuffer) = 0;
     virtual void Present() = 0;
 
@@ -66,5 +67,8 @@ public:
 
     virtual void* Map(HWConstantBuffer* resource) = 0;
     virtual void Unmap(HWConstantBuffer* resource) = 0;
+
+    virtual size_t GetWidth() = 0;
+    virtual size_t GetHeight() = 0;
 };
 

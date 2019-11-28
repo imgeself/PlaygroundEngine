@@ -20,6 +20,7 @@ public:
 
     void ClearScreen(const float* color) override;
     void Draw(HWVertexBuffer* vertexBuffer) override;
+    void Draw(size_t vertexCount, size_t vertexBaseLocation) override;
     void DrawIndexed(HWIndexBuffer* indexBuffer) override;
     void Present() override;
 
@@ -65,15 +66,18 @@ public:
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }
 
+    size_t GetWidth() override { return m_ClientWidth; }
+    size_t GetHeight() override { return m_ClientHeight; }
+
 private:
     IDXGISwapChain* m_SwapChain = nullptr;
     ID3D11Device* m_Device = nullptr;
     ID3D11DeviceContext* m_DeviceContext = nullptr;
-    //ID3D11RenderTargetView* m_BackbufferRenderTargetView = nullptr;
-    //ID3D11DepthStencilView* m_BackbufferDepthStencilView = nullptr;
 
     DX11RenderTargetView* m_BackbufferRenderTargetView = nullptr;
     DX11DepthStencilView* m_BackbufferDepthStencilView = nullptr;
     D3D11_VIEWPORT m_DefaultViewport;
 
+    size_t m_ClientWidth;
+    size_t m_ClientHeight;
 };

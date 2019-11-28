@@ -10,11 +10,14 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     const UINT width = (UINT) clientSize.x;
     const UINT height = (UINT) clientSize.y;
 
+    m_ClientWidth = width;
+    m_ClientHeight = height;
+
     DXGI_MODE_DESC modeDescriptor = {};
     modeDescriptor.Width = width;
     modeDescriptor.Height = height;
     modeDescriptor.RefreshRate = refreshRate;
-    modeDescriptor.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    modeDescriptor.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
     modeDescriptor.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     modeDescriptor.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
@@ -123,6 +126,10 @@ void DX11RendererAPI::ClearScreen(const float* color) {
 void DX11RendererAPI::Draw(HWVertexBuffer* vertexBuffer) {
     DX11VertexBuffer* dx11VertexBuffer = (DX11VertexBuffer*) vertexBuffer;
     m_DeviceContext->Draw(dx11VertexBuffer->GetCount(), 0);
+}
+
+void DX11RendererAPI::Draw(size_t vertexCount, size_t vertexBaseLocation) {
+    m_DeviceContext->Draw((UINT) vertexCount, (UINT) vertexBaseLocation);
 }
 
 void DX11RendererAPI::DrawIndexed(HWIndexBuffer* indexBuffer) {

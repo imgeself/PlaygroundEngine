@@ -211,6 +211,7 @@
     <ClCompile Include="Renderer\PGShader.cpp" />
     <ClCompile Include="Renderer\PGShaderLib.cpp" />
     <ClCompile Include="Renderer\PGTexture.cpp" />
+    <ClCompile Include="Renderer\PostProcessPass.cpp" />
     <ClCompile Include="Renderer\SceneRenderPass.cpp" />
     <ClCompile Include="Renderer\ShadowMapPass.cpp" />
     <ClCompile Include="Utility\tiny_obj_loader.cpp" />
@@ -268,6 +269,7 @@
     <ClInclude Include="Renderer\PGShaderLib.h" />
     <ClInclude Include="Renderer\PGShaderResources.h" />
     <ClInclude Include="Renderer\PGTexture.h" />
+    <ClInclude Include="Renderer\PostProcessPass.h" />
     <ClInclude Include="Renderer\SceneRenderPass.h" />
     <ClInclude Include="Renderer\ShadowMapPass.h" />
     <ClInclude Include="Scene.h" />

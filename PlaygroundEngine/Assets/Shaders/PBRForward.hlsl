@@ -71,13 +71,10 @@ float4 PSMain(VSOut input) : SV_Target {
     };
 
     float3 lightColor = (float3) 1.0f;
-    float intensity = 2.0f;
+    float intensity = 1.0f;
     float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
     float3 color = Lo * lightColor * intensity * shadowFactor * ao;
-
-    // Gamma correction
-    color = pow(color, (float3)(1.0 / 2.2));
 
     return float4(color, 1.0f);
 }

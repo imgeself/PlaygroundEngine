@@ -17,17 +17,20 @@ void Application::OnInit() {
 
     PGCamera* mainCamera = new PGCamera;
     mainCamera->SetFrustum(1280, 720, 0.01f, 100.0f, PI / 4.0f);
-    mainCamera->SetView(Vector3(0.0f, 1.0f, -10.0f), Vector3(0.0f, 0.0f, 1.0f));
+    //mainCamera->SetView(Vector3(0.0f, 10.0f, -10.0f), Vector3(0.0f, 0.0f, 1.0f));
 
     PGShaderLib* shaderLib = m_System->GetShaderLib();
     m_PBRShader = shaderLib->GetDefaultShader("PBRForward");
 
-    Vector3 lightPosition(2.0f, 24.0f, -5.0f);
+    Vector3 lightPosition(20.0f, 24.0f, -20.0f);
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
 
     m_Scene.camera = mainCamera;
     m_Scene.light = mainLight;
+
+    PGTexture* skybox = (PGTexture*) PGResourceManager::CreateResource("./assets/skybox.dds");
+    m_Scene.skybox = new Skybox(skybox);
 
     PGTexture* albedoTexture = (PGTexture*) PGResourceManager::CreateResource("./assets/monkey/albedo.png");
     PGTexture* roughnessTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/roughness.png");
@@ -105,7 +108,10 @@ void Application::OnInit() {
     PGRenderer::EndScene();
 }
 
+
+
 std::vector<float> frameTimes;
+
 void Application::OnUpdate(float deltaTime) {
     if (frameTimes.size() < 32) {
         frameTimes.push_back(deltaTime);
@@ -114,21 +120,51 @@ void Application::OnUpdate(float deltaTime) {
         frameTimes[frameTimes.size() - 1] = deltaTime;
     }
 
+    Transform cameraTransform;
+    Vector3 cameraMove(0.0f, 0.0f, 0.0f);
 
-    Vector3 cameraPos = m_Scene.camera->GetPosition();
+    static Vector2 lastMouse;
+    static float pitch = 0.0f;
+    static float yaw = 0.0f;
+    if (PGInput::IsMouseButtonPressed(PGMOUSE_RBUTTON)) {
+        Vector2 mousePos = PGInput::GetMousePos();
+        if (lastMouse == Vector2(-1.0f, -1.0f)) {
+            // First click
+            lastMouse = mousePos;
+        }
+        else {
+            Vector2 mouseDelta = mousePos - lastMouse;
+            lastMouse = mousePos;
+
+            pitch += mouseDelta.y / 400;
+            yaw += mouseDelta.x / 300;
+        }
+    } else {
+        lastMouse.x = -1.0f;
+        lastMouse.y = -1.0f;
+    }
+
+    cameraTransform.RotateXAxis(pitch);
+    cameraTransform.RotateYAxis(yaw);
+
     if (PGInput::IsKeyPressed(PGKEY_W)) {
-        cameraPos.y += 5.0f * deltaTime;
+        cameraMove.z += 5.0f * deltaTime;
+
     } else if (PGInput::IsKeyPressed(PGKEY_S)) {
-        cameraPos.y -= 5.0f * deltaTime;
+        cameraMove.z -= 5.0f * deltaTime;
     }
 
     if (PGInput::IsKeyPressed(PGKEY_A)) {
-        cameraPos.x -= 5.0f * deltaTime;
+        cameraMove.x -= 5.0f * deltaTime;
+    } else if (PGInput::IsKeyPressed(PGKEY_D)) {
+        cameraMove.x += 5.0f * deltaTime;
     }
-    else if (PGInput::IsKeyPressed(PGKEY_D)) {
-        cameraPos.x += 5.0f * deltaTime;
-    }
-    m_Scene.camera->SetView(cameraPos, Vector3(0.0f, 0.0f, 0.0f));
+
+    cameraMove = (cameraTransform.rotationMatrix * Vector4(cameraMove, 0.0f)).xyz();
+
+    Vector3 cameraPos = m_Scene.camera->GetPosition();
+    cameraTransform.Translate(cameraPos + cameraMove);
+    m_Scene.camera->TransformCamera(&cameraTransform);
 
     Vector3 lightPos = m_Scene.light->position;
     if (PGInput::IsKeyPressed(PGKEY_I)) {

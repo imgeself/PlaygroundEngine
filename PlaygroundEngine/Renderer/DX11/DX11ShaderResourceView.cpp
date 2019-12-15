@@ -24,7 +24,10 @@ DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Textu
     if (textureDesc.SampleDesc.Count > 1) {
         shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
     } else {
-        if (textureDesc.ArraySize > 1) {
+        if (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_TEXTURECUBE) {
+            shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+            shaderResouceViewDesc.TextureCube.MipLevels = textureDesc.MipLevels;
+        } else if (textureDesc.ArraySize > 1) {
             shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
             shaderResouceViewDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
             shaderResouceViewDesc.Texture2DArray.MipLevels = textureDesc.MipLevels;

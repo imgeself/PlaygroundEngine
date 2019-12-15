@@ -8,13 +8,27 @@ typedef DXGI_FORMAT TextureDataFormat;
 
 enum TextureResourceFlags {
     // Bind flags
-    BIND_SHADER_RESOURCE   = BIT(0),
-    BIND_RENDER_TARGET     = BIT(1),
-    BIND_DEPTH_STENCIL     = BIT(2),
+    BIND_SHADER_RESOURCE   = BIT(1),
+    BIND_RENDER_TARGET     = BIT(2),
+    BIND_DEPTH_STENCIL     = BIT(3),
 
     // Usage flags
-    USAGE_CPU_READ         = BIT(4),
-    USAGE_CPU_WRITE        = BIT(5),
+    CPU_ACCESS_READ        = BIT(4),
+    CPU_ACCESS_WRITE       = BIT(5),
+
+    USAGE_DYNAMIC          = BIT(6),
+    USAGE_STAGING          = BIT(7),
+    USAGE_IMMUTABLE        = BIT(8),
+
+
+    MISC_TEXTURE_CUBE      = BIT(9),
+    MISC_GENERATE_MIPS     = BIT(10)
+};
+
+struct TextureSubresourceData {
+    const void* data = nullptr;
+    uint32_t memPitch = 0;
+    uint32_t memSlicePitch = 0;
 };
 
 struct Texture2DInitParams {
@@ -24,8 +38,9 @@ struct Texture2DInitParams {
     uint32_t flags;
     size_t sampleCount;
     size_t arraySize;
+    size_t mipCount;
 
-    void* data;
+    TextureSubresourceData* subresources = nullptr;
 };
 
 class HWTexture2D {

@@ -10,8 +10,9 @@ void ShadowMapPass::Initialize(HWRendererAPI* rendererAPI, PGShaderLib* shaderLi
     initParams.height = shadowMapSize;
     initParams.format = DXGI_FORMAT_R16_TYPELESS;
     initParams.sampleCount = 1;
+    initParams.mipCount = 1;
     initParams.arraySize = CASCADE_COUNT;
-    initParams.data = nullptr;
+    initParams.subresources = nullptr;
     initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL | TextureResourceFlags::BIND_SHADER_RESOURCE;
 
     m_ShadowMapTexture = rendererAPI->CreateTexture2D(&initParams);

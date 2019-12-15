@@ -10,6 +10,7 @@
 #include "PGRenderObject.h"
 #include "SceneRenderPass.h"
 #include "PostProcessPass.h"
+#include "Skybox.h"
 
 #include <vector>
 #include <array>

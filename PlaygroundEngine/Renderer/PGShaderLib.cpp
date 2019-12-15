@@ -120,6 +120,7 @@ void PGShaderLib::LoadDefaultShaders() {
     LoadShaderFromDisk("../PlaygroundEngine/Assets/Shaders/ShadowGen.hlsl");
     LoadShaderFromDisk("../PlaygroundEngine/Assets/Shaders/PBRForward.hlsl");
     LoadShaderFromDisk("../PlaygroundEngine/Assets/Shaders/HDRPostProcess.hlsl");
+    LoadShaderFromDisk("../PlaygroundEngine/Assets/Shaders/Skybox.hlsl");
 }
 
 ShaderRef PGShaderLib::GetDefaultShader(const std::string& name) {

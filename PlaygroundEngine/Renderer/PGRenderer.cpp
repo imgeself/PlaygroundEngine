@@ -235,6 +235,11 @@ void PGRenderer::RenderFrame() {
 
     s_SceneRenderPass.Execute(s_RendererAPI);
 
+    // Render skybox
+    if (s_ActiveSceneData->skybox) {
+        s_ActiveSceneData->skybox->RenderSkybox();
+    }
+
     // PostProcess
     s_PostProcessPass.Execute(s_RendererAPI, s_ShaderLib);
 

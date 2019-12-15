@@ -17,6 +17,8 @@
 
 #define POST_PROCESS_TEXTURE0_SLOT 5
 
+#define SKYBOX_TEXTURECUBE_SLOT 6
+
 #define SHADOW_SAMPLER_COMPARISON_STATE_SLOT 0
 #define POINT_CLAMP_SAMPLER_STATE_SLOT 1
 #define LINEAR_WRAP_SAMPLER_STATE_SLOT 2
@@ -28,6 +30,7 @@
 #define CBUFFER(name, slotNumber) cbuffer name : register(b ## slotNumber)
 #define TEXTURE2D(name, slotNumber) Texture2D name : register(t ## slotNumber)
 #define TEXTURE2DARRAY(name, slotNumber) Texture2DArray name : register(t ## slotNumber)
+#define TEXTURECUBE(name, slotNumber) TextureCube name : register(t ## slotNumber)
 #define SAMPLER_STATE(name, slotNumber) SamplerState name : register(s ## slotNumber)
 #define SAMPLER_COMPARISON_STATE(name, slotNumber) SamplerComparisonState name : register(s ## slotNumber)
 #define Matrix4 row_major matrix
@@ -39,6 +42,7 @@
 #define CBUFFER(name, registerNumber) struct name
 #define TEXTURE2D(name, slotNumber)
 #define TEXTURE2DARRAY(name, slotNumber)
+#define TEXTURECUBE(name, slotNumber)
 #define SAMPLER_STATE(name, slotNumber)
 #define SAMPLER_COMPARISON_STATE(name, slotNumber)
 #include "../../Math/math_util.h"
@@ -103,6 +107,9 @@ TEXTURE2D(g_AlbedoTexture, ALBEDO_TEXTURE2D_SLOT);
 TEXTURE2D(g_RoughnessTexture, ROUGHNESS_TEXTURE2D_SLOT);
 TEXTURE2D(g_MetallicTexture, METALLIC_TEXTURE2D_SLOT);
 TEXTURE2D(g_AOTexture, AO_TEXTURE2D_SLOT);
+
+// Skybox
+TEXTURECUBE(g_SkyboxTexture, SKYBOX_TEXTURECUBE_SLOT);
 
 // Post process textures
 TEXTURE2D(g_PostProcessTexture0, POST_PROCESS_TEXTURE0_SLOT);

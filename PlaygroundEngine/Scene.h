@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PGCamera.h"
+#include "Renderer/Skybox.h"
 
 struct PGLight {
     Vector3 position;
@@ -12,5 +13,6 @@ struct PGLight {
 struct PGScene {
     PGCamera* camera;
     PGLight* light;
+    Skybox* skybox;
 };
 

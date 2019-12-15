@@ -105,6 +105,29 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     PG_ASSERT(SUCCEEDED(result), "Error at creating rasterizer state");
 
     m_DeviceContext->RSSetState(rasterizerState);
+
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    depthStencilDesc.DepthEnable = TRUE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    depthStencilDesc.StencilEnable = FALSE;
+    depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+    depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+    depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+    depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+    depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+
+    ID3D11DepthStencilState* depthStencilState = nullptr;
+    result = m_Device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil state");
+
+    m_DeviceContext->OMSetDepthStencilState(depthStencilState, 0);
+
     SetRenderTargets((HWRenderTargetView**) &m_BackbufferRenderTargetView, 1, m_BackbufferDepthStencilView);
 }
 

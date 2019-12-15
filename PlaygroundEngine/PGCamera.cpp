@@ -1,7 +1,9 @@
 #include "PGCamera.h"
 
 
-PGCamera::PGCamera() {
+PGCamera::PGCamera()
+    : m_Position(0.0f, 3.0f, -10.0f)
+{
 
 }
 
@@ -14,4 +16,16 @@ void PGCamera::SetView(Vector3 cameraPosition, Vector3 targetPoint) {
     m_ViewMatrix = LookAtLH(cameraPosition, targetPoint, Vector3(0.0f, 1.0f, 0.0f));
     m_Position = cameraPosition;
 }
+
+void PGCamera::TransformCamera(Transform* transform) {
+    m_Position = transform->position;
+
+	Matrix4 orientation = transform->rotationMatrix;
+    Vector3 up = (orientation * Vector4(0.0f, 1.0f, 0.0f, 0.0f)).xyz();
+    Vector3 target = (orientation * Vector4(0.0f, 0.0f, 1.0f, 0.0f)).xyz();
+
+    Vector3 lookAtTarget = m_Position + target;
+	m_ViewMatrix = LookAtLH(m_Position, lookAtTarget, up);
+}
+
 

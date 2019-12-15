@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "Transform.h"
 #include "Math/math_util.h"
 
 class PG_API PGCamera {
@@ -10,6 +11,7 @@ public:
 
     void SetFrustum(uint32_t imageWidth, uint32_t imageHeight, float nearPlaneDistance, float farPlaneDistance, float fovRadians);
     void SetView(Vector3 cameraPosition, Vector3 targetPoint);
+    void TransformCamera(Transform* transform);
 
     inline Vector3 GetPosition() {
         return m_Position;

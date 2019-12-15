@@ -5,59 +5,52 @@
 class Transform {
 public:
     Transform() {
-        m_Position = Vector3(0.0f, 0.0f, 0.0f);
-        m_TranslateMatrix = IdentityMatrix;
-        m_RotationMatrix = IdentityMatrix;
-        m_ScaleMatrix = IdentityMatrix;
+        position = Vector3(0.0f, 0.0f, 0.0f);
+        translateMatrix = IdentityMatrix;
+        rotationMatrix = IdentityMatrix;
+        scaleMatrix = IdentityMatrix;
     }
 
     Transform(const Vector3& position, const Matrix4& translateMatrix, const Matrix4& rotationMatrix, const Matrix4& scaleMatrix)
-        : m_Position(position), m_TranslateMatrix(translateMatrix), m_RotationMatrix(rotationMatrix), m_ScaleMatrix(scaleMatrix) {
+        : position(position), translateMatrix(translateMatrix), rotationMatrix(rotationMatrix), scaleMatrix(scaleMatrix) {
     }
 
     inline void Translate(const Vector3& translateVector) {
         // World space translation
-        m_Position += translateVector;
+        position += translateVector;
     }
 
     inline void Scale(const Vector3& scaleVector) {
         Matrix4 matrix = ScaleMatrix(scaleVector);
-        m_ScaleMatrix = matrix * m_ScaleMatrix;
+        scaleMatrix = matrix * scaleMatrix;
     }
 
     inline void RotateXAxis(float degreeRadians) {
         Matrix4 matrix = RotateMatrixXAxis(degreeRadians);
-        m_RotationMatrix = matrix * m_RotationMatrix;
+        rotationMatrix = matrix * rotationMatrix;
     }
 
     inline void RotateYAxis(float degreeRadians) {
         Matrix4 matrix = RotateMatrixYAxis(degreeRadians);
-        m_RotationMatrix = matrix * m_RotationMatrix;
+        rotationMatrix = matrix * rotationMatrix;
     }
 
     inline void RotateZAxis(float degreeRadians) {
         Matrix4 matrix = RotateMatrixZAxis(degreeRadians);
-        m_RotationMatrix = matrix * m_RotationMatrix;
+        rotationMatrix = matrix * rotationMatrix;
     }
 
     inline Matrix4 GetTransformMatrix() {
-        Matrix4 translateMatrix = TranslateMatrix(m_Position);
-        return translateMatrix * m_RotationMatrix * m_ScaleMatrix;
+        Matrix4 translateMatrix = TranslateMatrix(position);
+        return translateMatrix * rotationMatrix * scaleMatrix;
     }
 
-    inline Vector3 GetPosition() {
-        return m_Position;
-    }
 
-    inline void SetPosition(const Vector3& position) {
-        m_Position = position;
-    }
+public:
+    Vector3 position;
 
-private:
-    Vector3 m_Position;
-
-    Matrix4 m_TranslateMatrix; // Currently we dont use this
-    Matrix4 m_RotationMatrix;
-    Matrix4 m_ScaleMatrix;
+    Matrix4 translateMatrix; // Currently we don't use this
+    Matrix4 rotationMatrix;
+    Matrix4 scaleMatrix;
 };
 

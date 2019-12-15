@@ -79,6 +79,10 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\int\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -89,6 +93,10 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\int\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -131,6 +139,16 @@
       <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(SolutionDir)bin\shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -181,6 +199,16 @@
       <ShaderModel>4.0</ShaderModel>
       <ObjectFileOutput>$(SolutionDir)bin\shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Imgui\imgui.cpp" />
@@ -214,6 +242,8 @@
     <ClCompile Include="Renderer\PostProcessPass.cpp" />
     <ClCompile Include="Renderer\SceneRenderPass.cpp" />
     <ClCompile Include="Renderer\ShadowMapPass.cpp" />
+    <ClCompile Include="Renderer\Skybox.cpp" />
+    <ClCompile Include="Utility\tinyddsloader.cpp" />
     <ClCompile Include="Utility\tiny_obj_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -272,9 +302,11 @@
     <ClInclude Include="Renderer\PostProcessPass.h" />
     <ClInclude Include="Renderer\SceneRenderPass.h" />
     <ClInclude Include="Renderer\ShadowMapPass.h" />
+    <ClInclude Include="Renderer\Skybox.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Utility\stb_image.h" />
+    <ClInclude Include="Utility\tinyddsloader.h" />
     <ClInclude Include="Utility\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>

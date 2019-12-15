@@ -27,10 +27,16 @@ IResource* PGResourceManager::CreateResource(const std::string& resourceFilePath
     size_t extSize = resourceFilePath.size() - extIndex;
     std::string_view extension(resourceFilePath.c_str() + extIndex, extSize);
 
-    if (!extension.compare("png")) {
-        IResource* pResource = new PGTexture(resourceFilePath);
+    if (!extension.compare("dds")) {
+        IResource* pResource = PGTexture::CreateTextureFromDDSFile(resourceFilePath);
         s_ResourcePool[resourceFilePath] = pResource;
         return pResource;
+    } else if (!extension.compare("png")) {
+        IResource* pResource = PGTexture::CreateTexture2D(resourceFilePath);
+        s_ResourcePool[resourceFilePath] = pResource;
+        return pResource;
+    } else {
+        PG_ASSERT(false, "Unhandled resource extension");
     }
 
     return nullptr;

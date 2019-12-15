@@ -182,7 +182,7 @@ inline Matrix4 LookAtLH(const Vector3& position, const Vector3& target, const Ve
 
     const Vector3 cameraZ = Normalize(target - position);
     const Vector3 cameraX = Normalize(CrossProduct(upVector, cameraZ));
-    const Vector3 cameraY = Normalize(CrossProduct(cameraZ, cameraX));
+    const Vector3 cameraY = CrossProduct(cameraZ, cameraX);
     result[0] = Vector4(cameraX, -DotProduct(position, cameraX));
     result[1] = Vector4(cameraY, -DotProduct(position, cameraY));
     result[2] = Vector4(cameraZ, -DotProduct(position, cameraZ));

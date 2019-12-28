@@ -39,6 +39,10 @@ inline float3 FresnelSchlick(float angle, float3 f0, float f90) {
     return f0 + (f90 - f0) * pow(1.0 - angle, 5.0f);
 }
 
+inline float3 FresnelSchlickRoughness(float angle, float3 F0, float roughness) {
+    return F0 + (max((float3)(1.0 - roughness), F0) - F0) * pow(1.0 - angle, 5.0);
+}
+
 inline float DisneyDiffuse(float3 lightVector, float3 halfwayVector, float3 normalVector, float3 viewVector, float roughness) {
     float LdotH = saturate(dot(lightVector, halfwayVector));
     float NdotL = saturate(dot(lightVector, normalVector));
@@ -64,13 +68,17 @@ float3 BRDF(float3 lightVector, float3 normalVector, float3 viewVector, float3 a
     float VdotH = saturate(dot(viewVector, halfwayVector));
     float3 F = FresnelSchlick(VdotH, f0, 1.0f);
 
+    float3 kS = F;
+    float3 kD = 1.0f - kS;
+    kD *= 1.0 - metallic;
+
     float NdotL = saturate(dot(normalVector, lightVector));
 
     float3 numerator = D * G * F;
     float3 denom = 4.0f * saturate(dot(normalVector, viewVector)) * NdotL;
     float3 specularBRDF = numerator / max(denom, 0.001f);
 
-    float3 diffuseBRDF = albedo * DisneyDiffuse(lightVector, halfwayVector, normalVector, viewVector, roughness);
+    float3 diffuseBRDF = kD * albedo * DisneyDiffuse(lightVector, halfwayVector, normalVector, viewVector, roughness);
 
     float3 brdf = diffuseBRDF + specularBRDF;
     float3 Lo = brdf * NdotL;

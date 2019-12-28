@@ -91,6 +91,7 @@ DX11SamplerState::DX11SamplerState(ID3D11Device* device, SamplerStateInitParams*
     samplerStateDesc.AddressV = GetD3DAddressModeFromAddressMode(initParams->addressModeV);
     samplerStateDesc.AddressW = GetD3DAddressModeFromAddressMode(initParams->addressModeW);
     samplerStateDesc.ComparisonFunc = GetD3DComparisonFunc(initParams->comparisonFunction);
+    samplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
     memcpy(samplerStateDesc.BorderColor, initParams->borderColor, sizeof(float) * 4);
 
     HRESULT result = device->CreateSamplerState(&samplerStateDesc, &m_SamplerState);

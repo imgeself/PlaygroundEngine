@@ -71,10 +71,28 @@ float4 PSMain(VSOut input) : SV_Target {
     };
 
     float3 lightColor = (float3) 1.0f;
-    float intensity = 1.0f;
+    float intensity = 3.0f;
     float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
-    float3 color = Lo * lightColor * intensity * shadowFactor * ao;
+    float3 f0 = lerp((float3) 0.04f, albedoColor, metallic);
+    float NdotV = saturate(dot(normalVector, viewVector));
+    float3 kS = FresnelSchlickRoughness(NdotV, f0, roughness);
+    float3 kD = 1.0f - kS;
+    kD *= 1.0 - metallic;
+
+    float3 eyeVector = -viewVector;
+    float3 reflectedVector = reflect(eyeVector, input.normal);
+    float3 radiance = g_RadianceTexture.SampleLevel(g_LinearWrapSampler, reflectedVector, roughness * 6.0f).rgb;
+    float3 irradiance = g_IrradianceTexture.Sample(g_LinearWrapSampler, input.normal).rgb;
+    
+    float2 lutVector = float2(NdotV, roughness);
+    float2 envBRDF = g_EnvBrdfTexture.Sample(g_LinearClampSampler, lutVector).rg;
+
+    float3 diffuseAmbient = kD * (irradiance * albedoColor);
+    float3 ambient = diffuseAmbient + radiance * (f0 * envBRDF.x + envBRDF.y);
+    ambient *= ao;
+
+    float3 color = Lo * lightColor * intensity * shadowFactor + ambient;
 
     return float4(color, 1.0f);
 }

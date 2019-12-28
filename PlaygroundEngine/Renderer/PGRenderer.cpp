@@ -14,7 +14,7 @@ HWConstantBuffer* PGRenderer::s_PerDrawGlobalConstantBuffer = nullptr;
 HWConstantBuffer* PGRenderer::s_RendererVarsConstantBuffer = nullptr;
 HWConstantBuffer* PGRenderer::s_PostProcessConstantBuffer = nullptr;
 
-std::array<HWSamplerState*, 4> PGRenderer::s_DefaultSamplers = std::array<HWSamplerState*, 4>();
+std::array<HWSamplerState*, 5> PGRenderer::s_DefaultSamplers = std::array<HWSamplerState*, 5>();
 
 ShadowMapPass PGRenderer::s_ShadowMapPass = ShadowMapPass();
 SceneRenderPass PGRenderer::s_SceneRenderPass = SceneRenderPass();
@@ -125,6 +125,35 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, size_t sh
 
 }
 
+void PGRenderer::CreateDefaultSamplerStates() {
+    // Default sampler states
+    SamplerStateInitParams shadowSamplerStateInitParams = {};
+    shadowSamplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT;
+    shadowSamplerStateInitParams.addressModeU = TextureAddressMode_CLAMP;
+    shadowSamplerStateInitParams.addressModeV = TextureAddressMode_CLAMP;
+    shadowSamplerStateInitParams.addressModeW = TextureAddressMode_CLAMP;
+    shadowSamplerStateInitParams.comparisonFunction = ComparisonFunction::LESS_EQUAL;
+    s_DefaultSamplers[SHADOW_SAMPLER_COMPARISON_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&shadowSamplerStateInitParams);
+
+    SamplerStateInitParams samplerStateInitParams = {};
+    samplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_MIP_POINT;
+    samplerStateInitParams.addressModeU = TextureAddressMode_CLAMP;
+    samplerStateInitParams.addressModeV = TextureAddressMode_CLAMP;
+    samplerStateInitParams.addressModeW = TextureAddressMode_CLAMP;
+    s_DefaultSamplers[POINT_CLAMP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&samplerStateInitParams);
+
+    samplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_MIP_LINEAR;
+    s_DefaultSamplers[LINEAR_CLAMP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&samplerStateInitParams);
+
+    samplerStateInitParams.addressModeU = TextureAddressMode_WRAP;
+    samplerStateInitParams.addressModeV = TextureAddressMode_WRAP;
+    samplerStateInitParams.addressModeW = TextureAddressMode_WRAP;
+    s_DefaultSamplers[LINEAR_WRAP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&samplerStateInitParams);
+
+    samplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_MIP_POINT;
+    s_DefaultSamplers[POINT_WRAP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&samplerStateInitParams);
+}
+
 bool PGRenderer::Initialize(PGWindow* window) {
     s_RendererAPI = new DX11RendererAPI(window);
     s_ShaderLib = new PGShaderLib(s_RendererAPI);
@@ -155,25 +184,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_RendererAPI->SetConstanBuffersVS(0, constantBuffers, ARRAYSIZE(constantBuffers));
     s_RendererAPI->SetConstanBuffersPS(0, constantBuffers, ARRAYSIZE(constantBuffers));
 
-    // Default sampler states
-    SamplerStateInitParams shadowSamplerStateInitParams = {};
-    shadowSamplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT;
-    shadowSamplerStateInitParams.addressModeU = TextureAddressMode_CLAMP;
-    shadowSamplerStateInitParams.addressModeV = TextureAddressMode_CLAMP;
-    shadowSamplerStateInitParams.addressModeW = TextureAddressMode_CLAMP;
-    shadowSamplerStateInitParams.comparisonFunction = ComparisonFunction::LESS_EQUAL;
-    s_DefaultSamplers[SHADOW_SAMPLER_COMPARISON_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&shadowSamplerStateInitParams);
-
-    shadowSamplerStateInitParams.comparisonFunction = ComparisonFunction::NONE;
-    s_DefaultSamplers[POINT_CLAMP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&shadowSamplerStateInitParams);
-
-    SamplerStateInitParams linearWrapSamplerStateInitParams = {};
-    linearWrapSamplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT;
-    linearWrapSamplerStateInitParams.addressModeU = TextureAddressMode_WRAP;
-    linearWrapSamplerStateInitParams.addressModeV = TextureAddressMode_WRAP;
-    linearWrapSamplerStateInitParams.addressModeW = TextureAddressMode_WRAP;
-    s_DefaultSamplers[LINEAR_WRAP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&shadowSamplerStateInitParams);
-
+    CreateDefaultSamplerStates();
     // Bind default sampler states
     s_RendererAPI->SetSamplerStatesPS(0, s_DefaultSamplers.data(), s_DefaultSamplers.max_size());
 
@@ -184,6 +195,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     hdrBufferInitParams.width = s_RendererAPI->GetWidth();
     hdrBufferInitParams.height = s_RendererAPI->GetHeight();
     hdrBufferInitParams.sampleCount = 1;
+    hdrBufferInitParams.mipCount = 1;
     hdrBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
 
     // TODO: release this resources

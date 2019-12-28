@@ -38,6 +38,8 @@ public:
 private:
     PGRenderer();
 
+    static void CreateDefaultSamplerStates();
+
     static HWRendererAPI* s_RendererAPI;
     static PGShaderLib* s_ShaderLib;
     static std::vector<PGRenderObject*> s_RenderObjects;
@@ -48,7 +50,7 @@ private:
     static HWConstantBuffer* s_PostProcessConstantBuffer;
     static HWConstantBuffer* s_RendererVarsConstantBuffer;
 
-    static std::array<HWSamplerState*, 4> s_DefaultSamplers;
+    static std::array<HWSamplerState*, 5> s_DefaultSamplers;
 
     static ShadowMapPass s_ShadowMapPass;
     static SceneRenderPass s_SceneRenderPass;

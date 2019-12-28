@@ -17,7 +17,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     modeDescriptor.Width = width;
     modeDescriptor.Height = height;
     modeDescriptor.RefreshRate = refreshRate;
-    modeDescriptor.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
+    modeDescriptor.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     modeDescriptor.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     modeDescriptor.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
@@ -73,6 +73,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL;
     initParams.sampleCount = 1;
     initParams.arraySize = 1;
+    initParams.mipCount = 1;
     DX11Texture2D depthTexture = DX11Texture2D(m_Device, &initParams);
 
     m_BackbufferDepthStencilView = new DX11DepthStencilView(m_Device, depthTexture.GetDXTexture2D(), 0, 1, 0, (uint32_t) initParams.sampleCount);

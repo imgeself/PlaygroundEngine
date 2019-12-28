@@ -54,13 +54,19 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
         PGTexture* roughnessTexture = renderObject->mesh->material->roughnessTexture;
         PGTexture* metallicTexture = renderObject->mesh->material->metallicTexture;
         PGTexture* aoTexture = renderObject->mesh->material->aoTexture;
+        PGTexture* radianceMap = renderObject->mesh->material->radianceMap;
+        PGTexture* irradianceMap = renderObject->mesh->material->irradianceMap;
+        PGTexture* envBrdf = renderObject->mesh->material->envBrdf;
         HWShaderResourceView* textureResources[] = {
             albedoTexture ? albedoTexture->GetHWResourceView() : nullptr,
             roughnessTexture ? roughnessTexture->GetHWResourceView() : nullptr,
             metallicTexture ? metallicTexture->GetHWResourceView() : nullptr,
             aoTexture ? aoTexture->GetHWResourceView() : nullptr,
+            radianceMap ? radianceMap->GetHWResourceView() : nullptr,
+            irradianceMap ? irradianceMap->GetHWResourceView() : nullptr,
+            envBrdf ? envBrdf->GetHWResourceView() : nullptr,
         };
-        rendererAPI->SetShaderResourcesPS(1, textureResources, ARRAYSIZE(textureResources));
+        rendererAPI->SetShaderResourcesPS(ALBEDO_TEXTURE2D_SLOT, textureResources, ARRAYSIZE(textureResources));
 
         size_t vertexBufferStride = sizeof(Vertex);
         rendererAPI->SetVertexBuffer(renderObject->vertexBuffer, vertexBufferStride);

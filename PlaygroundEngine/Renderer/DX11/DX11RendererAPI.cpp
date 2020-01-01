@@ -66,18 +66,6 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, 0, 1, 0, swapChainDescriptor.SampleDesc.Count);
     backbuffer->Release();
 
-    Texture2DInitParams initParams = {};
-    initParams.width = width;
-    initParams.height = height;
-    initParams.format = DXGI_FORMAT_D32_FLOAT;
-    initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL;
-    initParams.sampleCount = 1;
-    initParams.arraySize = 1;
-    initParams.mipCount = 1;
-    DX11Texture2D depthTexture = DX11Texture2D(m_Device, &initParams);
-
-    m_BackbufferDepthStencilView = new DX11DepthStencilView(m_Device, depthTexture.GetDXTexture2D(), 0, 1, 0, (uint32_t) initParams.sampleCount);
-
     m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     m_DefaultViewport.TopLeftX = 0;
@@ -128,12 +116,9 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil state");
 
     m_DeviceContext->OMSetDepthStencilState(depthStencilState, 0);
-
-    SetRenderTargets((HWRenderTargetView**) &m_BackbufferRenderTargetView, 1, m_BackbufferDepthStencilView);
 }
 
 DX11RendererAPI::~DX11RendererAPI() {
-    delete m_BackbufferDepthStencilView;
     delete m_BackbufferRenderTargetView;
 
     SAFE_RELEASE(m_SwapChain);
@@ -143,7 +128,6 @@ DX11RendererAPI::~DX11RendererAPI() {
 
 void DX11RendererAPI::ClearScreen(const float* color) {
     ClearRenderTarget(m_BackbufferRenderTargetView, (float*) color);
-    ClearDepthStencilView(m_BackbufferDepthStencilView, false, 1.0f, 0);
 
 }
 
@@ -168,10 +152,6 @@ void DX11RendererAPI::Present() {
 
 HWRenderTargetView* DX11RendererAPI::GetBackbufferRenderTargetView() {
     return (HWRenderTargetView*) m_BackbufferRenderTargetView;
-}
-
-HWDepthStencilView* DX11RendererAPI::GetBackbufferDepthStencilView() {
-    return (HWDepthStencilView*) m_BackbufferDepthStencilView;
 }
 
 HWViewport DX11RendererAPI::GetDefaultViewport() {
@@ -397,4 +377,14 @@ void DX11RendererAPI::Unmap(HWConstantBuffer* resource) {
 
     m_DeviceContext->Unmap(buffer, NULL);
 }
+
+void DX11RendererAPI::MSAAResolve(HWTexture2D* dest, HWTexture2D* source) {
+    DX11Texture2D* dxDestTexture = (DX11Texture2D*) dest;
+    DX11Texture2D* dxSourceTexture = (DX11Texture2D*) source;
+    ID3D11Texture2D* dst = dxDestTexture->GetDXTexture2D();
+    D3D11_TEXTURE2D_DESC destDesc = {};
+    dst->GetDesc(&destDesc);
+    m_DeviceContext->ResolveSubresource(dst, 0, dxSourceTexture->GetDXTexture2D(), 0, destDesc.Format);
+}
+
 

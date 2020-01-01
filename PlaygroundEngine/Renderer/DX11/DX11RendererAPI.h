@@ -25,7 +25,6 @@ public:
     void Present() override;
 
     HWRenderTargetView* GetBackbufferRenderTargetView() override;
-    HWDepthStencilView* GetBackbufferDepthStencilView() override;
     HWViewport GetDefaultViewport() override;
 
     HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
@@ -62,6 +61,8 @@ public:
     void* Map(HWConstantBuffer* resource) override;
     void Unmap(HWConstantBuffer* resource) override;
 
+    void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) override;
+
 
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }
@@ -75,7 +76,6 @@ private:
     ID3D11DeviceContext* m_DeviceContext = nullptr;
 
     DX11RenderTargetView* m_BackbufferRenderTargetView = nullptr;
-    DX11DepthStencilView* m_BackbufferDepthStencilView = nullptr;
     D3D11_VIEWPORT m_DefaultViewport;
 
     size_t m_ClientWidth;

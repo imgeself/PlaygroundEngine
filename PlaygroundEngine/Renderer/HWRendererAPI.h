@@ -31,7 +31,6 @@ public:
     virtual void Present() = 0;
 
     virtual HWRenderTargetView* GetBackbufferRenderTargetView() = 0;
-    virtual HWDepthStencilView* GetBackbufferDepthStencilView() = 0;
     virtual HWViewport GetDefaultViewport() = 0;
 
     virtual HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) = 0;
@@ -67,6 +66,8 @@ public:
 
     virtual void* Map(HWConstantBuffer* resource) = 0;
     virtual void Unmap(HWConstantBuffer* resource) = 0;
+
+    virtual void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) = 0;
 
     virtual size_t GetWidth() = 0;
     virtual size_t GetHeight() = 0;

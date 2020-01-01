@@ -73,7 +73,7 @@ float3 ACESFitted(float3 color)
 
 float4 PSMain(VSOut input) : SV_Target
 {
-    float3 hdrColor = g_PostProcessTexture0.Sample(g_LinearWrapSampler, input.texCoords).rgb;
+    float3 hdrColor = g_PostProcessTexture0.Load(input.pos.xyz).rgb;
     hdrColor *= g_PPExposure;
 
     // ACES film curve from https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl

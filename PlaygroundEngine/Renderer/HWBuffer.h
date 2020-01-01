@@ -1,20 +1,19 @@
 #pragma once
 
 #include "../Core.h"
+#include "HWResource.h"
 
-//TODO: We implementing uniform shader data interface like DX11 constant buffer interface.
-// But this will probably be changed in the future when we support more graphics APIs. 
-class HWConstantBuffer {
+class HWConstantBuffer : public HWResource {
 public:
     virtual ~HWConstantBuffer() = default;
 };
 
-class HWVertexBuffer {
+class HWVertexBuffer : public HWResource {
 public:
     virtual ~HWVertexBuffer() = default;
 };
 
-class HWIndexBuffer {
+class HWIndexBuffer : public HWResource {
 public:
     virtual ~HWIndexBuffer() = default;
 };

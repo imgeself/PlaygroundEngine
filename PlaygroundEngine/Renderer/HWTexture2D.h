@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Core.h"
+#include "HWResource.h"
 
 // TODO: We use DXGI_FORMAT for texture format but we need cross platform enum for supporting different APIs.
 #include <d3d11.h>
@@ -43,7 +44,7 @@ struct Texture2DInitParams {
     TextureSubresourceData* subresources = nullptr;
 };
 
-class HWTexture2D {
+class HWTexture2D : public HWResource {
 public:
     virtual ~HWTexture2D() = default;
 };

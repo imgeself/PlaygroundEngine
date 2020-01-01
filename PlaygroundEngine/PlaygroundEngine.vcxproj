@@ -285,6 +285,7 @@
     <ClInclude Include="Renderer\DX11\DX11ShaderResourceView.h" />
     <ClInclude Include="Renderer\DX11\DX11Texture2D.h" />
     <ClInclude Include="Renderer\HWRenderTarget.h" />
+    <ClInclude Include="Renderer\HWResource.h" />
     <ClInclude Include="Renderer\HWSamplerState.h" />
     <ClInclude Include="Renderer\HWShaderResourceView.h" />
     <ClInclude Include="Renderer\HWTexture2D.h" />

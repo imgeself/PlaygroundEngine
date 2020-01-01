@@ -308,6 +308,9 @@
     <ClInclude Include="Utility\tinyddsloader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\HWResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Imgui\LICENSE.txt" />

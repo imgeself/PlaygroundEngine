@@ -22,11 +22,54 @@ TonemapPass PGRenderer::s_PostProcessPass = TonemapPass();
 
 const size_t SHADOW_MAP_SIZE = 1024;
 
+struct GPUResource {
+    HWResource* resource = nullptr;
+    HWShaderResourceView* srv = nullptr;
+    HWDepthStencilView* dsv = nullptr;
+    HWRenderTargetView* rtv = nullptr;
+
+    GPUResource(HWRendererAPI* rendererAPI, Texture2DInitParams* initParams) {
+        HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams);
+        resource = (HWResource*) texture;
+
+        uint32_t flags = initParams->flags;
+        if (flags & TextureResourceFlags::BIND_SHADER_RESOURCE) {
+            srv = rendererAPI->CreateShaderResourceView(texture);
+        }
+        if (flags & TextureResourceFlags::BIND_RENDER_TARGET) {
+            rtv = rendererAPI->CreateRenderTargetView(texture, 0, 1);
+        }
+        if (flags & TextureResourceFlags::BIND_DEPTH_STENCIL) {
+            dsv = rendererAPI->CreateDepthStencilView(texture, 0, 1);
+        }
+    }
+
+    ~GPUResource() {
+        SAFE_DELETE(srv);
+        SAFE_DELETE(rtv);
+        SAFE_DELETE(dsv);
+        SAFE_DELETE(resource);
+    }
+};
+
+// Renderer resources
+GPUResource* s_HDRRenderTarget = nullptr;
+GPUResource* s_DepthStencilTarget = nullptr;
+GPUResource* s_ResolvedHDRRenderTarget = nullptr; // if msaa enabled
+
+// Renderer variables
+uint32_t s_MSAASampleCount = 4; // 1 if MSAA disabled
+
 void PGRenderer::Uninitialize() {
     delete s_PerFrameGlobalConstantBuffer;
     delete s_PerDrawGlobalConstantBuffer;
     delete s_RendererVarsConstantBuffer;
     delete s_PostProcessConstantBuffer;
+
+    SAFE_DELETE(s_HDRRenderTarget);
+    SAFE_DELETE(s_DepthStencilTarget);
+    SAFE_DELETE(s_ResolvedHDRRenderTarget);
+
     for (HWSamplerState* samplerState : s_DefaultSamplers) {
         if (samplerState) {
             delete samplerState;
@@ -36,6 +79,7 @@ void PGRenderer::Uninitialize() {
     for (PGRenderObject* renderObject : s_RenderObjects) {
         delete renderObject;
     }
+
     delete s_ShaderLib;
     delete s_RendererAPI;
 }
@@ -154,6 +198,8 @@ void PGRenderer::CreateDefaultSamplerStates() {
     s_DefaultSamplers[POINT_WRAP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&samplerStateInitParams);
 }
 
+
+
 bool PGRenderer::Initialize(PGWindow* window) {
     s_RendererAPI = new DX11RendererAPI(window);
     s_ShaderLib = new PGShaderLib(s_RendererAPI);
@@ -194,19 +240,36 @@ bool PGRenderer::Initialize(PGWindow* window) {
     hdrBufferInitParams.format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     hdrBufferInitParams.width = s_RendererAPI->GetWidth();
     hdrBufferInitParams.height = s_RendererAPI->GetHeight();
-    hdrBufferInitParams.sampleCount = 1;
+    hdrBufferInitParams.sampleCount = s_MSAASampleCount;
     hdrBufferInitParams.mipCount = 1;
     hdrBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
+    s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrBufferInitParams);
 
-    // TODO: release this resources
-    HWTexture2D* HDRTexture = s_RendererAPI->CreateTexture2D(&hdrBufferInitParams);
-    HWRenderTargetView* HDRBuffer = s_RendererAPI->CreateRenderTargetView(HDRTexture, 0, 1);
-    HWShaderResourceView* HDRBufferResourceView = s_RendererAPI->CreateShaderResourceView(HDRTexture);
-    delete HDRTexture;
+    Texture2DInitParams depthTextureInitParams = {};
+    depthTextureInitParams.arraySize = 1;
+    depthTextureInitParams.format = DXGI_FORMAT_D32_FLOAT;
+    depthTextureInitParams.width = s_RendererAPI->GetWidth();
+    depthTextureInitParams.height = s_RendererAPI->GetHeight();
+    depthTextureInitParams.sampleCount = hdrBufferInitParams.sampleCount;
+    depthTextureInitParams.mipCount = 1;
+    depthTextureInitParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL;
+    s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthTextureInitParams);
+
+    if (s_MSAASampleCount) {
+        Texture2DInitParams resolvedBufferInitParams = {};
+        resolvedBufferInitParams.arraySize = 1;
+        resolvedBufferInitParams.format = hdrBufferInitParams.format;
+        resolvedBufferInitParams.width = hdrBufferInitParams.width;
+        resolvedBufferInitParams.height = hdrBufferInitParams.height;
+        resolvedBufferInitParams.sampleCount = 1;
+        resolvedBufferInitParams.mipCount = 1;
+        resolvedBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
+        s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedBufferInitParams);
+    }
 
     // Render passes
-    s_SceneRenderPass.SetRenderTarget(0, HDRBuffer);
-    s_SceneRenderPass.SetDepthStencilTarget(s_RendererAPI->GetBackbufferDepthStencilView());
+    s_SceneRenderPass.SetRenderTarget(0, s_HDRRenderTarget->rtv);
+    s_SceneRenderPass.SetDepthStencilTarget(s_DepthStencilTarget->dsv);
     HWViewport defaultViewport = s_RendererAPI->GetDefaultViewport();
     s_SceneRenderPass.SetViewport(defaultViewport);
 
@@ -215,7 +278,11 @@ bool PGRenderer::Initialize(PGWindow* window) {
 
     s_PostProcessPass.SetRenderTarget(0, s_RendererAPI->GetBackbufferRenderTargetView());
     s_PostProcessPass.SetViewport(defaultViewport);
-    s_PostProcessPass.SetHDRBufferResourceView(HDRBufferResourceView);
+    if (s_MSAASampleCount > 1) {
+        s_PostProcessPass.SetHDRBufferResourceView(s_ResolvedHDRRenderTarget->srv);
+    } else {
+        s_PostProcessPass.SetHDRBufferResourceView(s_HDRRenderTarget->srv);
+    }
 
     return true;
 }
@@ -250,6 +317,10 @@ void PGRenderer::RenderFrame() {
     // Render skybox
     if (s_ActiveSceneData->skybox) {
         s_ActiveSceneData->skybox->RenderSkybox();
+    }
+
+    if (s_MSAASampleCount > 1) {
+        s_RendererAPI->MSAAResolve((HWTexture2D*)s_ResolvedHDRRenderTarget->resource, (HWTexture2D*)s_HDRRenderTarget->resource);
     }
 
     // PostProcess

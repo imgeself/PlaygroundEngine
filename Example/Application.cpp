@@ -1,9 +1,12 @@
 #include "Application.h"
+#include "LogWindow.h"
 
 #include <stdio.h>
 #include <time.h>
 #include <Math/math_util.h>
 #include <Platform/PGTime.h>
+
+#include <PGLog.h>
 
 Application::Application(PGSystem* system) 
     : m_System(system) {
@@ -13,8 +16,6 @@ Application::~Application() {
 }
 
 void Application::OnInit() {
-    printf("init \n");
-
     PGCamera* mainCamera = new PGCamera;
     mainCamera->SetFrustum(1280, 720, 0.01f, 100.0f, PI / 4.0f);
     //mainCamera->SetView(Vector3(0.0f, 10.0f, -10.0f), Vector3(0.0f, 0.0f, 1.0f));
@@ -111,7 +112,6 @@ void Application::OnInit() {
     monkeyMesh->transform = monkeyTransform;
     PGRenderer::AddMesh(monkeyMesh);
 
-
     /*
     uint32_t randomSeed = 38689 * 643 / 6 + 4;
     MeshRef cubeMesh = LoadMeshFromOBJFile("./assets/cube.obj");
@@ -151,13 +151,17 @@ void Application::OnUpdate(float deltaTime) {
         frameTimes[frameTimes.size() - 1] = deltaTime;
     }
 
+    if (ImGui::IsAnyItemActive()) {
+        return;
+    }
+
     Transform cameraTransform;
     Vector3 cameraMove(0.0f, 0.0f, 0.0f);
 
     static Vector2 lastMouse;
     static float pitch = 0.0f;
     static float yaw = 0.0f;
-    if (PGInput::IsMouseButtonPressed(PGMOUSE_RBUTTON)) {
+    if (PGInput::IsMouseButtonPressed(PGMOUSE_LBUTTON)) {
         Vector2 mousePos = PGInput::GetMousePos();
         if (lastMouse == Vector2(-1.0f, -1.0f)) {
             // First click
@@ -226,10 +230,10 @@ void Application::OnUIRender() {
     ImGui::SliderFloat("Metallic", &m_DefaultMaterial->metallic, 0.0f, 1.0f);
     ImGui::ColorPicker3("Albedo", &m_DefaultMaterial->diffuseColor.x);
     ImGui::End();
+
+    DrawLogWindow();
 }
 
 void Application::OnExit() {
-    printf("Exit \n");
-
 }
 

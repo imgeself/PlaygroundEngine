@@ -1,4 +1,5 @@
 #include "../PGWindow.h"
+#include "../../Imgui/imgui.h"
 
 LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     PGWindow* window = nullptr;
@@ -132,6 +133,12 @@ LRESULT PGWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) {
         case WM_MBUTTONUP:
         {
             PGInput::mouseButtonPressedState[PGMOUSE_MBUTTON] = false;
+        } break;
+        case WM_CHAR:
+        {
+            // NOTE: We may need to store input characters for our input system too.
+            ImGuiIO& io = ImGui::GetIO();
+            io.AddInputCharacter((unsigned int) wParam);
         } break;
     }
 

@@ -219,6 +219,7 @@
     <ClCompile Include="Imgui\imgui_widgets.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PGCamera.cpp" />
+    <ClCompile Include="PGLog.cpp" />
     <ClCompile Include="PGResourceManager.cpp" />
     <ClCompile Include="PGSystem.cpp" />
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
@@ -265,6 +266,7 @@
     <ClInclude Include="MeshUtils.h" />
     <ClInclude Include="PGApplication.h" />
     <ClInclude Include="PGCamera.h" />
+    <ClInclude Include="PGLog.h" />
     <ClInclude Include="PGResouceManager.h" />
     <ClInclude Include="PGResource.h" />
     <ClInclude Include="PGSystem.h" />
@@ -298,7 +300,6 @@
     <ClInclude Include="Renderer\HWRendererAPI.h" />
     <ClInclude Include="Renderer\HWShader.h" />
     <ClInclude Include="Renderer\PGShaderLib.h" />
-    <ClInclude Include="Renderer\PGShaderResources.h" />
     <ClInclude Include="Renderer\PGTexture.h" />
     <ClInclude Include="Renderer\PostProcessPass.h" />
     <ClInclude Include="Renderer\SceneRenderPass.h" />

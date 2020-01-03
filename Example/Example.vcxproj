@@ -180,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="LogWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlaygroundEngine\PlaygroundEngine.vcxproj">

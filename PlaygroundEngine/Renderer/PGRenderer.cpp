@@ -341,9 +341,11 @@ void PGRenderer::BeginScene(PGScene* sceneData) {
 }
 
 void PGRenderer::AddMesh(const MeshRef& renderMesh) {
-    PGRenderObject* object = new PGRenderObject(renderMesh, s_RendererAPI);
-    object->perDrawConstantBuffer = s_PerDrawGlobalConstantBuffer;
-    s_RenderObjects.push_back(object);
+    if (renderMesh.get()) {
+        PGRenderObject* object = new PGRenderObject(renderMesh, s_RendererAPI);
+        object->perDrawConstantBuffer = s_PerDrawGlobalConstantBuffer;
+        s_RenderObjects.push_back(object);
+    }
 }
 
 void PGRenderer::EndScene() {

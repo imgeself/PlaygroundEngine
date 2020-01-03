@@ -3,6 +3,7 @@
 #include "Mesh.h"
 
 #include "Core.h"
+#include "PGLog.h"
 
 #include <unordered_map>
 #include <memory>
@@ -20,12 +21,13 @@ static MeshRef LoadMeshFromOBJFile(const std::string& filename, bool flipZ = tru
 
     bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warnings, &errors, filename.c_str());
     if (!warnings.empty()) {
-        printf("%s Obj file load warnings: %s", filename.c_str(), warnings.c_str());
+        PG_LOG_WARNING("%s Obj file load warnings: %s", filename.c_str(), warnings.c_str());
     }
     if (!errors.empty()) {
-        printf("%s Obj file load errors: %s", filename.c_str(), errors.c_str());
+        PG_LOG_ERROR("%s Obj file load errors: %s", filename.c_str(), errors.c_str());
+        return std::shared_ptr<Mesh>(nullptr);
     }
-    PG_ASSERT(success, "Assertion failed: Obj file load error!");
+
 
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;

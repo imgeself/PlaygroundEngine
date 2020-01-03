@@ -7,7 +7,6 @@
 
 class DX11ShaderProgram : public HWShaderProgram {
 public:
-    DX11ShaderProgram(ID3D11Device* device, ShaderFileData* shaderFileData);
     DX11ShaderProgram(ID3D11Device* device, ShaderFileData* vertexShaderBinaryFileData, ShaderFileData* pixelShaderBinaryFileData);
     ~DX11ShaderProgram() override;
 

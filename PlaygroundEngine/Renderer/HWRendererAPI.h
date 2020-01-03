@@ -36,7 +36,6 @@ public:
     virtual HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) = 0;
     virtual HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) = 0;
     virtual HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) = 0;
-    virtual HWShaderProgram* CreateShaderProgramFromSource(ShaderFileData* shaderFileData) = 0;
     virtual HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) = 0;
     virtual HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) = 0;
     virtual HWTexture2D* CreateTexture2D(Texture2DInitParams* initParams) = 0;

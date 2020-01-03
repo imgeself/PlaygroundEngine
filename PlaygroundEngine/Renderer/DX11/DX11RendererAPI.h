@@ -30,7 +30,6 @@ public:
     HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
     HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
     HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) override;
-    HWShaderProgram* CreateShaderProgramFromSource(ShaderFileData* shaderFileData) override;
     HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) override;
     HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) override;
     HWTexture2D* CreateTexture2D(Texture2DInitParams* initParams) override;

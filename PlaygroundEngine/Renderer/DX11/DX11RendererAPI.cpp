@@ -176,10 +176,6 @@ HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t c
     return new DX11IndexBuffer(m_Device, bufferData, count);
 }
 
-HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromSource(ShaderFileData* shaderFileData) {
-    return new DX11ShaderProgram(m_Device, shaderFileData);
-}
-
 HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) {
     return new DX11ShaderProgram(m_Device, vertexShaderFileData, pixelShaderFileData);
 }

@@ -9,7 +9,11 @@ void ImguiModule::Initialize(PGWindow* window, HWRendererAPI* rendererAPI) {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.BackendPlatformName = "imgui_impl";
-    io.ImeWindowHandle = window->GetWindowHandle();
+    //io.ImeWindowHandle = window->GetWindowHandle();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    main_viewport->PlatformHandle = main_viewport->PlatformHandleRaw = window->GetWindowHandle();
 
     // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array that we will update during the application lifetime.
     io.KeyMap[ImGuiKey_Tab] = PGKEY_TAB;

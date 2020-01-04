@@ -45,13 +45,12 @@ static bool CompileShader(const char* filename, const char* mainFunctionName, co
 }
 
 void PGShader::LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename) {
-    PG_LOG_DEBUG("Compile shader: %s", filename);
-    bool compilationSuccess = true;
+    PG_LOG_DEBUG("Compiling shader: %s", filename);
     ID3DBlob* vertexShaderBlob = nullptr;
-    compilationSuccess = CompileShader(filename, "VSMain", "vs_5_0", &vertexShaderBlob);
+    bool vertexCompilationSuccess = CompileShader(filename, "VSMain", "vs_5_0", &vertexShaderBlob);
     ID3DBlob* pixelShaderBlob = nullptr;
-    compilationSuccess = CompileShader(filename, "PSMain", "ps_5_0", &pixelShaderBlob);
-    PG_ASSERT(compilationSuccess, "Shader compilation failed!")
+    bool pixelCompilationSuccess = CompileShader(filename, "PSMain", "ps_5_0", &pixelShaderBlob);
+    PG_ASSERT(vertexCompilationSuccess && pixelCompilationSuccess, "Shader compilation failed!")
 
     ShaderFileData vertexShaderData = { (char*)vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
     ShaderFileData pixelShaderData = { (char*)pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
@@ -77,13 +76,12 @@ void PGShader::LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* file
 
 void PGShader::Reload(HWRendererAPI* rendererAPI, const char* filename) {
     PG_LOG_DEBUG("Reloading shader: %s", filename);
-    bool compilationSuccess = true;
     ID3DBlob* vertexShaderBlob = nullptr;
-    compilationSuccess = CompileShader(filename, "VSMain", "vs_5_0", &vertexShaderBlob);
+    bool vertexCompilationSuccess = CompileShader(filename, "VSMain", "vs_5_0", &vertexShaderBlob);
     ID3DBlob* pixelShaderBlob = nullptr;
-    compilationSuccess = CompileShader(filename, "PSMain", "ps_5_0", &pixelShaderBlob);
+    bool pixelCompilationSuccess = CompileShader(filename, "PSMain", "ps_5_0", &pixelShaderBlob);
 
-    if (!compilationSuccess) {
+    if (!vertexCompilationSuccess || !pixelCompilationSuccess) {
         PG_LOG_ERROR("Shader reload failed!");
         return;
     }

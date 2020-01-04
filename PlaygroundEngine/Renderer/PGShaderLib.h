@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 #include <memory>
+#include <filesystem>
 
 typedef PGShader* ShaderRef;
 
@@ -14,7 +15,7 @@ public:
     PGShaderLib(HWRendererAPI* rendererAPI);
     ~PGShaderLib();
 
-    ShaderRef LoadShaderFromDisk(const std::string& shaderFileName, bool createIfExists = false);
+    ShaderRef LoadShaderFromDisk(const std::filesystem::path& shaderFileName);
     void ReloadShadersIfNeeded();
     void LoadDefaultShaders();
     ShaderRef GetDefaultShader(const std::string& name);
@@ -22,6 +23,6 @@ public:
 private:
     HWRendererAPI* m_RendererAPI;
     std::unordered_map<std::string, ShaderRef> m_Shaders;
-    std::unordered_map<std::string, FILETIME> m_ShaderFileLastWriteTimeMap;
+    std::unordered_map<std::string, std::filesystem::file_time_type> m_ShaderFileLastWriteTimeMap;
 };
 

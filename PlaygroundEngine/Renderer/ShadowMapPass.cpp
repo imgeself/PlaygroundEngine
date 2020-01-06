@@ -5,7 +5,7 @@ ShadowMapPass::ShadowMapPass() {
 }
 
 void ShadowMapPass::Initialize(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib, size_t shadowMapSize) {
-    Texture2DInitParams initParams = {};
+    Texture2DDesc initParams = {};
     initParams.width = shadowMapSize;
     initParams.height = shadowMapSize;
     initParams.format = DXGI_FORMAT_R16_TYPELESS;

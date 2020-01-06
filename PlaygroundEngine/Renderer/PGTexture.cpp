@@ -18,7 +18,7 @@ PGTexture* PGTexture::CreateTexture2D(const std::string& filepath) {
     subresource.memSlicePitch = 0;
 
 
-    Texture2DInitParams initParams = {};
+    Texture2DDesc initParams = {};
     initParams.arraySize = 1;
     initParams.format = DXGI_FORMAT_R8G8B8A8_UNORM;
     initParams.width = width;
@@ -55,7 +55,7 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
     }
 
 
-    Texture2DInitParams initParams = {};
+    Texture2DDesc initParams = {};
     initParams.arraySize = arraySize;
     initParams.format = (DXGI_FORMAT) ddsFile.GetFormat();
     initParams.width = ddsFile.GetWidth();
@@ -73,7 +73,7 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
     return texture;
 }
 
-PGTexture::PGTexture(Texture2DInitParams* initParams) {
+PGTexture::PGTexture(Texture2DDesc* initParams) {
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
     m_HWTexture2D = rendererAPI->CreateTexture2D(initParams);
     m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);

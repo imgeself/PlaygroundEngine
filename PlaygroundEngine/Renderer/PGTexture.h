@@ -19,7 +19,7 @@ public:
     inline HWShaderResourceView* GetHWResourceView() { return m_HWShaderResourceView; }
 
 private:
-    PGTexture(Texture2DInitParams* initParams);
+    PGTexture(Texture2DDesc* initParams);
 
     HWTexture2D* m_HWTexture2D = nullptr;
     HWShaderResourceView* m_HWShaderResourceView = nullptr;

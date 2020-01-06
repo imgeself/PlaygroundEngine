@@ -32,7 +32,7 @@ struct TextureSubresourceData {
     uint32_t memSlicePitch = 0;
 };
 
-struct Texture2DInitParams {
+struct Texture2DDesc {
     size_t width;
     size_t height;
     TextureDataFormat format;
@@ -47,5 +47,7 @@ struct Texture2DInitParams {
 class HWTexture2D : public HWResource {
 public:
     virtual ~HWTexture2D() = default;
+
+    virtual Texture2DDesc GetDesc() = 0;
 };
 

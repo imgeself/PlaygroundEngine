@@ -9,6 +9,8 @@ public:
     Application(PGSystem* system);
     ~Application() override;
 
+    virtual void OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) override;
+
     void OnInit() override;
     void OnUpdate(float deltaTime) override;
     void OnUIRender() override;
@@ -16,6 +18,8 @@ public:
 
 private:
     PGSystem* m_System;
+    PGCamera m_MainCamera;
+
 
     std::shared_ptr<HWIndexBuffer> m_IndexBuffer;
     std::shared_ptr<HWVertexBuffer> m_VertexBuffer;

@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Core.h"
+#include "Events/PGEvent.h"
 
-class IApplication {
+class IApplication : public ISystemEventListener {
 public:
     virtual ~IApplication() = default;
+
+    virtual void OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) = 0;
 
     virtual void OnInit() = 0;
     virtual void OnUpdate(float deltaTime) = 0;

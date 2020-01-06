@@ -10,15 +10,16 @@
 
 Application::Application(PGSystem* system) 
     : m_System(system) {
+    system->GetSystemEventDispatcher()->RegisterListener(this);
 }
 
 Application::~Application() {
+    m_System->GetSystemEventDispatcher()->RemoveListener(this);
 }
 
 void Application::OnInit() {
-    PGCamera* mainCamera = new PGCamera;
-    mainCamera->SetFrustum(1280, 720, 0.01f, 100.0f, PI / 4.0f);
-    //mainCamera->SetView(Vector3(0.0f, 10.0f, -10.0f), Vector3(0.0f, 0.0f, 1.0f));
+
+    m_MainCamera.SetFrustum(1280, 720, 0.01f, 100.0f, PI / 4.0f);
 
     PGShaderLib* shaderLib = m_System->GetShaderLib();
     m_PBRShader = shaderLib->GetDefaultShader("PBRForward");
@@ -27,7 +28,7 @@ void Application::OnInit() {
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
 
-    m_Scene.camera = mainCamera;
+    m_Scene.camera = &m_MainCamera;
     m_Scene.light = mainLight;
 
     PGTexture* skybox = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/environment.dds");
@@ -139,6 +140,11 @@ void Application::OnInit() {
     PGRenderer::EndScene();
 }
 
+void Application::OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) {
+    if (event == SystemEvent::RESIZE) {
+        m_MainCamera.SetFrustum((uint32_t) param1, (uint32_t) param2, 0.01f, 100.0f, PI / 4.0f);
+    }
+}
 
 
 std::vector<float> frameTimes;
@@ -193,6 +199,13 @@ void Application::OnUpdate(float deltaTime) {
         cameraMove.x -= 5.0f * deltaTime;
     } else if (PGInput::IsKeyPressed(PGKEY_D)) {
         cameraMove.x += 5.0f * deltaTime;
+    }
+
+    if (PGInput::IsKeyPressed(PGKEY_Q)) {
+        cameraMove.y -= 5.0f * deltaTime;
+    }
+    else if (PGInput::IsKeyPressed(PGKEY_E)) {
+        cameraMove.y += 5.0f * deltaTime;
     }
 
     cameraMove = (cameraTransform.rotationMatrix * Vector4(cameraMove, 0.0f)).xyz();

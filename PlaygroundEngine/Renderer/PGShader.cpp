@@ -38,10 +38,9 @@ static bool CompileShader(const char* filename, const char* mainFunctionName, co
     if (errorBlob) {
         PG_LOG_ERROR("Shader compilation errors: %s", (char*)errorBlob->GetBufferPointer());
         errorBlob->Release();
-        return false;
     }
 
-    return true;
+    return SUCCEEDED(status);
 }
 
 void PGShader::LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename) {

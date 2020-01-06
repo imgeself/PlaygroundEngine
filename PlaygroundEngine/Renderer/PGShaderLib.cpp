@@ -53,7 +53,7 @@ void PGShaderLib::ReloadShadersIfNeeded() {
 }
 
 void PGShaderLib::LoadDefaultShaders() {
-    std::string shaderDirectory = "../PlaygroundEngine/Assets/Shaders";
+    std::string shaderDirectory = "../PlaygroundEngine/Assets/Shaders/";
     for (const auto& entry : std::filesystem::directory_iterator(shaderDirectory)) {
         if (!entry.path().extension().compare(".hlsl")) {
             LoadShaderFromDisk(entry.path());

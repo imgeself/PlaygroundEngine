@@ -28,7 +28,7 @@ struct GPUResource {
     HWDepthStencilView* dsv = nullptr;
     HWRenderTargetView* rtv = nullptr;
 
-    GPUResource(HWRendererAPI* rendererAPI, Texture2DInitParams* initParams) {
+    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams) {
         HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams);
         resource = (HWResource*) texture;
 
@@ -198,8 +198,6 @@ void PGRenderer::CreateDefaultSamplerStates() {
     s_DefaultSamplers[POINT_WRAP_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&samplerStateInitParams);
 }
 
-
-
 bool PGRenderer::Initialize(PGWindow* window) {
     s_RendererAPI = new DX11RendererAPI(window);
     s_ShaderLib = new PGShaderLib(s_RendererAPI);
@@ -235,7 +233,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_RendererAPI->SetSamplerStatesPS(0, s_DefaultSamplers.data(), s_DefaultSamplers.max_size());
 
     // HDR mainbuffer
-    Texture2DInitParams hdrBufferInitParams = {};
+    Texture2DDesc hdrBufferInitParams = {};
     hdrBufferInitParams.arraySize = 1;
     hdrBufferInitParams.format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     hdrBufferInitParams.width = s_RendererAPI->GetWidth();
@@ -245,7 +243,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     hdrBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
     s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrBufferInitParams);
 
-    Texture2DInitParams depthTextureInitParams = {};
+    Texture2DDesc depthTextureInitParams = {};
     depthTextureInitParams.arraySize = 1;
     depthTextureInitParams.format = DXGI_FORMAT_D32_FLOAT;
     depthTextureInitParams.width = s_RendererAPI->GetWidth();
@@ -256,7 +254,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthTextureInitParams);
 
     if (s_MSAASampleCount) {
-        Texture2DInitParams resolvedBufferInitParams = {};
+        Texture2DDesc resolvedBufferInitParams = {};
         resolvedBufferInitParams.arraySize = 1;
         resolvedBufferInitParams.format = hdrBufferInitParams.format;
         resolvedBufferInitParams.width = hdrBufferInitParams.width;
@@ -285,6 +283,53 @@ bool PGRenderer::Initialize(PGWindow* window) {
     }
 
     return true;
+}
+
+void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
+    s_RendererAPI->ResizeBackBuffer(newWidth, newHeight);
+
+    if (s_HDRRenderTarget) {
+        Texture2DDesc hdrRenderTargetDesc = ((HWTexture2D*) s_HDRRenderTarget->resource)->GetDesc();
+        hdrRenderTargetDesc.width = newWidth;
+        hdrRenderTargetDesc.height = newHeight;
+
+        delete s_HDRRenderTarget;
+        s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrRenderTargetDesc);
+    }
+
+    if (s_DepthStencilTarget) {
+        Texture2DDesc depthStencilDesc = ((HWTexture2D*) s_DepthStencilTarget->resource)->GetDesc();
+        depthStencilDesc.width = newWidth;
+        depthStencilDesc.height = newHeight;
+
+        delete s_DepthStencilTarget;
+        s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthStencilDesc);
+    }
+
+    if (s_ResolvedHDRRenderTarget) {
+        Texture2DDesc resolvedHDRRenderTargetDesc = ((HWTexture2D*) s_ResolvedHDRRenderTarget->resource)->GetDesc();
+        resolvedHDRRenderTargetDesc.width = newWidth;
+        resolvedHDRRenderTargetDesc.height = newHeight;
+
+        delete s_ResolvedHDRRenderTarget;
+        s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedHDRRenderTargetDesc);
+    }
+
+    // Render passes
+    s_SceneRenderPass.SetRenderTarget(0, s_HDRRenderTarget->rtv);
+    s_SceneRenderPass.SetDepthStencilTarget(s_DepthStencilTarget->dsv);
+    HWViewport defaultViewport = s_RendererAPI->GetDefaultViewport();
+    s_SceneRenderPass.SetViewport(defaultViewport);
+
+    s_PostProcessPass.SetRenderTarget(0, s_RendererAPI->GetBackbufferRenderTargetView());
+    s_PostProcessPass.SetViewport(defaultViewport);
+    if (s_MSAASampleCount > 1) {
+        s_PostProcessPass.SetHDRBufferResourceView(s_ResolvedHDRRenderTarget->srv);
+    }
+    else {
+        s_PostProcessPass.SetHDRBufferResourceView(s_HDRRenderTarget->srv);
+    }
+
 }
 
 void PGRenderer::BeginFrame() {
@@ -352,4 +397,3 @@ void PGRenderer::EndScene() {
     // TODO: sorting, bathcing, etc
     s_SceneRenderPass.AddRenderObjects(s_RenderObjects);
 }
-

@@ -27,6 +27,8 @@ public:
     static void AddMesh(const MeshRef& renderMesh);
     static void EndScene();
 
+    static void ResizeResources(size_t newWidth, size_t newHeight);
+
     static HWRendererAPI* GetRendererAPI() {
         return s_RendererAPI;
     }

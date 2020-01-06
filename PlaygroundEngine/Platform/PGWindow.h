@@ -5,12 +5,13 @@
 #endif // PLATFORM_WINDOWS
 
 #include "../Core.h"
-#include "PGInput.h"
+#include "../Events/PGSystemEventDispatcher.h"
 #include "../Math/math_util.h"
+#include "PGInput.h"
 
 class PG_API PGWindow {
 public:
-    PGWindow(const char* name, uint32_t width, uint32_t height);
+    PGWindow(const char* name, uint32_t width, uint32_t height, PGSystemEventDispatcher* eventDispatcher);
     ~PGWindow();
 
     void Show();
@@ -25,6 +26,7 @@ private:
     WindowHandle m_Handle;
     uint32_t m_Width;
     uint32_t m_Height;
+    PGSystemEventDispatcher* m_SystemEventDispatcher = nullptr;
 
 #ifdef PLATFORM_WINDOWS
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -21,7 +21,7 @@ LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
     }
 };
 
-PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height) 
+PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height, PGSystemEventDispatcher* eventDispatcher) 
     : m_Width(width)
     , m_Height(height) {
     HINSTANCE hInstance = GetModuleHandle(0);
@@ -49,6 +49,7 @@ PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height)
 
 
     m_Handle = windowHandle;
+    m_SystemEventDispatcher = eventDispatcher;
 }
 
 PGWindow::~PGWindow() {
@@ -139,6 +140,17 @@ LRESULT PGWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) {
             // NOTE: We may need to store input characters for our input system too.
             ImGuiIO& io = ImGui::GetIO();
             io.AddInputCharacter((unsigned int) wParam);
+        } break;
+        case WM_SIZE:
+        {
+            m_Width = LOWORD(lParam);
+            m_Height = HIWORD(lParam);
+
+            RECT rect;
+            GetClientRect(m_Handle, &rect);
+            if (m_SystemEventDispatcher) {
+                m_SystemEventDispatcher->DispatchSystemEvent(SystemEvent::RESIZE, (uint64_t)(rect.right - rect.left), (uint64_t)(rect.bottom - rect.top));
+            }
         } break;
     }
 

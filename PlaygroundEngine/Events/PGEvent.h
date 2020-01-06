@@ -1,23 +1,18 @@
 #pragma once
 
+#include "../Core.h"
+#include <stdint.h>
+
 enum SystemEvent {
     INITIALIZE,
+    // Trigger resize event when window resized
+    // param1 = client width, param2 = client height
+    RESIZE,
     CLOSE,
 };
 
-struct ISystemEventListener {
-
+class PG_API ISystemEventListener {
 public:
     virtual ~ISystemEventListener() = default;
-    virtual void OnSystemEvent(SystemEvent event) = 0;
-};
-
-struct ISystemEventDispatcher {
-    
-public:
-    virtual ~ISystemEventDispatcher() = default;
-
-    virtual void RegisterListener(ISystemEventListener* listener) = 0;
-    virtual void RemoveListener(ISystemEventListener* listener) = 0;
-    virtual void DispatchSystemEvent(SystemEvent event) = 0;
+    virtual void OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) = 0;
 };

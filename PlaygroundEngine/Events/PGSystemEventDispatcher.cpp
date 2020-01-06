@@ -12,10 +12,10 @@ void PGSystemEventDispatcher::RemoveListener(ISystemEventListener* listener) {
     m_listeners.erase(listener);
 }
 
-void PGSystemEventDispatcher::DispatchSystemEvent(SystemEvent event) {
+void PGSystemEventDispatcher::DispatchSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) {
     for (ISystemEventListener* listener : m_listeners) {
         if (listener) {
-            listener->OnSystemEvent(event);
+            listener->OnSystemEvent(event, param1, param2);
         }
     }
 }

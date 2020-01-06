@@ -3,15 +3,15 @@
 #include "PGEvent.h"
 #include <set>
 
-class PGSystemEventDispatcher : public ISystemEventDispatcher {
+class PG_API PGSystemEventDispatcher {
 
 public:
     PGSystemEventDispatcher();
     virtual ~PGSystemEventDispatcher() = default;
     
-    virtual void RegisterListener(ISystemEventListener* listener) override;
-    virtual void RemoveListener(ISystemEventListener* listener) override;
-    virtual void DispatchSystemEvent(SystemEvent event) override;
+    void RegisterListener(ISystemEventListener* listener);
+    void RemoveListener(ISystemEventListener* listener);
+    void DispatchSystemEvent(SystemEvent event, uint64_t param1 = 0, uint64_t param2 = 0);
 
 private:
     std::set<ISystemEventListener*> m_listeners;

@@ -40,7 +40,7 @@ public:
     virtual HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) = 0;
     virtual HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) = 0;
     virtual HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) = 0;
-    virtual HWTexture2D* CreateTexture2D(Texture2DDesc* initParams) = 0;
+    virtual HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources) = 0;
     virtual HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1) = 0;
     virtual HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1) = 0;
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture) = 0;

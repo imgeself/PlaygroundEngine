@@ -28,8 +28,8 @@ struct GPUResource {
     HWDepthStencilView* dsv = nullptr;
     HWRenderTargetView* rtv = nullptr;
 
-    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams) {
-        HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams);
+    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams, TextureSubresourceData* subresources) {
+        HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams, subresources);
         resource = (HWResource*) texture;
 
         uint32_t flags = initParams->flags;
@@ -241,7 +241,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     hdrBufferInitParams.sampleCount = s_MSAASampleCount;
     hdrBufferInitParams.mipCount = 1;
     hdrBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
-    s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrBufferInitParams);
+    s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrBufferInitParams, nullptr);
 
     Texture2DDesc depthTextureInitParams = {};
     depthTextureInitParams.arraySize = 1;
@@ -251,7 +251,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     depthTextureInitParams.sampleCount = hdrBufferInitParams.sampleCount;
     depthTextureInitParams.mipCount = 1;
     depthTextureInitParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL;
-    s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthTextureInitParams);
+    s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthTextureInitParams, nullptr);
 
     if (s_MSAASampleCount) {
         Texture2DDesc resolvedBufferInitParams = {};
@@ -262,7 +262,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
         resolvedBufferInitParams.sampleCount = 1;
         resolvedBufferInitParams.mipCount = 1;
         resolvedBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
-        s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedBufferInitParams);
+        s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedBufferInitParams, nullptr);
     }
 
     // Render passes
@@ -294,7 +294,7 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
         hdrRenderTargetDesc.height = newHeight;
 
         delete s_HDRRenderTarget;
-        s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrRenderTargetDesc);
+        s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrRenderTargetDesc, nullptr);
     }
 
     if (s_DepthStencilTarget) {
@@ -303,7 +303,7 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
         depthStencilDesc.height = newHeight;
 
         delete s_DepthStencilTarget;
-        s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthStencilDesc);
+        s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthStencilDesc, nullptr);
     }
 
     if (s_ResolvedHDRRenderTarget) {
@@ -312,7 +312,7 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
         resolvedHDRRenderTargetDesc.height = newHeight;
 
         delete s_ResolvedHDRRenderTarget;
-        s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedHDRRenderTargetDesc);
+        s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedHDRRenderTargetDesc, nullptr);
     }
 
     // Render passes

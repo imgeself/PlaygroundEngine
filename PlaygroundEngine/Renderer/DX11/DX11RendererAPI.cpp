@@ -206,8 +206,8 @@ HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<Vertex
     return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram);
 }
 
-HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams) {
-    return new DX11Texture2D(m_Device, initParams);
+HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources) {
+    return new DX11Texture2D(m_Device, initParams, subresources);
 }
 
 HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {

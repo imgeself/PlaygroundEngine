@@ -26,9 +26,8 @@ PGTexture* PGTexture::CreateTexture2D(const std::string& filepath) {
     initParams.sampleCount = 1;
     initParams.mipCount = 1;
     initParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::USAGE_IMMUTABLE;
-    initParams.subresources = &subresource;
 
-    PGTexture* texture = new PGTexture(&initParams);
+    PGTexture* texture = new PGTexture(&initParams, &subresource);
 
     stbi_image_free(imageData);
     return texture;
@@ -63,19 +62,18 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
     initParams.sampleCount = 1;
     initParams.mipCount = mipCount;
     initParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::USAGE_IMMUTABLE;
-    initParams.subresources = subresources;
 
     if (ddsFile.IsCubemap()) {
         initParams.flags |= TextureResourceFlags::MISC_TEXTURE_CUBE;
     }
 
-    PGTexture* texture = new PGTexture(&initParams);
+    PGTexture* texture = new PGTexture(&initParams, subresources);
     return texture;
 }
 
-PGTexture::PGTexture(Texture2DDesc* initParams) {
+PGTexture::PGTexture(Texture2DDesc* initParams, TextureSubresourceData* subresources) {
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
-    m_HWTexture2D = rendererAPI->CreateTexture2D(initParams);
+    m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, subresources);
     m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);
 }
 

@@ -12,10 +12,9 @@ void ShadowMapPass::Initialize(HWRendererAPI* rendererAPI, PGShaderLib* shaderLi
     initParams.sampleCount = 1;
     initParams.mipCount = 1;
     initParams.arraySize = CASCADE_COUNT;
-    initParams.subresources = nullptr;
     initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL | TextureResourceFlags::BIND_SHADER_RESOURCE;
 
-    m_ShadowMapTexture = rendererAPI->CreateTexture2D(&initParams);
+    m_ShadowMapTexture = rendererAPI->CreateTexture2D(&initParams, nullptr);
     for (uint32_t cascadeIndex = 0; cascadeIndex < CASCADE_COUNT; ++cascadeIndex) {
         m_DepthStencilViews[cascadeIndex] = rendererAPI->CreateDepthStencilView(m_ShadowMapTexture, cascadeIndex, 1);
     }

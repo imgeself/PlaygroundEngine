@@ -40,8 +40,6 @@ struct Texture2DDesc {
     size_t sampleCount;
     size_t arraySize;
     size_t mipCount;
-
-    TextureSubresourceData* subresources = nullptr;
 };
 
 class HWTexture2D : public HWResource {

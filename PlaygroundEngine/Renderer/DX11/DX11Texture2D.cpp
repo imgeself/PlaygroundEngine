@@ -33,7 +33,7 @@ static inline D3D11_CPU_ACCESS_FLAG GetCPUAccessFlagFromResourceFlags(uint32_t r
     );
 }
 
-DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams) {
+DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams, TextureSubresourceData* subresources) {
     D3D11_TEXTURE2D_DESC textureDesc = {};
     textureDesc.Width = (UINT) initParams->width;
     textureDesc.Height = (UINT) initParams->height;
@@ -47,9 +47,9 @@ DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams) {
     textureDesc.CPUAccessFlags = GetCPUAccessFlagFromResourceFlags(initParams->flags);
     textureDesc.MiscFlags = GetMiscFlagsFromResourceFlags(initParams->flags);
 
-    if (initParams->subresources) {
+    if (subresources) {
         D3D11_SUBRESOURCE_DATA* subresourceDatas = (D3D11_SUBRESOURCE_DATA*) alloca(sizeof(D3D11_SUBRESOURCE_DATA) * initParams->arraySize * initParams->mipCount);
-        TextureSubresourceData* textureSubresource = initParams->subresources;
+        TextureSubresourceData* textureSubresource = subresources;
         for (size_t arrayIndex = 0; arrayIndex < initParams->arraySize; ++arrayIndex) {
             for (size_t mipIndex = 0; mipIndex < initParams->mipCount; ++mipIndex) {
                 D3D11_SUBRESOURCE_DATA* subresourceData = subresourceDatas + (arrayIndex * initParams->mipCount + mipIndex);

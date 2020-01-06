@@ -24,6 +24,8 @@ class HWRendererAPI {
 public:
     virtual ~HWRendererAPI() = default;
 
+    virtual void ResizeBackBuffer(size_t clientWidth, size_t clientHeight) = 0;
+
     virtual void ClearScreen(const float* color) = 0;
     virtual void Draw(HWVertexBuffer* indexBuffer) = 0;
     virtual void Draw(size_t vertexCount, size_t vertexBaseLocation) = 0;
@@ -38,7 +40,7 @@ public:
     virtual HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) = 0;
     virtual HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) = 0;
     virtual HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) = 0;
-    virtual HWTexture2D* CreateTexture2D(Texture2DInitParams* initParams) = 0;
+    virtual HWTexture2D* CreateTexture2D(Texture2DDesc* initParams) = 0;
     virtual HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1) = 0;
     virtual HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1) = 0;
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture) = 0;

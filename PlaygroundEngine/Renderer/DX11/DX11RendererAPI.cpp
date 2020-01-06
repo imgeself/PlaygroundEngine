@@ -126,9 +126,31 @@ DX11RendererAPI::~DX11RendererAPI() {
     SAFE_RELEASE(m_DeviceContext);
 }
 
+void DX11RendererAPI::ResizeBackBuffer(size_t clientWidth, size_t clientHeight) {
+    delete m_BackbufferRenderTargetView;
+
+    m_ClientWidth = clientWidth;
+    m_ClientHeight = clientHeight;
+
+    m_SwapChain->ResizeBuffers(2, (UINT) clientWidth, (UINT) clientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+
+    ID3D11Texture2D* backbuffer = nullptr;
+    HRESULT result = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
+    PG_ASSERT(SUCCEEDED(result), "Couldn't get the backbuffer");
+
+    DXGI_SWAP_CHAIN_DESC swapChainDesc;
+    m_SwapChain->GetDesc(&swapChainDesc);
+
+    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, 0, 1, 0, swapChainDesc.SampleDesc.Count);
+    backbuffer->Release();
+
+    m_DefaultViewport.Width = (FLOAT) clientWidth;
+    m_DefaultViewport.Height = (FLOAT) clientHeight;
+}
+
+
 void DX11RendererAPI::ClearScreen(const float* color) {
     ClearRenderTarget(m_BackbufferRenderTargetView, (float*) color);
-
 }
 
 void DX11RendererAPI::Draw(HWVertexBuffer* vertexBuffer) {
@@ -184,7 +206,7 @@ HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<Vertex
     return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram);
 }
 
-HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DInitParams* initParams) {
+HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams) {
     return new DX11Texture2D(m_Device, initParams);
 }
 

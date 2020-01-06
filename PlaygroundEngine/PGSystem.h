@@ -13,7 +13,7 @@
 
 #include <memory>
 
-class PGSystem : public ISystemEventListener {
+class PG_API PGSystem : public ISystemEventListener {
 public:
     PGSystem();
     ~PGSystem();
@@ -21,7 +21,7 @@ public:
     bool InitializeSystem(SystemInitArguments* initArguments);
     void RunMainLoop();
 
-    virtual void OnSystemEvent(SystemEvent event) override;
+    virtual void OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) override;
 
     static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return s_systemEventDispatcher; };
 

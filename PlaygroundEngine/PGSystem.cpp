@@ -30,7 +30,7 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
     PG_ASSERT(m_GameApplication, "Couldn't get the game application");
 
     const char* windowName = "PlaygroundEngine";
-    m_Window = new PGWindow(windowName, 1280, 720);
+    m_Window = new PGWindow(windowName, 1280, 720, s_systemEventDispatcher.get());
 
     PGRenderer::Initialize(m_Window);
 
@@ -75,6 +75,9 @@ void PGSystem::RunMainLoop() {
     }
 }
 
-void PGSystem::OnSystemEvent(SystemEvent event) {
+void PGSystem::OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) {
     printf("Event occured %d\n", event);
+    if (event == SystemEvent::RESIZE) {
+        PGRenderer::ResizeResources(param1, param2);
+    }
 }

@@ -3,12 +3,11 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "../Core.h"
 
 // We use column-major vector.
 // We layout the matrix like column-major matrix (mathematically), we do post multiplication, etc.
 // But our memory layout is row-major.
-struct PG_API Matrix4 {
+struct Matrix4 {
     Vector4 data[4];
 
     Matrix4();

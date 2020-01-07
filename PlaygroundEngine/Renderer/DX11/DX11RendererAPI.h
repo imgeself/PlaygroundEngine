@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../HWRendererAPI.h"
+#include "../../Platform/PGWindow.h"
 
 #include "DX11Buffer.h"
 #include "DX11Shader.h"
@@ -13,7 +14,6 @@
 #include <d3d11.h>
 
 class DX11RendererAPI : public HWRendererAPI {
-    friend class SceneRenderPass;
 public:
     DX11RendererAPI(PGWindow* window);
     ~DX11RendererAPI() override;

@@ -7,7 +7,6 @@
 #include "../Core.h"
 #include "../Events/PGSystemEventDispatcher.h"
 #include "../Math/math_util.h"
-#include "PGInput.h"
 
 class PG_API PGWindow {
 public:
@@ -15,6 +14,9 @@ public:
     ~PGWindow();
 
     void Show();
+
+    // Processes all window messages
+    // Returns false if quit requested otherwise returns true
     bool ProcessMessages();
 
     WindowHandle GetWindowHandle();

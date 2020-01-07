@@ -1,4 +1,5 @@
 #include "PostProcessPass.h"
+#include "../Assets/Shaders/ShaderDefinitions.h"
 
 TonemapPass::TonemapPass() {
 

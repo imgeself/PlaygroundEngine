@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PGKeycode.h"
-#include "PGWindow.h"
+#include "../Core.h"
 #include "../Math/math_util.h"
+#include "PGKeycode.h"
 
 #include <utility>
 

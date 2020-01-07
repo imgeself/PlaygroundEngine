@@ -7,7 +7,7 @@ struct ShaderFileData {
     size_t fileSize;
 };
 
-class PG_API HWShaderProgram {
+class HWShaderProgram {
 public:
     virtual ~HWShaderProgram() = default;
 };

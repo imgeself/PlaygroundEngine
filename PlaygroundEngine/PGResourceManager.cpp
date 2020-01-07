@@ -1,4 +1,5 @@
 #include "PGResouceManager.h"
+#include "Renderer/PGTexture.h"
 
 #include <string_view>
 

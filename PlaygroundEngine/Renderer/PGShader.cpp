@@ -1,6 +1,8 @@
 #include "PGShader.h"
 #include "../PGLog.h"
 
+#include <d3dcompiler.h>
+
 PGShader::PGShader() {
 
 }

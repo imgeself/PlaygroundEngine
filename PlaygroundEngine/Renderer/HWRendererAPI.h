@@ -1,8 +1,5 @@
 #pragma once
 
-#include "../Core.h"
-#include "../Platform/PGWindow.h"
-
 #include "HWBuffer.h"
 #include "HWShader.h"
 #include "HWInputLayout.h"

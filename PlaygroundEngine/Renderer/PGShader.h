@@ -1,11 +1,7 @@
 #pragma once
 
 #include "../Core.h"
-#include "../Math/math_util.h"
 #include "HWRendererAPI.h"
-#include "../Assets/Shaders/ShaderDefinitions.h"
-
-#include <d3dcompiler.h>
 
 #include <string>
 #include <unordered_map>

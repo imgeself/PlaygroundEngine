@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.h"
-#include "Renderer/PGTexture.h"
+#include "PGResource.h"
 
 #include <string>
 #include <unordered_map>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Core.h"
 #include "PGShaderLib.h"
 #include "PGTexture.h"
+#include "../Assets/Shaders/ShaderDefinitions.h"
 
 #include <memory>
 

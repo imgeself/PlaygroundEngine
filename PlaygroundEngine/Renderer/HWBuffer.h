@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Core.h"
 #include "HWResource.h"
+#include "../Core.h"
 
 class HWConstantBuffer : public HWResource {
 public:

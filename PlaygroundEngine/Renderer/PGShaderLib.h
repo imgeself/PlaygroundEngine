@@ -1,11 +1,9 @@
 #pragma once
 
 #include "../Core.h"
-#include "HWRendererAPI.h"
 #include "PGShader.h"
 
 #include <unordered_map>
-#include <memory>
 #include <filesystem>
 
 typedef PGShader* ShaderRef;

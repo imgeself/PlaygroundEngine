@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Math/math_util.h"
-#include "Core.h"
 #include "Renderer/Material.h"
 #include "Transform.h"
 

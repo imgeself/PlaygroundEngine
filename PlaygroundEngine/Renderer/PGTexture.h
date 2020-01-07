@@ -4,9 +4,7 @@
 #include "HWRendererAPI.h"
 #include "../PGResource.h"
 
-#include <unordered_map>
 #include <string>
-#include <array>
 
 class PGTexture : public IResource {
 public:

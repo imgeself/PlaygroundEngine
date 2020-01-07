@@ -76,7 +76,6 @@ void PGSystem::RunMainLoop() {
 }
 
 void PGSystem::OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) {
-    printf("Event occured %d\n", event);
     if (event == SystemEvent::RESIZE) {
         PGRenderer::ResizeResources(param1, param2);
     }

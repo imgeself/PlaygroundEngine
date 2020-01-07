@@ -4,13 +4,13 @@
 #include "../MeshUtils.h"
 #include "../Scene.h"
 #include "../Platform/PGWindow.h"
+
+#include "../Assets/Shaders/ShaderDefinitions.h"
 #include "HWRendererAPI.h"
 #include "PGShaderLib.h"
-#include "../Assets/Shaders/ShaderDefinitions.h"
 #include "PGRenderObject.h"
 #include "SceneRenderPass.h"
 #include "PostProcessPass.h"
-#include "Skybox.h"
 
 #include <vector>
 #include <array>

@@ -1,5 +1,7 @@
 #include "../PGWindow.h"
+#include "../PGInput.h"
 #include "../../Imgui/imgui.h"
+
 
 LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     PGWindow* window = nullptr;
@@ -24,6 +26,7 @@ LRESULT CALLBACK PGWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height, PGSystemEventDispatcher* eventDispatcher) 
     : m_Width(width)
     , m_Height(height) {
+    
     HINSTANCE hInstance = GetModuleHandle(0);
 
     const char* windowClassName = "WindowClass";
@@ -46,7 +49,6 @@ PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height, PGSystemEv
         NULL,
         hInstance,
         this);
-
 
     m_Handle = windowHandle;
     m_SystemEventDispatcher = eventDispatcher;
@@ -79,8 +81,6 @@ void PGWindow::Show() {
     ShowWindow(m_Handle, SW_SHOWDEFAULT);
 }
 
-// Procces all window messages
-// Returns false if quit requested otherwise returns true
 bool PGWindow::ProcessMessages() {
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {

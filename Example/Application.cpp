@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "LogWindow.h"
+#include "PerformanceWindow.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -147,16 +148,7 @@ void Application::OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t par
 }
 
 
-std::vector<float> frameTimes;
-
 void Application::OnUpdate(float deltaTime) {
-    if (frameTimes.size() < 32) {
-        frameTimes.push_back(deltaTime);
-    } else {
-        std::rotate(frameTimes.begin(), frameTimes.begin() + 1, frameTimes.end());
-        frameTimes[frameTimes.size() - 1] = deltaTime;
-    }
-
     if (ImGui::IsAnyItemActive()) {
         return;
     }
@@ -273,11 +265,7 @@ void Application::OnUIRender() {
     }
     ImGui::End();
 
-    if (ImGui::Begin("Performance")) {
-        ImGui::PlotLines("", frameTimes.data(), (int)frameTimes.size(), 0, "Frame Time", 0.0f, 0.038f, ImVec2(0, 80));
-        ImGui::Text("Frame %.3f ms", frameTimes.back() * 1000.0f);
-    }
-    ImGui::End();
+    DrawPerformanceWindow();
 
     if (ImGui::Begin("Material")) {
         ImGui::SliderFloat("Roughness", &m_DefaultMaterial->roughness, 0.0f, 1.0f);

@@ -1,4 +1,5 @@
 #include "SceneRenderPass.h"
+#include "../PGProfiler.h"
 
 SceneRenderPass::SceneRenderPass() {
 
@@ -33,7 +34,8 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
         // Generate shadow map
         m_ShadowMapPass->Execute(rendererAPI, m_RenderObjects);
     }
-
+    
+    PG_PROFILE_FUNCTION();
     rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, m_DepthStencilView);
     float color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     rendererAPI->ClearRenderTarget(m_RenderTargets[0], color);

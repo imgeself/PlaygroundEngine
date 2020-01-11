@@ -2,6 +2,7 @@
 #include "Renderer/DX11/DX11RendererAPI.h"
 #include "PGGameApplication.h"
 #include "Platform/PGTime.h"
+#include "PGProfiler.h"
 
 // Static members
 std::shared_ptr<PGSystemEventDispatcher> PGSystem::s_systemEventDispatcher = std::make_shared<PGSystemEventDispatcher>();
@@ -47,6 +48,7 @@ void PGSystem::RunMainLoop() {
     m_Window->Show();
 
     while (true) {
+        PG_PROFILE_SCOPE("Frame");
         if (!m_Window->ProcessMessages()) {
             // Close requested
             s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::CLOSE);
@@ -63,9 +65,15 @@ void PGSystem::RunMainLoop() {
         lastTime = time;
 
         PGRenderer::BeginFrame();
+        {
+            PG_PROFILE_SCOPE("Update");
+            m_GameApplication->OnUpdate(deltaTime);
+        }
 
-        m_GameApplication->OnUpdate(deltaTime);
-        PGRenderer::RenderFrame();
+        {
+            PG_PROFILE_SCOPE("Render");
+            PGRenderer::RenderFrame();
+        }
 
         ImguiModule::Begin(deltaTime);
         m_GameApplication->OnUIRender();

@@ -1,4 +1,5 @@
 #include "ShadowMapPass.h"
+#include "../PGProfiler.h"
 
 ShadowMapPass::ShadowMapPass() {
 
@@ -43,6 +44,7 @@ ShadowMapPass::~ShadowMapPass() {
 }
 
 void ShadowMapPass::Execute(HWRendererAPI* rendererAPI, const std::vector<PGRenderObject*>& renderObjects) {
+    PG_PROFILE_FUNCTION();
     HWShaderProgram* hwShader = m_ShadowGenShader->GetHWShader();
     rendererAPI->SetShaderProgram(hwShader);
     rendererAPI->SetViewport(&m_Viewport);

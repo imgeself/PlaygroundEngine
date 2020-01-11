@@ -1,5 +1,6 @@
 #include "Skybox.h"
 #include "PGRenderer.h"
+#include "../PGProfiler.h"
 
 
 Skybox::Skybox(PGTexture* skyboxCubemap) : m_SkyboxCubemap(skyboxCubemap) {
@@ -71,6 +72,7 @@ Skybox::~Skybox() {
 }
 
 void Skybox::RenderSkybox() {
+    PG_PROFILE_FUNCTION();
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
 
     rendererAPI->SetVertexBuffer(m_VertexBuffer, sizeof(Vector3));

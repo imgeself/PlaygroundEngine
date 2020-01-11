@@ -1,5 +1,6 @@
 #include "PostProcessPass.h"
 #include "../Assets/Shaders/ShaderDefinitions.h"
+#include "../PGProfiler.h"
 
 TonemapPass::TonemapPass() {
 
@@ -22,6 +23,7 @@ void TonemapPass::SetHDRBufferResourceView(HWShaderResourceView* hdrBuffer) {
 }
 
 void TonemapPass::Execute(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
+    PG_PROFILE_FUNCTION();
     rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, nullptr);
     float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     rendererAPI->ClearRenderTarget(m_RenderTargets[0], color);

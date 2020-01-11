@@ -1,5 +1,6 @@
 #include "PGRenderer.h"
 #include "Skybox.h"
+#include "../PGProfiler.h"
 
 #include "DX11/DX11RendererAPI.h"
 
@@ -87,6 +88,7 @@ void PGRenderer::Uninitialize() {
 
 void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, size_t shadowMapSize,
                                   Matrix4* outMatricesData) {
+    PG_PROFILE_FUNCTION();
     Matrix4 inverseProjectionViewMatrix = camera->GetInverseProjectionViewMatrix();
 
     // Get frustum points in world space
@@ -334,8 +336,6 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
 }
 
 void PGRenderer::BeginFrame() {
-    const float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    s_RendererAPI->ClearScreen(color);
 }
 
 void PGRenderer::RenderFrame() {

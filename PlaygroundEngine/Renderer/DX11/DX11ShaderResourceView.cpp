@@ -1,6 +1,6 @@
 #include "DX11ShaderResourceView.h"
 
-DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Texture2D* texture) {
+DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Texture2D* texture, const char* debugName) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -39,6 +39,13 @@ DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Textu
 
     HRESULT result = device->CreateShaderResourceView(texture, &shaderResouceViewDesc, &m_ShaderResourceView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating shader resource view");
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_ShaderResourceView->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
+    }
+#endif
 }
 
 DX11ShaderResourceView::~DX11ShaderResourceView() {

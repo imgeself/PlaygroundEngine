@@ -29,16 +29,16 @@ public:
     HWRenderTargetView* GetBackbufferRenderTargetView() override;
     HWViewport GetDefaultViewport() override;
 
-    HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size) override;
-    HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) override;
-    HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count) override;
-    HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) override;
-    HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) override;
-    HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources) override;
-    HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) override;
-    HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) override;
-    HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture) override;
-    HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams) override;
+    HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, const char* debugName) override;
+    HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize, const char* debugName) override;
+    HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, const char* debugName) override;
+    HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData, const char* debugName) override;
+    HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram, const char* debugName) override;
+    HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) override;
+    HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
+    HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
+    HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName) override;
+    HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
 
     void SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) override;
@@ -75,6 +75,7 @@ private:
     IDXGISwapChain* m_SwapChain = nullptr;
     ID3D11Device* m_Device = nullptr;
     ID3D11DeviceContext* m_DeviceContext = nullptr;
+    ID3D11Debug* m_Debug = nullptr;
 
     DX11RenderTargetView* m_BackbufferRenderTargetView = nullptr;
     D3D11_VIEWPORT m_DefaultViewport;

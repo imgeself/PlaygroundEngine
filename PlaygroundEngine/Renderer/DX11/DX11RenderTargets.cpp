@@ -1,6 +1,6 @@
 #include "DX11RenderTargets.h"
 
-DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
+DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -29,13 +29,20 @@ DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D
 
     HRESULT result = device->CreateRenderTargetView(texture, &renderTargetViewDesc, &m_RenderTargetView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating render target view");
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_RenderTargetView->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
+    }
+#endif
 }
 
 DX11RenderTargetView::~DX11RenderTargetView() {
     SAFE_RELEASE(m_RenderTargetView);
 }
 
-DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
+DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -75,6 +82,13 @@ DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D
 
     HRESULT result = device->CreateDepthStencilView(texture, &depthStencilViewDesc, &m_DepthStencilView);
     PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil view");
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_DepthStencilView->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
+    }
+#endif
 }
 
 DX11DepthStencilView::~DX11DepthStencilView() {

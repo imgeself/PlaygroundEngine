@@ -33,7 +33,7 @@ static inline D3D11_CPU_ACCESS_FLAG GetCPUAccessFlagFromResourceFlags(uint32_t r
     );
 }
 
-DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams, TextureSubresourceData* subresources) {
+DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) {
     D3D11_TEXTURE2D_DESC textureDesc = {};
     textureDesc.Width = (UINT) initParams->width;
     textureDesc.Height = (UINT) initParams->height;
@@ -66,6 +66,13 @@ DX11Texture2D::DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams, Te
         HRESULT result = device->CreateTexture2D(&textureDesc, nullptr, &m_Texture);
         PG_ASSERT(SUCCEEDED(result), "Error at creating texture");
     }
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_Texture->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
+    }
+#endif
 
     m_Desc = *initParams;
 }

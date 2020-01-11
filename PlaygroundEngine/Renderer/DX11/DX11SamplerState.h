@@ -6,7 +6,7 @@
 
 class DX11SamplerState : public HWSamplerState {
 public:
-    DX11SamplerState(ID3D11Device* device, SamplerStateInitParams* initParams);
+    DX11SamplerState(ID3D11Device* device, SamplerStateInitParams* initParams, const char* debugName = 0);
     ~DX11SamplerState();
 
     inline ID3D11SamplerState* GetDXSamplerState() { return m_SamplerState; }

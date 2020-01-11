@@ -22,7 +22,7 @@ static DXGI_FORMAT ConvertInputFormatToDXGIFormat(VertexDataFormat format) {
     return DXGI_FORMAT_UNKNOWN;
 }
 
-DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<VertexInputElement> inputElements, DX11ShaderProgram* shaderProgram) {
+DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<VertexInputElement> inputElements, DX11ShaderProgram* shaderProgram, const char* debugName) {
     // Input layout creation
     const size_t size = inputElements.size();
     std::vector<D3D11_INPUT_ELEMENT_DESC> layoutDescription;
@@ -45,6 +45,13 @@ DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<V
     HRESULT result = device->CreateInputLayout(layoutDescription.data(), (UINT) layoutDescription.size(), 
         vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), &m_InputLayout);
     PG_ASSERT(SUCCEEDED(result), "Error at creating input layout");
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_InputLayout->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
+    }
+#endif
 }
 
 DX11VertexInputLayout::~DX11VertexInputLayout() {

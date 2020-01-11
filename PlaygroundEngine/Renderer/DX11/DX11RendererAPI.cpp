@@ -40,12 +40,17 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
         D3D_FEATURE_LEVEL_11_0
     };
 
+    UINT createDeviceFlags = 0;
+#ifdef PG_DEBUG_GPU_DEVICE
+    createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
     D3D_FEATURE_LEVEL deviceFeatureLevel;
     HRESULT result = D3D11CreateDeviceAndSwapChain(
         nullptr,
         D3D_DRIVER_TYPE_HARDWARE,
         nullptr,
-        D3D11_CREATE_DEVICE_DEBUG,
+        (D3D11_CREATE_DEVICE_FLAG) createDeviceFlags,
         featureLevels,
         ARRAYSIZE(featureLevels),
         D3D11_SDK_VERSION,
@@ -55,6 +60,10 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
         &deviceFeatureLevel,
         &m_DeviceContext
     );
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    m_Device->QueryInterface(__uuidof(ID3D11Debug), (void**) (&m_Debug));
+#endif
 
     PG_ASSERT(SUCCEEDED(result), "Device context creation failed");
     PG_ASSERT(featureLevels[0] == deviceFeatureLevel, "Hardware doesn't support DX11");
@@ -94,6 +103,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     PG_ASSERT(SUCCEEDED(result), "Error at creating rasterizer state");
 
     m_DeviceContext->RSSetState(rasterizerState);
+    rasterizerState->Release();
 
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
     depthStencilDesc.DepthEnable = TRUE;
@@ -116,14 +126,20 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil state");
 
     m_DeviceContext->OMSetDepthStencilState(depthStencilState, 0);
+    depthStencilState->Release();
 }
 
 DX11RendererAPI::~DX11RendererAPI() {
     delete m_BackbufferRenderTargetView;
 
     SAFE_RELEASE(m_SwapChain);
-    SAFE_RELEASE(m_Device);
     SAFE_RELEASE(m_DeviceContext);
+    SAFE_RELEASE(m_Device);
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    m_Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    m_Debug->Release();
+#endif
 }
 
 void DX11RendererAPI::ResizeBackBuffer(size_t clientWidth, size_t clientHeight) {
@@ -186,47 +202,47 @@ HWViewport DX11RendererAPI::GetDefaultViewport() {
     return result;
 }
 
-HWConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size) {
-    return new DX11ConstantBuffer(m_Device, bufferData, size);
+HWConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size, const char* debugName) {
+    return new DX11ConstantBuffer(m_Device, bufferData, size, debugName);
 }
 
-HWVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize) {
-    return new DX11VertexBuffer(m_Device, bufferData, size, strideSize);
+HWVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize, const char* debugName) {
+    return new DX11VertexBuffer(m_Device, bufferData, size, strideSize, debugName);
 }
 
-HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t count) {
-    return new DX11IndexBuffer(m_Device, bufferData, count);
+HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t count, const char* debugName) {
+    return new DX11IndexBuffer(m_Device, bufferData, count, debugName);
 }
 
-HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData) {
+HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData, const char* debugName) {
     return new DX11ShaderProgram(m_Device, vertexShaderFileData, pixelShaderFileData);
 }
 
-HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram) {
-    return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram);
+HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram, const char* debugName) {
+    return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram, debugName);
 }
 
-HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources) {
-    return new DX11Texture2D(m_Device, initParams, subresources);
+HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) {
+    return new DX11Texture2D(m_Device, initParams, subresources, debugName);
 }
 
-HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
+HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11RenderTargetView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount);
+    return new DX11RenderTargetView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount, debugName);
 }
 
-HWDepthStencilView* DX11RendererAPI::CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) {
+HWDepthStencilView* DX11RendererAPI::CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11DepthStencilView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount);
+    return new DX11DepthStencilView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount, debugName);
 }
 
-HWShaderResourceView* DX11RendererAPI::CreateShaderResourceView(HWTexture2D* texture) {
+HWShaderResourceView* DX11RendererAPI::CreateShaderResourceView(HWTexture2D* texture, const char* debugName) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11ShaderResourceView(m_Device, dxTexture2D->GetDXTexture2D());
+    return new DX11ShaderResourceView(m_Device, dxTexture2D->GetDXTexture2D(), debugName);
 }
 
-HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* initParams) {
-    return new DX11SamplerState(m_Device, initParams);
+HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) {
+    return new DX11SamplerState(m_Device, initParams, debugName);
 }
 
 

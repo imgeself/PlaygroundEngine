@@ -15,11 +15,11 @@ void ShadowMapPass::Initialize(HWRendererAPI* rendererAPI, PGShaderLib* shaderLi
     initParams.arraySize = CASCADE_COUNT;
     initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL | TextureResourceFlags::BIND_SHADER_RESOURCE;
 
-    m_ShadowMapTexture = rendererAPI->CreateTexture2D(&initParams, nullptr);
+    m_ShadowMapTexture = rendererAPI->CreateTexture2D(&initParams, nullptr, "ShadowMapTexture");
     for (uint32_t cascadeIndex = 0; cascadeIndex < CASCADE_COUNT; ++cascadeIndex) {
-        m_DepthStencilViews[cascadeIndex] = rendererAPI->CreateDepthStencilView(m_ShadowMapTexture, cascadeIndex, 1);
+        m_DepthStencilViews[cascadeIndex] = rendererAPI->CreateDepthStencilView(m_ShadowMapTexture, cascadeIndex, 1, 0, 1, "Cascade DSV Slice");
     }
-    m_ShadowMapRsourceView = rendererAPI->CreateShaderResourceView(m_ShadowMapTexture);
+    m_ShadowMapRsourceView = rendererAPI->CreateShaderResourceView(m_ShadowMapTexture, "ShadowMapResourceView");
     delete m_ShadowMapTexture;
 
     m_Viewport.topLeftX = 0.0f;
@@ -30,7 +30,7 @@ void ShadowMapPass::Initialize(HWRendererAPI* rendererAPI, PGShaderLib* shaderLi
     m_ShadowGenShader = shaderLib->GetDefaultShader("ShadowGen");
 
     PerShadowGenConstantBuffer initData = {};
-    m_PerShadowGenConstantBuffer = rendererAPI->CreateConstantBuffer(&initData, sizeof(PerShadowGenConstantBuffer));
+    m_PerShadowGenConstantBuffer = rendererAPI->CreateConstantBuffer(&initData, sizeof(PerShadowGenConstantBuffer), "ShadowGenCB");
     rendererAPI->SetConstanBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
     rendererAPI->SetConstanBuffersPS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
 }

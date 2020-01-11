@@ -84,7 +84,7 @@ static inline D3D11_COMPARISON_FUNC GetD3DComparisonFunc(ComparisonFunction func
     return result;
 }
 
-DX11SamplerState::DX11SamplerState(ID3D11Device* device, SamplerStateInitParams* initParams) {
+DX11SamplerState::DX11SamplerState(ID3D11Device* device, SamplerStateInitParams* initParams, const char* debugName) {
     D3D11_SAMPLER_DESC samplerStateDesc = {};
     samplerStateDesc.Filter = GetD3DFilterFromFilterMode(initParams->filterMode, initParams->comparisonFunction);
     samplerStateDesc.AddressU = GetD3DAddressModeFromAddressMode(initParams->addressModeU);
@@ -96,6 +96,13 @@ DX11SamplerState::DX11SamplerState(ID3D11Device* device, SamplerStateInitParams*
 
     HRESULT result = device->CreateSamplerState(&samplerStateDesc, &m_SamplerState);
     PG_ASSERT(SUCCEEDED(result), "Error at creating sampler state");
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_SamplerState->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
+    }
+#endif
 }
 
 DX11SamplerState::~DX11SamplerState() {

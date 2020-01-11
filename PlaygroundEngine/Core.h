@@ -23,6 +23,8 @@
     #endif
 #endif
 
+#define PG_DEBUG_GPU_DEVICE 1
+
 struct SystemInitArguments {
     const char* executablePath;
     const char* gameLibraryPath;

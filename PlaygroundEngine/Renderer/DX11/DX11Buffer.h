@@ -6,7 +6,7 @@
 
 class DX11ConstantBuffer : public HWConstantBuffer {
 public:
-    DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size);
+    DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size, const char* debugName = 0);
     ~DX11ConstantBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
@@ -17,7 +17,7 @@ private:
 
 class DX11VertexBuffer : public HWVertexBuffer {
 public:
-    DX11VertexBuffer(ID3D11Device* device, void* data, size_t size, size_t strideSize);
+    DX11VertexBuffer(ID3D11Device* device, void* data, size_t size, size_t strideSize, const char* debugName = 0);
     ~DX11VertexBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
@@ -30,7 +30,7 @@ private:
 
 class DX11IndexBuffer : public HWIndexBuffer {
 public:
-    DX11IndexBuffer(ID3D11Device* device, uint32_t* data, size_t count);
+    DX11IndexBuffer(ID3D11Device* device, uint32_t* data, size_t count, const char* debugName = 0);
     ~DX11IndexBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }

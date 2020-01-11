@@ -126,6 +126,9 @@
     <ClCompile Include="PGLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PGProfiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSystem.h">
@@ -312,6 +315,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PGProfiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

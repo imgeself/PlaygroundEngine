@@ -220,6 +220,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PGCamera.cpp" />
     <ClCompile Include="PGLog.cpp" />
+    <ClCompile Include="PGProfiler.cpp" />
     <ClCompile Include="PGResourceManager.cpp" />
     <ClCompile Include="PGSystem.cpp" />
     <ClCompile Include="Events\PGSystemEventDispatcher.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="PGApplication.h" />
     <ClInclude Include="PGCamera.h" />
     <ClInclude Include="PGLog.h" />
+    <ClInclude Include="PGProfiler.h" />
     <ClInclude Include="PGResouceManager.h" />
     <ClInclude Include="PGResource.h" />
     <ClInclude Include="PGSystem.h" />

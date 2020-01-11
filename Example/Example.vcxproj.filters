@@ -26,5 +26,8 @@
     <ClInclude Include="LogWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PerformanceWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

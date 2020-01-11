@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="LogWindow.h" />
+    <ClInclude Include="PerformanceWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlaygroundEngine\PlaygroundEngine.vcxproj">

@@ -62,7 +62,7 @@ Skybox::Skybox(PGTexture* skyboxCubemap) : m_SkyboxCubemap(skyboxCubemap) {
         { "POSITION", VertexDataFormat_FLOAT3, 0, 0 },
     };
 
-    m_VertexInputLayout = rendererAPI->CreateVertexInputLayout(inputElements, m_Shader->GetHWShader());
+    m_VertexInputLayout = rendererAPI->CreateVertexInputLayout(inputElements, m_Shader->GetHWVertexShader());
 }
 
 Skybox::~Skybox() {
@@ -78,7 +78,8 @@ void Skybox::RenderSkybox() {
     rendererAPI->SetVertexBuffer(m_VertexBuffer, sizeof(Vector3));
     rendererAPI->SetIndexBuffer(m_IndexBuffer);
     rendererAPI->SetInputLayout(m_VertexInputLayout);
-    rendererAPI->SetShaderProgram(m_Shader->GetHWShader());
+    rendererAPI->SetVertexShader(m_Shader->GetHWVertexShader());
+    rendererAPI->SetPixelShader(m_Shader->GetHWPixelShader());
 
     HWShaderResourceView* skyboxView = m_SkyboxCubemap->GetHWResourceView();
     rendererAPI->SetShaderResourcesPS(SKYBOX_TEXTURECUBE_SLOT, &skyboxView, 1);

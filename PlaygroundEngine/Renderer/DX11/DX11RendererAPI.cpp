@@ -214,12 +214,16 @@ HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t c
     return new DX11IndexBuffer(m_Device, bufferData, count, debugName);
 }
 
-HWShaderProgram* DX11RendererAPI::CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData, const char* debugName) {
-    return new DX11ShaderProgram(m_Device, vertexShaderFileData, pixelShaderFileData);
+HWVertexShader* DX11RendererAPI::CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName) {
+    return new DX11VertexShader(m_Device, vertexShaderFileData);
 }
 
-HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram, const char* debugName) {
-    return new DX11VertexInputLayout(m_Device, inputElements, (DX11ShaderProgram*) shaderProgram, debugName);
+HWPixelShader* DX11RendererAPI::CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName) {
+    return new DX11PixelShader(m_Device, pixelShaderFileData);
+}
+
+HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName) {
+    return new DX11VertexInputLayout(m_Device, inputElements, (DX11VertexShader*) vertexShader, debugName);
 }
 
 HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) {
@@ -272,12 +276,14 @@ void DX11RendererAPI::SetInputLayout(HWVertexInputLayout* vertexInputLayout) {
     }
 }
 
-void DX11RendererAPI::SetShaderProgram(HWShaderProgram* shaderProgram) {
-    DX11ShaderProgram* dx11ShaderProgram = (DX11ShaderProgram*) shaderProgram;
-    ID3D11VertexShader* vertexShader = dx11ShaderProgram->GetDXVertexShader();
-    ID3D11PixelShader* pixelShader = dx11ShaderProgram->GetDXPixelShader();
-    m_DeviceContext->VSSetShader(vertexShader, nullptr, 0);
-    m_DeviceContext->PSSetShader(pixelShader, nullptr, 0);
+void DX11RendererAPI::SetVertexShader(HWVertexShader* vertexShader) {
+    ID3D11VertexShader* dx11VertexShader = ((DX11VertexShader*) vertexShader)->GetDXVertexShader();
+    m_DeviceContext->VSSetShader(dx11VertexShader, nullptr, 0);
+}
+
+void DX11RendererAPI::SetPixelShader(HWPixelShader* pixelShader) {
+    ID3D11PixelShader* dx11PixelShader = ((DX11PixelShader*) pixelShader)->GetDXPixelShader();
+    m_DeviceContext->PSSetShader(dx11PixelShader, nullptr, 0);
 }
 
 void DX11RendererAPI::SetRenderTargets(HWRenderTargetView** renderTargets, size_t renderTargetCount, HWDepthStencilView* depthStencilView) {

@@ -7,8 +7,13 @@ struct ShaderFileData {
     size_t fileSize;
 };
 
-class HWShaderProgram {
+class HWVertexShader {
 public:
-    virtual ~HWShaderProgram() = default;
+    virtual ~HWVertexShader() = default;
+};
+
+class HWPixelShader {
+public:
+    virtual ~HWPixelShader() = default;
 };
 

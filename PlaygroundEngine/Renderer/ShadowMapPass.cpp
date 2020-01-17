@@ -45,8 +45,8 @@ ShadowMapPass::~ShadowMapPass() {
 
 void ShadowMapPass::Execute(HWRendererAPI* rendererAPI, const std::vector<PGRenderObject*>& renderObjects) {
     PG_PROFILE_FUNCTION();
-    HWShaderProgram* hwShader = m_ShadowGenShader->GetHWShader();
-    rendererAPI->SetShaderProgram(hwShader);
+    rendererAPI->SetVertexShader(m_ShadowGenShader->GetHWVertexShader());
+    rendererAPI->SetPixelShader(m_ShadowGenShader->GetHWPixelShader());
     rendererAPI->SetViewport(&m_Viewport);
     
     for (uint32_t cascadeIndex = 0; cascadeIndex < CASCADE_COUNT; ++cascadeIndex) {

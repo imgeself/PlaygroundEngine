@@ -10,7 +10,7 @@ PGRenderObject::PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI)
     indexBuffer= rendererAPI->CreateIndexBuffer(mesh->indices.data(), indicesCount);
 
     shader = mesh->material->shader;
-    HWShaderProgram* hwShader = shader->GetHWShader();
+    HWVertexShader* hwVertexShader = shader->GetHWVertexShader();
 
     //TODO: Do we want fixed input elements for all shaders?
     std::vector<VertexInputElement> inputElements = {
@@ -19,7 +19,7 @@ PGRenderObject::PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI)
         { "TEXCOORD", VertexDataFormat_FLOAT2, 0, 24 }
     };
 
-    inputLayout = rendererAPI->CreateVertexInputLayout(inputElements, hwShader);
+    inputLayout = rendererAPI->CreateVertexInputLayout(inputElements, hwVertexShader);
 }
 
 PGRenderObject::~PGRenderObject() {

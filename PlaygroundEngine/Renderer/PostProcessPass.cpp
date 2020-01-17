@@ -30,7 +30,8 @@ void TonemapPass::Execute(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
     rendererAPI->SetViewport(&m_Viewport);
 
     PGShader* hdrPostShader = shaderLib->GetDefaultShader("HDRPostProcess");
-    rendererAPI->SetShaderProgram(hdrPostShader->GetHWShader());
+    rendererAPI->SetVertexShader(hdrPostShader->GetHWVertexShader());
+    rendererAPI->SetPixelShader(hdrPostShader->GetHWPixelShader());
 
     rendererAPI->SetShaderResourcesPS(POST_PROCESS_TEXTURE0_SLOT, &m_HDRBufferResourceView, 1);
     rendererAPI->Draw(3, 0);

@@ -74,7 +74,8 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
         rendererAPI->SetVertexBuffer(renderObject->vertexBuffer, vertexBufferStride);
         rendererAPI->SetIndexBuffer(renderObject->indexBuffer);
         rendererAPI->SetInputLayout(renderObject->inputLayout);
-        rendererAPI->SetShaderProgram(renderObject->shader->GetHWShader());
+        rendererAPI->SetVertexShader(renderObject->shader->GetHWVertexShader());
+        rendererAPI->SetPixelShader(renderObject->shader->GetHWPixelShader());
         if (renderObject->indexBuffer) {
             rendererAPI->DrawIndexed(renderObject->indexBuffer);
         } else {

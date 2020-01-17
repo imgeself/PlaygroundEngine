@@ -15,9 +15,11 @@ public:
     void LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* fileData);
     void Reload(HWRendererAPI* rendererAPI, const char* filename);
 
-    inline HWShaderProgram* GetHWShader() { return m_HWShader; }
+    inline HWVertexShader* GetHWVertexShader() { return m_HWVertexShader; }
+    inline HWPixelShader* GetHWPixelShader() { return m_HWPixelShader; }
 
 private:
-    HWShaderProgram* m_HWShader;
+    HWVertexShader* m_HWVertexShader;
+    HWPixelShader* m_HWPixelShader;
 };
 

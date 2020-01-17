@@ -8,7 +8,8 @@ PGShader::PGShader() {
 }
 
 PGShader::~PGShader() {
-    delete m_HWShader;
+    delete m_HWVertexShader;
+    delete m_HWPixelShader;
 }
 
 static ID3DBlob* CompileShader(ShaderFileData* source, const char* mainFunctionName, const char* version) {
@@ -56,7 +57,8 @@ void PGShader::LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename
     ShaderFileData vertexShaderData = { (char*)vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
     ShaderFileData pixelShaderData = { (char*)pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
 
-    m_HWShader = rendererAPI->CreateShaderProgramFromBinarySource(&vertexShaderData, &pixelShaderData);
+    m_HWVertexShader = rendererAPI->CreateVertexShaderFromBinarySource(&vertexShaderData);
+    m_HWPixelShader = rendererAPI->CreatePixelShaderFromBinarySource(&pixelShaderData);
 
     SAFE_RELEASE(vertexShaderBlob);
     SAFE_RELEASE(pixelShaderBlob);
@@ -69,7 +71,8 @@ void PGShader::LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* file
     ShaderFileData vertexShaderData = { (char*) vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
     ShaderFileData pixelShaderData = { (char*) pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
 
-    m_HWShader = rendererAPI->CreateShaderProgramFromBinarySource(&vertexShaderData, &pixelShaderData);
+    m_HWVertexShader = rendererAPI->CreateVertexShaderFromBinarySource(&vertexShaderData);
+    m_HWPixelShader = rendererAPI->CreatePixelShaderFromBinarySource(&pixelShaderData);
 
     SAFE_RELEASE(vertexShaderBlob);
     SAFE_RELEASE(pixelShaderBlob);
@@ -90,8 +93,10 @@ void PGShader::Reload(HWRendererAPI* rendererAPI, const char* filename) {
     ShaderFileData vertexShaderData = { (char*)vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
     ShaderFileData pixelShaderData = { (char*)pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
 
-    delete m_HWShader;
-    m_HWShader = rendererAPI->CreateShaderProgramFromBinarySource(&vertexShaderData, &pixelShaderData);
+    delete m_HWVertexShader;
+    delete m_HWPixelShader;
+    m_HWVertexShader = rendererAPI->CreateVertexShaderFromBinarySource(&vertexShaderData);
+    m_HWPixelShader = rendererAPI->CreatePixelShaderFromBinarySource(&pixelShaderData);
 
     SAFE_RELEASE(vertexShaderBlob);
     SAFE_RELEASE(pixelShaderBlob);

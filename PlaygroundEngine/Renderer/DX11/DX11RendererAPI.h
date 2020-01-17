@@ -32,8 +32,9 @@ public:
     HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, const char* debugName) override;
     HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize, const char* debugName) override;
     HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, const char* debugName) override;
-    HWShaderProgram* CreateShaderProgramFromBinarySource(ShaderFileData* vertexShaderFileData, ShaderFileData* pixelShaderFileData, const char* debugName) override;
-    HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWShaderProgram* shaderProgram, const char* debugName) override;
+    HWVertexShader* CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName = 0) override;
+    HWPixelShader* CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName = 0) override;
+    HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName = 0) override;
     HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) override;
     HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
     HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
@@ -44,7 +45,8 @@ public:
     void SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) override;
     void SetIndexBuffer(HWIndexBuffer* indexBuffer) override;
     void SetInputLayout(HWVertexInputLayout* vertexInputLayout) override;
-    void SetShaderProgram(HWShaderProgram* shaderProgram) override;
+    void SetVertexShader(HWVertexShader* vertexShader) override;
+    void SetPixelShader(HWPixelShader* pixelShader) override;
     void SetRenderTargets(HWRenderTargetView** renderTargets, size_t renderTargetCount, HWDepthStencilView* depthStencilView) override;
     void SetShaderResourcesVS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;

@@ -10,7 +10,8 @@
 #include "PGShaderLib.h"
 #include "PGRenderObject.h"
 #include "SceneRenderPass.h"
-#include "PostProcessPass.h"
+#include "FullscreenPass.h"
+#include "ShadowMapStage.h"
 
 #include <vector>
 #include <array>
@@ -54,8 +55,8 @@ private:
 
     static std::array<HWSamplerState*, 5> s_DefaultSamplers;
 
-    static ShadowMapPass s_ShadowMapPass;
+    static ShadowGenStage s_ShadowGenStage;
     static SceneRenderPass s_SceneRenderPass;
-    static TonemapPass s_PostProcessPass;
+    static FullscreenPass s_ToneMappingPass;
 };
 

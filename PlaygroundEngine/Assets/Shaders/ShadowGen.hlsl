@@ -3,9 +3,15 @@
 ///////////////////////////////////////////////////////////////////////////
 /////// VERTEX SHADER
 ///////////////////////////////////////////////////////////////////////////
-float4 VSMain(float3 pos : Position, float3 normal : Normal) : SV_Position
-{
-    return mul(g_LightProjMatrices[g_ShadowGenCascadeIndex], mul(g_LightViewMatrix, mul(g_ModelMatrix, float4(pos, 1.0f))));
+struct VSOut {
+    float4 pos : SV_Position;
+    uint depthSlice : SV_RenderTargetArrayIndex;
+};
+VSOut VSMain(float3 pos : POSITION, float3 normal : NORMAL, float2 texCoord : TEXCOORD) {
+    VSOut output;
+    output.pos = mul(g_LightProjMatrices[g_ShadowGenCascadeIndex], mul(g_LightViewMatrix, mul(g_ModelMatrix, float4(pos, 1.0f))));
+    output.depthSlice = g_ShadowGenCascadeIndex;
+    return output;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -13,6 +19,5 @@ float4 VSMain(float3 pos : Position, float3 normal : Normal) : SV_Position
 ///////////////////////////////////////////////////////////////////////////
 void PSMain()
 {
-    //return float4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 

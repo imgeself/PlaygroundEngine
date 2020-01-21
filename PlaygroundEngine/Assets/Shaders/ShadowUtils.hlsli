@@ -9,11 +9,12 @@ inline float PCFShadowMap(float3 shadowCoord, uint cascadeIndex, float bias) {
     for (int i = -index; i <= index; ++i) {
         [unroll]
         for (int j = -index; j <= index; ++j) {
-            float sampleDepth = g_ShadowMapTexture.SampleCmpLevelZero(g_ShadowMapSampler, float3(shadowCoord.xy + float2(i, j) * texelSize, cascadeIndex), compareValue);
-            shadowValue += sampleDepth;
+            int2 offset = int2(i, j);
+            float sampleCmp = g_ShadowMapTexture.SampleCmpLevelZero(g_ShadowMapSampler, float3(shadowCoord.xy, cascadeIndex), compareValue, offset);
+            shadowValue += sampleCmp;
         }
     }
-    shadowValue /= pow(kernelSize, 2);
+    shadowValue /= (kernelSize * kernelSize);
     return shadowValue;
 }
 

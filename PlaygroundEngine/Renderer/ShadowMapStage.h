@@ -19,6 +19,7 @@ private:
         virtual ~ShadowGenPass() = default;
 
         virtual void Execute(HWRendererAPI* rendererAPI) {
+            PG_PROFILE_FUNCTION();
             for (PGRenderObject* renderObject : m_RenderObjects) {
                 renderObject->UpdatePerDrawConstantBuffer(rendererAPI);
 

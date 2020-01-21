@@ -1,5 +1,4 @@
 #include "SceneRenderPass.h"
-#include "../PGProfiler.h"
 
 void SceneRenderPass::SetRenderObjects(const std::vector<PGRenderObject*>& renderObjects) {
     m_RenderObjects.clear();

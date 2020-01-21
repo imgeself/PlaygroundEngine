@@ -4,6 +4,7 @@
 #include "PGRenderObject.h"
 
 #include "BaseRenderPass.h"
+#include "../PGProfiler.h"
 
 class SceneRenderPass : public RenderPass {
 public:

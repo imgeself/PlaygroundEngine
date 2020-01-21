@@ -70,5 +70,6 @@ static void DrawPerformanceWindow() {
         DrawChildNodes(profileTree);
     }
     ImGui::End();
+    PGProfileTimer::s_ProfileResults.clear();
 }
 

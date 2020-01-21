@@ -37,7 +37,7 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     swapChainDescriptor.Flags = 0;
 
     const D3D_FEATURE_LEVEL featureLevels[] = {
-        D3D_FEATURE_LEVEL_11_0
+        D3D_FEATURE_LEVEL_11_1,
     };
 
     UINT createDeviceFlags = 0;
@@ -277,13 +277,21 @@ void DX11RendererAPI::SetInputLayout(HWVertexInputLayout* vertexInputLayout) {
 }
 
 void DX11RendererAPI::SetVertexShader(HWVertexShader* vertexShader) {
-    ID3D11VertexShader* dx11VertexShader = ((DX11VertexShader*) vertexShader)->GetDXVertexShader();
-    m_DeviceContext->VSSetShader(dx11VertexShader, nullptr, 0);
+    if (vertexShader) {
+        ID3D11VertexShader* dx11VertexShader = ((DX11VertexShader*)vertexShader)->GetDXVertexShader();
+        m_DeviceContext->VSSetShader(dx11VertexShader, nullptr, 0);
+    } else {
+        m_DeviceContext->VSSetShader(nullptr, nullptr, 0);
+    }
 }
 
 void DX11RendererAPI::SetPixelShader(HWPixelShader* pixelShader) {
-    ID3D11PixelShader* dx11PixelShader = ((DX11PixelShader*) pixelShader)->GetDXPixelShader();
-    m_DeviceContext->PSSetShader(dx11PixelShader, nullptr, 0);
+    if (pixelShader) {
+        ID3D11PixelShader* dx11PixelShader = ((DX11PixelShader*)pixelShader)->GetDXPixelShader();
+        m_DeviceContext->PSSetShader(dx11PixelShader, nullptr, 0);
+    } else {
+        m_DeviceContext->PSSetShader(nullptr, nullptr, 0);
+    }
 }
 
 void DX11RendererAPI::SetRenderTargets(HWRenderTargetView** renderTargets, size_t renderTargetCount, HWDepthStencilView* depthStencilView) {

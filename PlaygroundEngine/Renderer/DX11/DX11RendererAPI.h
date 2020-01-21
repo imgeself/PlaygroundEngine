@@ -11,7 +11,7 @@
 #include "DX11ShaderResourceView.h"
 #include "DX11SamplerState.h"
 
-#include <d3d11.h>
+#include <d3d11_4.h>
 
 class DX11RendererAPI : public HWRendererAPI {
 public:

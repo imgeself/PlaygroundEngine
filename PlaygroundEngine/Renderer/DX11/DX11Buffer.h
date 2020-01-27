@@ -10,6 +10,7 @@ public:
     ~DX11ConstantBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
+    void* GetResourceHandle() override { return (void*) m_Buffer; }
 
 private:
     ID3D11Buffer* m_Buffer;
@@ -21,11 +22,10 @@ public:
     ~DX11VertexBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
-    uint32_t GetCount() { return m_Count; }
+    void* GetResourceHandle() override { return (void*)m_Buffer; }
 
 private:
     ID3D11Buffer* m_Buffer;
-    uint32_t m_Count;
 };
 
 class DX11IndexBuffer : public HWIndexBuffer {
@@ -34,6 +34,8 @@ public:
     ~DX11IndexBuffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
+    void* GetResourceHandle() override { return (void*)m_Buffer; }
+
     size_t GetCount() { return m_Count; }
 
 private:

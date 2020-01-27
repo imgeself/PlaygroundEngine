@@ -25,7 +25,6 @@ public:
     virtual void ResizeBackBuffer(size_t clientWidth, size_t clientHeight) = 0;
 
     virtual void ClearScreen(const float* color) = 0;
-    virtual void Draw(HWVertexBuffer* indexBuffer) = 0;
     virtual void Draw(size_t vertexCount, size_t vertexBaseLocation) = 0;
     virtual void DrawIndexed(HWIndexBuffer* indexBuffer) = 0;
     virtual void Present() = 0;
@@ -65,8 +64,8 @@ public:
     virtual void ClearRenderTarget(HWRenderTargetView* renderTargetView, float color[4]) = 0;
     virtual void ClearDepthStencilView(HWDepthStencilView* depthStencilView, bool clearStencil, float depthClearData, uint8_t stencilClearData) = 0;
 
-    virtual void* Map(HWConstantBuffer* resource) = 0;
-    virtual void Unmap(HWConstantBuffer* resource) = 0;
+    virtual void* Map(HWResource* resource) = 0;
+    virtual void Unmap(HWResource* resource) = 0;
 
     virtual void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) = 0;
 

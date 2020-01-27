@@ -12,6 +12,7 @@ public:
     Texture2DDesc GetDesc() override;
 
     inline ID3D11Texture2D* GetDXTexture2D() { return m_Texture; }
+    void* GetResourceHandle() override { return (void*) m_Texture; }
 
 private:
     ID3D11Texture2D* m_Texture;

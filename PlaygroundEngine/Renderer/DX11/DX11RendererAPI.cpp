@@ -169,11 +169,6 @@ void DX11RendererAPI::ClearScreen(const float* color) {
     ClearRenderTarget(m_BackbufferRenderTargetView, (float*) color);
 }
 
-void DX11RendererAPI::Draw(HWVertexBuffer* vertexBuffer) {
-    DX11VertexBuffer* dx11VertexBuffer = (DX11VertexBuffer*) vertexBuffer;
-    m_DeviceContext->Draw(dx11VertexBuffer->GetCount(), 0);
-}
-
 void DX11RendererAPI::Draw(size_t vertexCount, size_t vertexBaseLocation) {
     m_DeviceContext->Draw((UINT) vertexCount, (UINT) vertexBaseLocation);
 }
@@ -414,20 +409,18 @@ void DX11RendererAPI::ClearDepthStencilView(HWDepthStencilView* depthStencilView
 }
 
 
-void* DX11RendererAPI::Map(HWConstantBuffer* resource) {
-    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*) resource;
-    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
+void* DX11RendererAPI::Map(HWResource* resource) {
+    ID3D11Resource* d3dResource = (ID3D11Resource*) resource->GetResourceHandle();
 
     D3D11_MAPPED_SUBRESOURCE mappedResource = {};
-    m_DeviceContext->Map(buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    m_DeviceContext->Map(d3dResource, NULL, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     return mappedResource.pData;
 }
 
-void DX11RendererAPI::Unmap(HWConstantBuffer* resource) {
-    DX11ConstantBuffer* dx11ConstantBuffer = (DX11ConstantBuffer*)resource;
-    ID3D11Buffer* buffer = dx11ConstantBuffer->GetDXBuffer();
+void DX11RendererAPI::Unmap(HWResource* resource) {
+    ID3D11Resource* d3dResource = (ID3D11Resource*) resource->GetResourceHandle();
 
-    m_DeviceContext->Unmap(buffer, NULL);
+    m_DeviceContext->Unmap(d3dResource, NULL);
 }
 
 void DX11RendererAPI::MSAAResolve(HWTexture2D* dest, HWTexture2D* source) {

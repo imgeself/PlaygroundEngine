@@ -23,5 +23,7 @@ enum HWResourceFlags {
 class HWResource {
 public:
     virtual ~HWResource() = default;
+
+    virtual void* GetResourceHandle() = 0;
 };
 

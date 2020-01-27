@@ -21,7 +21,6 @@ public:
     void ResizeBackBuffer(size_t clientWidth, size_t clientHeight) override;
 
     void ClearScreen(const float* color) override;
-    void Draw(HWVertexBuffer* vertexBuffer) override;
     void Draw(size_t vertexCount, size_t vertexBaseLocation) override;
     void DrawIndexed(HWIndexBuffer* indexBuffer) override;
     void Present() override;
@@ -61,8 +60,8 @@ public:
     void ClearRenderTarget(HWRenderTargetView* renderTargetView, float color[4]) override;
     void ClearDepthStencilView(HWDepthStencilView* depthStencilView, bool clearStencil, float depthClearData, uint8_t stencilClearData) override;
 
-    void* Map(HWConstantBuffer* resource) override;
-    void Unmap(HWConstantBuffer* resource) override;
+    void* Map(HWResource* resource) override;
+    void Unmap(HWResource* resource) override;
 
     void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) override;
 

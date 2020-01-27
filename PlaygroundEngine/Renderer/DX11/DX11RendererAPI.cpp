@@ -252,12 +252,16 @@ HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* init
 
 
 // Bindings
-void DX11RendererAPI::SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) {
-    DX11VertexBuffer* dx11VertexBuffer = (DX11VertexBuffer*) vertexBuffer;
-    ID3D11Buffer* buffer = dx11VertexBuffer->GetDXBuffer();
-    UINT strides = (UINT) stride;
-    UINT offsets = 0;
-    m_DeviceContext->IASetVertexBuffers(0, 1, &buffer, &strides, &offsets);
+void DX11RendererAPI::SetVertexBuffers(HWVertexBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strides, uint32_t* offsets) {
+    DX11VertexBuffer** dx11VertexBuffers = (DX11VertexBuffer**) vertexBuffers;
+    ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * vertexBufferCount);
+    for (size_t i = 0; i < vertexBufferCount; ++i) {
+        DX11VertexBuffer* vertexBuffer = *dx11VertexBuffers;
+        *(buffers + i) = vertexBuffer ? vertexBuffer->GetDXBuffer() : nullptr;
+        dx11VertexBuffers++;
+    }
+
+    m_DeviceContext->IASetVertexBuffers(0, vertexBufferCount, buffers, (UINT*) strides, (UINT*) offsets);
 }
 
 void DX11RendererAPI::SetIndexBuffer(HWIndexBuffer* indexBuffer) {

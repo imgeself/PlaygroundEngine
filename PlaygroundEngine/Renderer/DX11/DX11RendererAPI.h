@@ -42,7 +42,7 @@ public:
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
 
-    void SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) override;
+    void SetVertexBuffers(HWVertexBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strides, uint32_t* offsets) override;
     void SetIndexBuffer(HWIndexBuffer* indexBuffer) override;
     void SetInputLayout(HWVertexInputLayout* vertexInputLayout) override;
     void SetVertexShader(HWVertexShader* vertexShader) override;

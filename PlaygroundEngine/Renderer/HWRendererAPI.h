@@ -45,7 +45,7 @@ public:
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName = 0) = 0;
     virtual HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName = 0) = 0;
 
-    virtual void SetVertexBuffer(HWVertexBuffer* vertexBuffer, size_t stride) = 0;
+    virtual void SetVertexBuffers(HWVertexBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strides, uint32_t* offsets) = 0;
     virtual void SetIndexBuffer(HWIndexBuffer* indexBuffer) = 0;
     virtual void SetInputLayout(HWVertexInputLayout* vertexInputLayout) = 0;
     virtual void SetVertexShader(HWVertexShader* vertexShader) = 0;

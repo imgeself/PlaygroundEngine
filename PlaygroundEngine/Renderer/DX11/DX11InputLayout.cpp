@@ -22,6 +22,13 @@ static DXGI_FORMAT ConvertInputFormatToDXGIFormat(VertexDataFormat format) {
     return DXGI_FORMAT_UNKNOWN;
 }
 
+static D3D11_INPUT_CLASSIFICATION InputClassificationToD3D11(InputClassification classification) {
+    switch (classification) { 
+        case PER_VERTEX_DATA: return D3D11_INPUT_PER_VERTEX_DATA;
+        case PER_INSTANCE_DATA: return D3D11_INPUT_PER_INSTANCE_DATA;
+    }
+}
+
 DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<VertexInputElement> inputElements, DX11VertexShader* vertexShader, const char* debugName) {
     // Input layout creation
     const size_t size = inputElements.size();
@@ -30,13 +37,13 @@ DX11VertexInputLayout::DX11VertexInputLayout(ID3D11Device* device, std::vector<V
 
     for (VertexInputElement& element : inputElements) {
         D3D11_INPUT_ELEMENT_DESC dx11Description = {};
-        dx11Description.SemanticName = element.name.c_str();
-        dx11Description.SemanticIndex = 0;
+        dx11Description.SemanticName = element.semanticName.c_str();
+        dx11Description.SemanticIndex = element.semanticIndex;
         dx11Description.Format = ConvertInputFormatToDXGIFormat(element.format);
         dx11Description.InputSlot = element.inputSlot;
-        dx11Description.AlignedByteOffset = element.offset;
-        dx11Description.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-        dx11Description.InstanceDataStepRate = 0;
+        dx11Description.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+        dx11Description.InputSlotClass = InputClassificationToD3D11(element.classification);
+        dx11Description.InstanceDataStepRate = element.instanceStepRate;
 
         layoutDescription.push_back(dx11Description);
     }

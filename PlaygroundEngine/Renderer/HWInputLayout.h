@@ -19,14 +19,22 @@ enum VertexDataFormat {
     VertexDataFormat_UINT4,
 };
 
+enum InputClassification {
+    PER_VERTEX_DATA,
+    PER_INSTANCE_DATA
+};
+
+
 struct VertexInputElement {
-    std::string name;
+    std::string semanticName;
+    uint32_t semanticIndex;
     VertexDataFormat format;
     uint32_t inputSlot;
-    uint32_t offset;
+    InputClassification classification;
+    uint32_t instanceStepRate;
 
-    VertexInputElement(const std::string& name, VertexDataFormat format, uint32_t slot, uint32_t offset) 
-        : name(name), format(format), inputSlot(slot), offset(offset) {}
+    VertexInputElement(const std::string& semanticName, uint32_t semanticIndex, VertexDataFormat format, uint32_t slot, InputClassification classification, uint32_t instanceStepRate)
+        : semanticName(semanticName), semanticIndex(semanticIndex), format(format), inputSlot(slot), classification(classification), instanceStepRate(instanceStepRate) {}
 };
 
 class HWVertexInputLayout {

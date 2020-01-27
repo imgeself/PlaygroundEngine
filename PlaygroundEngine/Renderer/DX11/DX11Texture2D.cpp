@@ -4,32 +4,32 @@
 
 static inline UINT GetMiscFlagsFromResourceFlags(uint32_t resourceFlags) {
     return UINT(
-        ((resourceFlags & TextureResourceFlags::MISC_TEXTURE_CUBE) ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0) |
-        ((resourceFlags & TextureResourceFlags::MISC_GENERATE_MIPS) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0)
+        ((resourceFlags & HWResourceFlags::MISC_TEXTURE_CUBE) ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0) |
+        ((resourceFlags & HWResourceFlags::MISC_GENERATE_MIPS) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0)
     );
 }
 
 static inline D3D11_BIND_FLAG GetBindFlagsFromResourceFlags(uint32_t resourceFlags) {
     return D3D11_BIND_FLAG(
-        ((resourceFlags & TextureResourceFlags::BIND_DEPTH_STENCIL) ? D3D11_BIND_DEPTH_STENCIL : 0) |
-        ((resourceFlags & TextureResourceFlags::BIND_RENDER_TARGET) ? D3D11_BIND_RENDER_TARGET : 0) |
-        ((resourceFlags & TextureResourceFlags::BIND_SHADER_RESOURCE) ? D3D11_BIND_SHADER_RESOURCE : 0)
+        ((resourceFlags & HWResourceFlags::BIND_DEPTH_STENCIL) ? D3D11_BIND_DEPTH_STENCIL : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_RENDER_TARGET) ? D3D11_BIND_RENDER_TARGET : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_SHADER_RESOURCE) ? D3D11_BIND_SHADER_RESOURCE : 0)
     );
 }
 
 static inline D3D11_USAGE GetUsageFromResourceFlags(uint32_t resourceFlags) {
     return D3D11_USAGE(
-        ((resourceFlags & TextureResourceFlags::USAGE_STAGING)    ? D3D11_USAGE_STAGING :
-        ((resourceFlags & TextureResourceFlags::USAGE_DYNAMIC)    ? D3D11_USAGE_DYNAMIC :
-        ((resourceFlags & TextureResourceFlags::USAGE_IMMUTABLE)  ? D3D11_USAGE_IMMUTABLE :
+        ((resourceFlags & HWResourceFlags::USAGE_STAGING)    ? D3D11_USAGE_STAGING :
+        ((resourceFlags & HWResourceFlags::USAGE_DYNAMIC)    ? D3D11_USAGE_DYNAMIC :
+        ((resourceFlags & HWResourceFlags::USAGE_IMMUTABLE)  ? D3D11_USAGE_IMMUTABLE :
                                                                     D3D11_USAGE_DEFAULT)))
     );
 }
 
 static inline D3D11_CPU_ACCESS_FLAG GetCPUAccessFlagFromResourceFlags(uint32_t resourceFlags) {
     return D3D11_CPU_ACCESS_FLAG(
-        ((resourceFlags & TextureResourceFlags::CPU_ACCESS_READ) ? D3D11_CPU_ACCESS_READ : 0) |
-        ((resourceFlags & TextureResourceFlags::CPU_ACCESS_WRITE) ? D3D11_CPU_ACCESS_WRITE : 0)
+        ((resourceFlags & HWResourceFlags::CPU_ACCESS_READ) ? D3D11_CPU_ACCESS_READ : 0) |
+        ((resourceFlags & HWResourceFlags::CPU_ACCESS_WRITE) ? D3D11_CPU_ACCESS_WRITE : 0)
     );
 }
 

@@ -202,16 +202,16 @@ HWViewport DX11RendererAPI::GetDefaultViewport() {
     return result;
 }
 
-HWConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size, const char* debugName) {
-    return new DX11ConstantBuffer(m_Device, bufferData, size, debugName);
+HWConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) {
+    return new DX11ConstantBuffer(m_Device, bufferData, size, flags, debugName);
 }
 
-HWVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize, const char* debugName) {
-    return new DX11VertexBuffer(m_Device, bufferData, size, strideSize, debugName);
+HWVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) {
+    return new DX11VertexBuffer(m_Device, bufferData, size, flags, debugName);
 }
 
-HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t count, const char* debugName) {
-    return new DX11IndexBuffer(m_Device, bufferData, count, debugName);
+HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t count, uint32_t flags, const char* debugName) {
+    return new DX11IndexBuffer(m_Device, bufferData, count, flags, debugName);
 }
 
 HWVertexShader* DX11RendererAPI::CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName) {

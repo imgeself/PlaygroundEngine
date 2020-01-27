@@ -33,9 +33,9 @@ public:
     virtual HWRenderTargetView* GetBackbufferRenderTargetView() = 0;
     virtual HWViewport GetDefaultViewport() = 0;
 
-    virtual HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, const char* debugName = 0) = 0;
-    virtual HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize, const char* debugName = 0) = 0;
-    virtual HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, const char* debugName = 0) = 0;
+    virtual HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName = 0) = 0;
+    virtual HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName = 0) = 0;
+    virtual HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, uint32_t flags, const char* debugName = 0) = 0;
     virtual HWVertexShader* CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName = 0) = 0;
     virtual HWPixelShader* CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName = 0) = 0;
     virtual HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName = 0) = 0;

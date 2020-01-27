@@ -29,9 +29,9 @@ public:
     HWRenderTargetView* GetBackbufferRenderTargetView() override;
     HWViewport GetDefaultViewport() override;
 
-    HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, const char* debugName) override;
-    HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, size_t strideSize, const char* debugName) override;
-    HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, const char* debugName) override;
+    HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) override;
+    HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) override;
+    HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, uint32_t flags, const char* debugName) override;
     HWVertexShader* CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName = 0) override;
     HWPixelShader* CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName = 0) override;
     HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName = 0) override;

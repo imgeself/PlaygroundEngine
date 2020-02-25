@@ -23,15 +23,12 @@ private:
             for (PGRenderObject* renderObject : m_RenderObjects) {
                 renderObject->UpdatePerDrawConstantBuffer(rendererAPI);
 
-                size_t vertexBufferStride = sizeof(Vertex);
-                rendererAPI->SetVertexBuffer(renderObject->vertexBuffer, vertexBufferStride);
+                uint32_t vertexBufferStride = sizeof(Vertex);
+                uint32_t offset = 0;
+                rendererAPI->SetVertexBuffers(&renderObject->vertexBuffer, 1, &vertexBufferStride, &offset);
                 rendererAPI->SetIndexBuffer(renderObject->indexBuffer);
                 rendererAPI->SetInputLayout(renderObject->inputLayout);
-                if (renderObject->indexBuffer) {
-                    rendererAPI->DrawIndexed(renderObject->indexBuffer);
-                } else {
-                    rendererAPI->Draw(renderObject->vertexBuffer);
-                }
+                rendererAPI->DrawIndexed(renderObject->indexBuffer);
             }
         }
     };

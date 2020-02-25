@@ -2,21 +2,20 @@
 
 PGRenderObject::PGRenderObject(const MeshRef& mesh, HWRendererAPI* rendererAPI)
     : mesh(mesh) {
-    size_t vertexBufferStride = sizeof(Vertex);
     size_t vertexBufferSize = sizeof(Vertex) * mesh->vertices.size();
-    vertexBuffer = rendererAPI->CreateVertexBuffer(mesh->vertices.data(), vertexBufferSize, vertexBufferStride);
+    vertexBuffer = rendererAPI->CreateVertexBuffer(mesh->vertices.data(), vertexBufferSize, HWResourceFlags::USAGE_IMMUTABLE);
 
     size_t indicesCount = mesh->indices.size();
-    indexBuffer= rendererAPI->CreateIndexBuffer(mesh->indices.data(), indicesCount);
+    indexBuffer= rendererAPI->CreateIndexBuffer(mesh->indices.data(), indicesCount, HWResourceFlags::USAGE_IMMUTABLE);
 
     shader = mesh->material->shader;
     HWVertexShader* hwVertexShader = shader->GetHWVertexShader();
 
     //TODO: Do we want fixed input elements for all shaders?
     std::vector<VertexInputElement> inputElements = {
-        { "POSITION", VertexDataFormat_FLOAT3, 0, 0 },
-        { "NORMAL", VertexDataFormat_FLOAT3, 0, 12 },
-        { "TEXCOORD", VertexDataFormat_FLOAT2, 0, 24 }
+        { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
+        { "NORMAL", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, VertexDataFormat_FLOAT2, 0, PER_VERTEX_DATA, 0 }
     };
 
     inputLayout = rendererAPI->CreateVertexInputLayout(inputElements, hwVertexShader);

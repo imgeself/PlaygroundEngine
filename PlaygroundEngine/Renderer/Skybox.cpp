@@ -53,13 +53,13 @@ Skybox::Skybox(PGTexture* skyboxCubemap) : m_SkyboxCubemap(skyboxCubemap) {
         21, 23, 22
     };
 
-    m_VertexBuffer = rendererAPI->CreateVertexBuffer((void*)vertices, sizeof(vertices), sizeof(Vector3));
-    m_IndexBuffer = rendererAPI->CreateIndexBuffer(indices, ARRAYSIZE(indices));
+    m_VertexBuffer = rendererAPI->CreateVertexBuffer((void*)vertices, sizeof(vertices), HWResourceFlags::USAGE_IMMUTABLE);
+    m_IndexBuffer = rendererAPI->CreateIndexBuffer(indices, ARRAYSIZE(indices), HWResourceFlags::USAGE_IMMUTABLE);
 
     m_Shader = shaderLib->GetDefaultShader("Skybox");
 
     std::vector<VertexInputElement> inputElements = {
-        { "POSITION", VertexDataFormat_FLOAT3, 0, 0 },
+        { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
     };
 
     m_VertexInputLayout = rendererAPI->CreateVertexInputLayout(inputElements, m_Shader->GetHWVertexShader());
@@ -75,7 +75,9 @@ void Skybox::RenderSkybox() {
     PG_PROFILE_FUNCTION();
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
 
-    rendererAPI->SetVertexBuffer(m_VertexBuffer, sizeof(Vector3));
+    uint32_t offset = 0;
+    uint32_t stride = sizeof(Vector3);
+    rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
     rendererAPI->SetIndexBuffer(m_IndexBuffer);
     rendererAPI->SetInputLayout(m_VertexInputLayout);
     rendererAPI->SetVertexShader(m_Shader->GetHWVertexShader());

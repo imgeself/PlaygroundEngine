@@ -35,13 +35,13 @@ struct GPUResource {
         resource = (HWResource*) texture;
 
         uint32_t flags = initParams->flags;
-        if (flags & TextureResourceFlags::BIND_SHADER_RESOURCE) {
+        if (flags & HWResourceFlags::BIND_SHADER_RESOURCE) {
             srv = rendererAPI->CreateShaderResourceView(texture);
         }
-        if (flags & TextureResourceFlags::BIND_RENDER_TARGET) {
+        if (flags & HWResourceFlags::BIND_RENDER_TARGET) {
             rtv = rendererAPI->CreateRenderTargetView(texture, 0, initParams->arraySize, 0, initParams->mipCount);
         }
-        if (flags & TextureResourceFlags::BIND_DEPTH_STENCIL) {
+        if (flags & HWResourceFlags::BIND_DEPTH_STENCIL) {
             dsv = rendererAPI->CreateDepthStencilView(texture, 0, initParams->arraySize, 0, initParams->mipCount);
         }
     }
@@ -209,21 +209,22 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_ShaderLib->LoadDefaultShaders();
 
     // Default resources init
+    uint32_t constantBufferFlags = HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE;
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
-    s_PerFrameGlobalConstantBuffer = s_RendererAPI->CreateConstantBuffer(&perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer));
+    s_PerFrameGlobalConstantBuffer = s_RendererAPI->CreateConstantBuffer(&perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer), constantBufferFlags);
 
     PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
-    s_PerDrawGlobalConstantBuffer = s_RendererAPI->CreateConstantBuffer(&perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer));
+    s_PerDrawGlobalConstantBuffer = s_RendererAPI->CreateConstantBuffer(&perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer), constantBufferFlags);
 
     PostProcessConstantBuffer postProcessConstantBuffer = {};
     postProcessConstantBuffer.g_PPExposure = 1.0f;
     postProcessConstantBuffer.g_PPGamma = 2.2f;
-    s_PostProcessConstantBuffer = s_RendererAPI->CreateConstantBuffer(&postProcessConstantBuffer, sizeof(PostProcessConstantBuffer));
+    s_PostProcessConstantBuffer = s_RendererAPI->CreateConstantBuffer(&postProcessConstantBuffer, sizeof(PostProcessConstantBuffer), constantBufferFlags);
 
     RendererVariablesConstantBuffer rendererVariablesConstantBuffer = {};
     rendererVariablesConstantBuffer.g_ShadowCascadeCount = CASCADE_COUNT;
     rendererVariablesConstantBuffer.g_ShadowMapSize = SHADOW_MAP_SIZE;
-    s_RendererVarsConstantBuffer = s_RendererAPI->CreateConstantBuffer(&rendererVariablesConstantBuffer, sizeof(RendererVariablesConstantBuffer));
+    s_RendererVarsConstantBuffer = s_RendererAPI->CreateConstantBuffer(&rendererVariablesConstantBuffer, sizeof(RendererVariablesConstantBuffer), constantBufferFlags);
 
     HWConstantBuffer* constantBuffers[8] = {0};
     constantBuffers[PER_DRAW_CBUFFER_SLOT] = s_PerDrawGlobalConstantBuffer;
@@ -245,7 +246,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     initParams.sampleCount = 1;
     initParams.mipCount = 1;
     initParams.arraySize = CASCADE_COUNT;
-    initParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL | TextureResourceFlags::BIND_SHADER_RESOURCE;
+    initParams.flags = HWResourceFlags::BIND_DEPTH_STENCIL | HWResourceFlags::BIND_SHADER_RESOURCE;
     s_ShadowMapCascadesTexture = new GPUResource(s_RendererAPI, &initParams, nullptr, "ShadowMap");
 
     s_ShadowGenStage.Initialize(s_RendererAPI, s_ShaderLib, SHADOW_MAP_SIZE);
@@ -270,7 +271,7 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
     hdrBufferInitParams.height = newHeight;
     hdrBufferInitParams.sampleCount = s_MSAASampleCount;
     hdrBufferInitParams.mipCount = 1;
-    hdrBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
+    hdrBufferInitParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE | HWResourceFlags::BIND_RENDER_TARGET;
     s_HDRRenderTarget = new GPUResource(s_RendererAPI, &hdrBufferInitParams, nullptr, "MainHDRTexture");
 
     Texture2DDesc depthTextureInitParams = {};
@@ -280,7 +281,7 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
     depthTextureInitParams.height = newHeight;
     depthTextureInitParams.sampleCount = hdrBufferInitParams.sampleCount;
     depthTextureInitParams.mipCount = 1;
-    depthTextureInitParams.flags = TextureResourceFlags::BIND_DEPTH_STENCIL;
+    depthTextureInitParams.flags = HWResourceFlags::BIND_DEPTH_STENCIL;
     s_DepthStencilTarget = new GPUResource(s_RendererAPI, &depthTextureInitParams, nullptr, "MainDepthStencilTexture");
 
     if (s_MSAASampleCount > 1) {
@@ -291,7 +292,7 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
         resolvedBufferInitParams.height = hdrBufferInitParams.height;
         resolvedBufferInitParams.sampleCount = 1;
         resolvedBufferInitParams.mipCount = 1;
-        resolvedBufferInitParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::BIND_RENDER_TARGET;
+        resolvedBufferInitParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE | HWResourceFlags::BIND_RENDER_TARGET;
         s_ResolvedHDRRenderTarget = new GPUResource(s_RendererAPI, &resolvedBufferInitParams, nullptr, "MainResolvedHDRTexture");
     }
 

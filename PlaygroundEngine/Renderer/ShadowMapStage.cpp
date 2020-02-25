@@ -15,7 +15,8 @@ void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI, PGShaderLib* shaderL
     m_ShadowGenPass.SetViewport(shadowViewport);
 
     PerShadowGenConstantBuffer initData = {};
-    m_PerShadowGenConstantBuffer = rendererAPI->CreateConstantBuffer(&initData, sizeof(PerShadowGenConstantBuffer), "ShadowGenCB");
+    m_PerShadowGenConstantBuffer = rendererAPI->CreateConstantBuffer(&initData, sizeof(PerShadowGenConstantBuffer), 
+                                                                     HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE, "ShadowGenCB");
     rendererAPI->SetConstanBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
 }
 

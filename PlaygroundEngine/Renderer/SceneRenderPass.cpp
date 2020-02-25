@@ -46,15 +46,12 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
         rendererAPI->SetShaderResourcesVS(0, m_ShaderResourcesVS, MAX_SHADER_RESOURCE_COUNT);
         rendererAPI->SetShaderResourcesPS(0, m_ShaderResourcesPS, MAX_SHADER_RESOURCE_COUNT);
 
-        size_t vertexBufferStride = sizeof(Vertex);
-        rendererAPI->SetVertexBuffer(renderObject->vertexBuffer, vertexBufferStride);
+        uint32_t vertexBufferStride = sizeof(Vertex);
+        uint32_t offset = 0;
+        rendererAPI->SetVertexBuffers(&renderObject->vertexBuffer, 1, &vertexBufferStride, &offset);
         rendererAPI->SetIndexBuffer(renderObject->indexBuffer);
         rendererAPI->SetInputLayout(renderObject->inputLayout);
-        if (renderObject->indexBuffer) {
-            rendererAPI->DrawIndexed(renderObject->indexBuffer);
-        } else {
-            rendererAPI->Draw(renderObject->vertexBuffer);
-        }
+        rendererAPI->DrawIndexed(renderObject->indexBuffer);
     }
 }
 

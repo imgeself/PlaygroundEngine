@@ -25,7 +25,7 @@ PGTexture* PGTexture::CreateTexture2D(const std::string& filepath) {
     initParams.height = height;
     initParams.sampleCount = 1;
     initParams.mipCount = 1;
-    initParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::USAGE_IMMUTABLE;
+    initParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE | HWResourceFlags::USAGE_IMMUTABLE;
 
     PGTexture* texture = new PGTexture(&initParams, &subresource);
 
@@ -61,10 +61,10 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
     initParams.height = ddsFile.GetHeight();
     initParams.sampleCount = 1;
     initParams.mipCount = mipCount;
-    initParams.flags = TextureResourceFlags::BIND_SHADER_RESOURCE | TextureResourceFlags::USAGE_IMMUTABLE;
+    initParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE | HWResourceFlags::USAGE_IMMUTABLE;
 
     if (ddsFile.IsCubemap()) {
-        initParams.flags |= TextureResourceFlags::MISC_TEXTURE_CUBE;
+        initParams.flags |= HWResourceFlags::MISC_TEXTURE_CUBE;
     }
 
     PGTexture* texture = new PGTexture(&initParams, subresources);

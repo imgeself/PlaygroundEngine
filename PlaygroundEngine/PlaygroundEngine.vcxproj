@@ -237,7 +237,8 @@
     <ClCompile Include="Renderer\DX11\DX11ShaderResourceView.cpp" />
     <ClCompile Include="Renderer\DX11\DX11Texture2D.cpp" />
     <ClCompile Include="Renderer\PGRenderer.cpp" />
-    <ClCompile Include="Renderer\PGRenderObject.cpp" />
+    <ClCompile Include="Renderer\PGRendererResources.cpp" />
+    <ClCompile Include="Renderer\PGRenderList.cpp" />
     <ClCompile Include="Renderer\PGShader.cpp" />
     <ClCompile Include="Renderer\PGShaderLib.cpp" />
     <ClCompile Include="Renderer\PGTexture.cpp" />
@@ -294,7 +295,8 @@
     <ClInclude Include="Renderer\HWSamplerState.h" />
     <ClInclude Include="Renderer\HWShaderResourceView.h" />
     <ClInclude Include="Renderer\HWTexture2D.h" />
-    <ClInclude Include="Renderer\PGRenderObject.h" />
+    <ClInclude Include="Renderer\PGRendererResources.h" />
+    <ClInclude Include="Renderer\PGRenderList.h" />
     <ClInclude Include="Renderer\PGShader.h" />
     <ClInclude Include="Renderer\Material.h" />
     <ClInclude Include="Renderer\HWBuffer.h" />

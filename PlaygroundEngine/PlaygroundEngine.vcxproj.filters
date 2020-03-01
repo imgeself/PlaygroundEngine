@@ -84,9 +84,6 @@
     <ClCompile Include="Renderer\PGShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer\PGRenderObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer\DX11\DX11RenderTargets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -124,6 +121,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderer\ShadowMapStage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\PGRendererResources.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\PGRenderList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -251,9 +254,6 @@
     <ClInclude Include="Renderer\PGShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\PGRenderObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer\HWRenderTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -318,6 +318,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderer\ShadowMapStage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\PGRendererResources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\PGRenderList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -35,8 +35,6 @@ bool PGSystem::InitializeSystem(SystemInitArguments* initArguments) {
 
     PGRenderer::Initialize(m_Window);
 
-    m_DefaultMeshMap = LoadDefaultMeshes();
-    
     s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::INITIALIZE);
     m_GameApplication->OnInit();
 

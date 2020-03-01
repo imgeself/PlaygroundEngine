@@ -25,11 +25,6 @@ public:
 
     static std::shared_ptr<PGSystemEventDispatcher> GetSystemEventDispatcher() { return s_systemEventDispatcher; };
 
-    MeshRef GetDefaultMeshInstance(const std::string& name) { 
-        MeshRef ref = m_DefaultMeshMap[name];
-        return std::make_shared<Mesh>(ref->name, ref->vertices, ref->indices);
-    }
-
     inline PGShaderLib* GetShaderLib() {
         return PGRenderer::GetShaderLib();
     }
@@ -38,8 +33,6 @@ private:
     PGWindow* m_Window;
     DLibrary* m_GameLibrary;
     IApplication* m_GameApplication;
-
-    std::unordered_map<std::string, MeshRef> m_DefaultMeshMap;
 
     static std::shared_ptr<PGSystemEventDispatcher> s_systemEventDispatcher;
 };

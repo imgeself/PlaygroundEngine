@@ -10,9 +10,15 @@ struct PGLight {
     //float radius;
 };
 
+struct PGSceneObject {
+    MeshRef mesh;
+    Transform transform;
+};
+
 struct PGScene {
     PGCamera* camera;
     PGLight* light;
     Skybox* skybox;
+    std::vector<PGSceneObject> sceneObjects;
 };
 

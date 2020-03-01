@@ -1,12 +1,6 @@
 #include "SceneRenderPass.h"
 
-void SceneRenderPass::SetRenderObjects(const std::vector<PGRenderObject*>& renderObjects) {
-    m_RenderObjects.clear();
-    m_RenderObjects.insert(std::end(m_RenderObjects), std::begin(renderObjects), std::end(renderObjects));
-}
-
-void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
-    PG_PROFILE_FUNCTION();
+void SceneRenderPass::Execute(HWRendererAPI* rendererAPI, const RenderList& renderList, SceneRenderPassType scenePassType) {
     rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, m_DepthStencilView);
     for (size_t i = 0; i < MAX_RENDER_TARGET_COUNT; ++i) {
         HWRenderTargetView* renderTarget = m_RenderTargets[i];
@@ -19,39 +13,9 @@ void SceneRenderPass::Execute(HWRendererAPI* rendererAPI) {
         rendererAPI->ClearDepthStencilView(m_DepthStencilView, false, 1.0f, 0);
     }
     rendererAPI->SetViewport(&m_Viewport);
-    rendererAPI->SetVertexShader(m_Shader->GetHWVertexShader());
-    rendererAPI->SetPixelShader(m_Shader->GetHWPixelShader());
+    rendererAPI->SetShaderResourcesVS(0, m_ShaderResourcesVS, MAX_SHADER_RESOURCE_COUNT);
+    rendererAPI->SetShaderResourcesPS(0, m_ShaderResourcesPS, MAX_SHADER_RESOURCE_COUNT);
 
-    for (PGRenderObject* renderObject : m_RenderObjects) {
-        renderObject->UpdatePerDrawConstantBuffer(rendererAPI);
-
-        PGTexture* albedoTexture = renderObject->mesh->material->albedoTexture;
-        PGTexture* roughnessTexture = renderObject->mesh->material->roughnessTexture;
-        PGTexture* metallicTexture = renderObject->mesh->material->metallicTexture;
-        PGTexture* aoTexture = renderObject->mesh->material->aoTexture;
-        PGTexture* radianceMap = renderObject->mesh->material->radianceMap;
-        PGTexture* irradianceMap = renderObject->mesh->material->irradianceMap;
-        PGTexture* envBrdf = renderObject->mesh->material->envBrdf;
-        HWShaderResourceView* textureResources[] = {
-            albedoTexture ? albedoTexture->GetHWResourceView() : nullptr,
-            roughnessTexture ? roughnessTexture->GetHWResourceView() : nullptr,
-            metallicTexture ? metallicTexture->GetHWResourceView() : nullptr,
-            aoTexture ? aoTexture->GetHWResourceView() : nullptr,
-            radianceMap ? radianceMap->GetHWResourceView() : nullptr,
-            irradianceMap ? irradianceMap->GetHWResourceView() : nullptr,
-            envBrdf ? envBrdf->GetHWResourceView() : nullptr,
-        };
-        memcpy(m_ShaderResourcesPS + ALBEDO_TEXTURE2D_SLOT, textureResources, sizeof(textureResources));
-        
-        rendererAPI->SetShaderResourcesVS(0, m_ShaderResourcesVS, MAX_SHADER_RESOURCE_COUNT);
-        rendererAPI->SetShaderResourcesPS(0, m_ShaderResourcesPS, MAX_SHADER_RESOURCE_COUNT);
-
-        uint32_t vertexBufferStride = sizeof(Vertex);
-        uint32_t offset = 0;
-        rendererAPI->SetVertexBuffers(&renderObject->vertexBuffer, 1, &vertexBufferStride, &offset);
-        rendererAPI->SetIndexBuffer(renderObject->indexBuffer);
-        rendererAPI->SetInputLayout(renderObject->inputLayout);
-        rendererAPI->DrawIndexed(renderObject->indexBuffer);
-    }
+    RenderScene(rendererAPI, renderList, scenePassType);
 }
 

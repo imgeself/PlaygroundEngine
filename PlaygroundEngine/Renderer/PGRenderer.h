@@ -8,7 +8,7 @@
 #include "../Assets/Shaders/ShaderDefinitions.h"
 #include "HWRendererAPI.h"
 #include "PGShaderLib.h"
-#include "PGRenderObject.h"
+#include "PGRenderList.h"
 #include "SceneRenderPass.h"
 #include "FullscreenPass.h"
 #include "ShadowMapStage.h"
@@ -25,7 +25,6 @@ public:
     static void EndFrame();
 
     static void BeginScene(PGScene* sceneData);
-    static void AddMesh(const MeshRef& renderMesh);
     static void EndScene();
 
     static void ResizeResources(size_t newWidth, size_t newHeight);
@@ -41,19 +40,12 @@ public:
 private:
     PGRenderer();
 
-    static void CreateDefaultSamplerStates();
-
     static HWRendererAPI* s_RendererAPI;
     static PGShaderLib* s_ShaderLib;
-    static std::vector<PGRenderObject*> s_RenderObjects;
     static PGScene* s_ActiveSceneData;
 
-    static HWConstantBuffer* s_PerFrameGlobalConstantBuffer;
-    static HWConstantBuffer* s_PerDrawGlobalConstantBuffer;
-    static HWConstantBuffer* s_PostProcessConstantBuffer;
-    static HWConstantBuffer* s_RendererVarsConstantBuffer;
-
-    static std::array<HWSamplerState*, 5> s_DefaultSamplers;
+    static PGRendererConfig s_RendererConfig;
+    static RenderList s_RenderList;
 
     static ShadowGenStage s_ShadowGenStage;
     static SceneRenderPass s_SceneRenderPass;

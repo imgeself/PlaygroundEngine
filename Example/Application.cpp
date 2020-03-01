@@ -82,13 +82,13 @@ void Application::OnInit() {
 
     Transform planeTransform;
     planeTransform.Scale(Vector3(100.0f, 1.0f, 100.0f));
-    MeshRef planeMesh = m_System->GetDefaultMeshInstance("Plane");
+    MeshRef planeMesh = CreatePlaneMesh(PGRenderer::GetRendererAPI());
     planeMesh->material = m_DefaultMaterial;
-    planeMesh->transform = planeTransform;
-    //PGRenderer::AddMesh(planeMesh);
+    PGSceneObject planeSceneObject = { planeMesh, planeTransform };
+    //m_Scene.sceneObjects.push_back(planeSceneObject);
 
     
-    MeshRef sphereMesh = LoadMeshFromOBJFile("./assets/uvsphere.obj");
+    MeshRef sphereMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/uvsphere.obj");
     for (int i = 0; i < 7; ++i) {
         for (int j = 0; j < 7; ++j) {
             // Transform
@@ -99,45 +99,50 @@ void Application::OnInit() {
             memcpy(sphereMaterial, m_DefaultMaterial, sizeof(Material));
             sphereMaterial->roughness = i / 6.0f;
             sphereMaterial->metallic = j / 6.0f;
-            MeshRef sphereMeshInstance = std::make_shared<Mesh>();
+            MeshRef sphereMeshInstance = new Mesh();
+            // TODO: Do not copy mesh struct! It is not safe!!!!
             *sphereMeshInstance = *sphereMesh;
             sphereMeshInstance->material = sphereMaterial;
-            sphereMeshInstance->transform = sphereTransform;
-            PGRenderer::AddMesh(sphereMeshInstance);
+
+            PGSceneObject sceneObject = { sphereMeshInstance, sphereTransform };
+            m_Scene.sceneObjects.push_back(sceneObject);
+
         }
     }
 
-    MeshRef monkeyMesh = LoadMeshFromOBJFile("./assets/monkey/monkey.obj");
+    MeshRef monkeyMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/monkey/monkey.obj");
     monkeyMesh->material = monkeyMaterial;
     Transform monkeyTransform;
     monkeyTransform.Translate(Vector3(0.0f, 3.0f, 0.0f));
-    monkeyMesh->transform = monkeyTransform;
-    PGRenderer::AddMesh(monkeyMesh);
+    PGSceneObject sceneObject = { monkeyMesh, monkeyTransform };
+    m_Scene.sceneObjects.push_back(sceneObject);
 
     /*
     uint32_t randomSeed = 38689 * 643 / 6 + 4;
-    MeshRef cubeMesh = LoadMeshFromOBJFile("./assets/cube.obj");
+    MeshRef cubeMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/cube.obj");
     for (int i = 0; i < 5; ++i) {
         Transform cubeTransform;
         float random = RandomBilateral(&randomSeed) * 5;
         cubeTransform.Translate(Vector3(-8.0f + i * 4, 1.0f, 2.0f+random));
-        MeshRef cubeMeshInstance = std::make_shared<Mesh>();
+        MeshRef cubeMeshInstance = new Mesh;
+        // TODO: Do not copy mesh struct! It is not safe!!!!
         *cubeMeshInstance = *cubeMesh;
         cubeMeshInstance->material = m_DefaultMaterial;
-        cubeMeshInstance->transform = cubeTransform;
-        PGRenderer::AddMesh(cubeMeshInstance);
+
+        PGSceneObject cubeSceneObject = { cubeMeshInstance, cubeTransform };
+        m_Scene.sceneObjects.push_back(cubeSceneObject);
+
     }
 
     
 
-    MeshRef sphereMesh = LoadMeshFromOBJFile("./assets/uvsphere.obj");
+    MeshRef sphereMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/uvsphere.obj");
     sphereMesh->material = m_DefaultMaterial;
     Transform sphereTransform;
     sphereTransform.Translate(Vector3(3.0f, 3.0f, 1.0f));
-    sphereMesh->transform = sphereTransform;
+    PGSceneObject sphereSceneObject = { sphereMesh, sphereTransform };
+    m_Scene.sceneObjects.push_back(sphereSceneObject);*/
 
-    PGRenderer::AddMesh(sphereMesh);
-    */
     PGRenderer::EndScene();
 }
 

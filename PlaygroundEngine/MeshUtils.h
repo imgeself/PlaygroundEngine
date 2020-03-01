@@ -10,9 +10,9 @@
 
 #include "Utility/tiny_obj_loader.h"
 
-typedef std::shared_ptr<Mesh> MeshRef;
+typedef Mesh* MeshRef;
 
-static MeshRef LoadMeshFromOBJFile(const std::string& filename, bool flipZ = true, bool flipWindingDirection = true) {
+static MeshRef LoadMeshFromOBJFile(HWRendererAPI* rendererAPI, const std::string& filename, bool flipZ = true, bool flipWindingDirection = true) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -25,11 +25,12 @@ static MeshRef LoadMeshFromOBJFile(const std::string& filename, bool flipZ = tru
     }
     if (!errors.empty()) {
         PG_LOG_ERROR("%s Obj file load errors: %s", filename.c_str(), errors.c_str());
-        return std::shared_ptr<Mesh>(nullptr);
+        return nullptr;
     }
 
 
-    std::vector<Vertex> vertices;
+    std::vector<Vertex_POS> positions;
+    std::vector<Vertex_NOR_TEXCOORD> normalsTexCoords;
     std::vector<uint32_t> indices;
 
     for (tinyobj::shape_t& shape : shapes) {
@@ -47,27 +48,28 @@ static MeshRef LoadMeshFromOBJFile(const std::string& filename, bool flipZ = tru
             }
 
             for (tinyobj::index_t& reorderedIndex : reorderedIndices) {
-                Vertex vertex;
-                vertex.position = {
+                Vertex_POS vertexPOS;
+                vertexPOS.position = {
                     attrib.vertices[reorderedIndex.vertex_index * 3],
                     attrib.vertices[reorderedIndex.vertex_index * 3 + 1],
                     attrib.vertices[reorderedIndex.vertex_index * 3 + 2],
                 };
 
-                vertex.normal = {
+                Vertex_NOR_TEXCOORD vertexNormalTexCoord;
+                vertexNormalTexCoord.normal = {
                     attrib.normals[reorderedIndex.normal_index * 3],
                     attrib.normals[reorderedIndex.normal_index * 3 + 1],
                     attrib.normals[reorderedIndex.normal_index * 3 + 2],
                 };
 
-                vertex.texCoord = {
+                vertexNormalTexCoord.texCoord = {
                     attrib.texcoords[reorderedIndex.texcoord_index * 2],
                     attrib.texcoords[reorderedIndex.texcoord_index * 2 + 1]
                 };
 
                 if (flipZ) {
-                    vertex.position.z *= -1.0f;
-                    vertex.normal.z *= -1.0f;
+                    vertexPOS.position.z *= -1.0f;
+                    vertexNormalTexCoord.normal.z *= -1.0f;
                 }
 
                 size_t combinedHash = 0;
@@ -77,38 +79,49 @@ static MeshRef LoadMeshFromOBJFile(const std::string& filename, bool flipZ = tru
                 combinedHash ^= hasher(reorderedIndex.texcoord_index) + 135253 + (combinedHash << 6);
 
                 if (uniqueVertices.count(combinedHash) == 0) {
-                    uniqueVertices[combinedHash] = (uint32_t) vertices.size();
-                    vertices.push_back(vertex);
+                    uniqueVertices[combinedHash] = (uint32_t) positions.size();
+                    positions.push_back(vertexPOS);
+                    normalsTexCoords.push_back(vertexNormalTexCoord);
                 }
                 indices.push_back(uniqueVertices[combinedHash]);
             }
         }
     }
 
-    return std::make_shared<Mesh>(shapes[0].name, vertices, indices);
+    MeshRef mesh = new Mesh;
+    mesh->name = shapes[0].name;
+    mesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = rendererAPI->CreateVertexBuffer(positions.data(), positions.size() * sizeof(Vertex_POS), HWResourceFlags::USAGE_IMMUTABLE);
+    mesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NOR_TEXCOORDS] = rendererAPI->CreateVertexBuffer(normalsTexCoords.data(), normalsTexCoords.size() * sizeof(Vertex_NOR_TEXCOORD), HWResourceFlags::USAGE_IMMUTABLE);
+    mesh->indexBuffer = rendererAPI->CreateIndexBuffer(indices.data(), indices.size(), HWResourceFlags::USAGE_IMMUTABLE);
+
+    return mesh;
 }
 
-static MeshRef CreatePlaneMesh() {
-    const std::vector<Vertex> vertices = {
-        { { -1, 0, -1 }, { 0, 1, 0 }, { 0, 1 } },
-        { { -1, 0, 1 }, { 0, 1, 0 }, { 0, 0 } },
-        { { 1, 0, -1 }, { 0, 1, 0 }, { 1, 1 } },
-        { { 1, 0, 1 }, { 0, 1, 0 }, { 1, 0 } },
+static MeshRef CreatePlaneMesh(HWRendererAPI* rendererAPI) {
+    std::vector<Vertex_POS> positions = {
+        { { -1, 0, -1 } },
+        { { -1, 0, 1 } },
+        { { 1, 0, -1 } },
+        { { 1, 0, 1 } }
     };
 
-    const std::vector<uint32_t> indices = {
+    std::vector<Vertex_NOR_TEXCOORD> normalsTexCoords = {
+        { { 0, 1, 0 }, { 0, 1 } },
+        { { 0, 1, 0 }, { 0, 0 } },
+        { { 0, 1, 0 }, { 1, 1 } },
+        { { 0, 1, 0 }, { 1, 0 } },
+    };
+
+    std::vector<uint32_t> indices = {
         0, 1, 3,
         3, 2, 0,
     };
 
-    return std::make_shared<Mesh>("Plane", vertices, indices);
-}
+    MeshRef mesh = new Mesh;
+    mesh->name = "Plane";
+    mesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = rendererAPI->CreateVertexBuffer(positions.data(), positions.size() * sizeof(Vertex_POS), HWResourceFlags::USAGE_IMMUTABLE);
+    mesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NOR_TEXCOORDS] = rendererAPI->CreateVertexBuffer(normalsTexCoords.data(), normalsTexCoords.size() * sizeof(Vertex_NOR_TEXCOORD), HWResourceFlags::USAGE_IMMUTABLE);
+    mesh->indexBuffer = rendererAPI->CreateIndexBuffer(indices.data(), indices.size(), HWResourceFlags::USAGE_IMMUTABLE);
 
-static std::unordered_map<std::string, MeshRef> LoadDefaultMeshes() {
-    std::unordered_map<std::string, MeshRef> defaultMeshMap;
-
-    MeshRef planeMesh = CreatePlaneMesh();
-    defaultMeshMap[planeMesh->name] = planeMesh;
-
-    return defaultMeshMap;
+    return mesh;
 }

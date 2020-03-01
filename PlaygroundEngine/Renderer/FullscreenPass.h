@@ -6,7 +6,7 @@ class FullscreenPass : public RenderPass {
 public:
     virtual ~FullscreenPass() = default;
 
-    virtual void Execute(HWRendererAPI* rendererAPI) override {
+    void Execute(HWRendererAPI* rendererAPI) {
         rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, nullptr);
         for (size_t i = 0; i < MAX_RENDER_TARGET_COUNT; ++i) {
             HWRenderTargetView* renderTarget = m_RenderTargets[i];
@@ -24,5 +24,12 @@ public:
         rendererAPI->SetShaderResourcesPS(0, m_ShaderResourcesPS, MAX_SHADER_RESOURCE_COUNT);
         rendererAPI->Draw(3, 0);
     }
+
+    inline void SetShader(PGShader* shader) {
+        m_Shader = shader;
+    }
+
+private:
+    PGShader* m_Shader = nullptr;
 };
 

@@ -13,31 +13,51 @@ struct Vertex_POS {
     Vector3 position;
 };
 
-struct Vertex_NOR_TEXCOORD {
+struct Vertex_NOR {
     Vector3 normal;
+};
+
+struct Vertex_TEXCOORD {
     Vector2 texCoord;
 };
 
 enum VertexBuffers : uint8_t {
     VERTEX_BUFFER_POSITIONS,
-    VERTEX_BUFFER_NOR_TEXCOORDS,
+    VERTEX_BUFFER_NORMAL,
+    VERTEX_BUFFER_TEXCOORD,
 
     VERTEX_BUFFER_COUNT,
 };
 
-struct Mesh {
-    std::string name;
+struct SubMesh {
     Material* material = nullptr;
 
     // TODO: Instead of storing raw pointers we should have handles for buffers. Because this is not a safe struct to copy.
     // If one of the copies get deleted, other's buffers will be invalidated.
-    HWVertexBuffer* vertexBuffers[VertexBuffers::VERTEX_BUFFER_COUNT] = {0};
-    HWIndexBuffer* indexBuffer = nullptr;
+    HWBuffer* vertexBuffers[VertexBuffers::VERTEX_BUFFER_COUNT] = {0};
+    uint32_t vertexStrides[VertexBuffers::VERTEX_BUFFER_COUNT] = {0};
+    uint32_t vertexOffsets[VertexBuffers::VERTEX_BUFFER_COUNT] = {0};
 
-    ~Mesh() {
+
+    HWBuffer* indexBuffer = nullptr;
+    uint32_t indexBufferStride;
+    uint32_t indexBufferOffset;
+
+    uint32_t indexStart;
+    uint32_t indexCount;
+
+    ~SubMesh() {
         for (size_t i = 0; i < VertexBuffers::VERTEX_BUFFER_COUNT; ++i) {
             SAFE_DELETE(vertexBuffers[i]);
         }
         SAFE_DELETE(indexBuffer);
     }
 };
+
+struct Mesh {
+    std::string name;
+    std::vector<SubMesh*> submeshes;
+};
+
+typedef Mesh* MeshRef;
+

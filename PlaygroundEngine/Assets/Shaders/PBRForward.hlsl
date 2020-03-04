@@ -52,6 +52,13 @@ float4 PSMain(VSOut input) : SV_Target {
         metallic = g_MetallicTexture.Sample(g_LinearWrapSampler, input.texCoord).r;
     }
 
+    if (g_Material.hasMetallicRoughnessTexture) {
+        float4 t = g_MetallicRoughnessTexture.Sample(g_LinearWrapSampler, input.texCoord);
+        // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0
+        metallic = t.b;
+        roughness = t.g;
+    }
+
     float ao = 1.0f;
     if (g_Material.hasAOTexture) {
         ao = g_AOTexture.Sample(g_LinearWrapSampler, input.texCoord).r;
@@ -71,7 +78,7 @@ float4 PSMain(VSOut input) : SV_Target {
     };
 
     float3 lightColor = (float3) 1.0f;
-    float intensity = 3.0f;
+    float intensity = 5.0f;
     float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
     float3 f0 = lerp((float3) 0.04f, albedoColor, metallic);
@@ -87,7 +94,7 @@ float4 PSMain(VSOut input) : SV_Target {
     
     float2 lutVector = float2(NdotV, roughness);
     float2 envBRDF = g_EnvBrdfTexture.Sample(g_LinearClampSampler, lutVector).rg;
-
+    
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
     float3 ambient = diffuseAmbient + radiance * (f0 * envBRDF.x + envBRDF.y);
     ambient *= ao;

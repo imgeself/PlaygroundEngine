@@ -4,41 +4,14 @@
 
 #include <d3d11.h>
 
-class DX11ConstantBuffer : public HWConstantBuffer {
+class DX11Buffer : public HWBuffer {
 public:
-    DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size, uint32_t flags, const char* debugName = 0);
-    ~DX11ConstantBuffer() override;
+    DX11Buffer(ID3D11Device* device, SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName = 0);
+    ~DX11Buffer() override;
 
     ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
     void* GetResourceHandle() override { return (void*) m_Buffer; }
 
 private:
     ID3D11Buffer* m_Buffer;
-};
-
-class DX11VertexBuffer : public HWVertexBuffer {
-public:
-    DX11VertexBuffer(ID3D11Device* device, void* data, size_t size, uint32_t flags, const char* debugName = 0);
-    ~DX11VertexBuffer() override;
-
-    ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
-    void* GetResourceHandle() override { return (void*)m_Buffer; }
-
-private:
-    ID3D11Buffer* m_Buffer;
-};
-
-class DX11IndexBuffer : public HWIndexBuffer {
-public:
-    DX11IndexBuffer(ID3D11Device* device, uint32_t* data, size_t count, uint32_t flags, const char* debugName = 0);
-    ~DX11IndexBuffer() override;
-
-    ID3D11Buffer* GetDXBuffer() { return m_Buffer; }
-    void* GetResourceHandle() override { return (void*)m_Buffer; }
-
-    size_t GetCount() { return m_Count; }
-
-private:
-    ID3D11Buffer* m_Buffer;
-    size_t m_Count;
 };

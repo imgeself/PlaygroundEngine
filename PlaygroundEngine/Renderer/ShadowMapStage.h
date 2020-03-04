@@ -11,7 +11,7 @@ public:
     void Execute(HWRendererAPI* rendererAPI, const RenderList& shadowCasterList, PGShaderLib* shaderLib);
 
 private:
-    HWConstantBuffer* m_PerShadowGenConstantBuffer;
+    HWBuffer* m_PerShadowGenConstantBuffer;
 
     HWDepthStencilView* m_ShadowMapTarget;
     HWViewport m_ShadowMapViewport;

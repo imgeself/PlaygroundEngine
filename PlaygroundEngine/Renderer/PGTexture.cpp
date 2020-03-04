@@ -8,11 +8,10 @@
 
 PGTexture* PGTexture::CreateTexture2D(const std::string& filepath) {
     int32_t width, height, bytesPerPixel;
-    stbi_set_flip_vertically_on_load(true);
     void* imageData = stbi_load(filepath.c_str(), &width, &height, &bytesPerPixel, STBI_rgb_alpha);
 
     // Subresources
-    TextureSubresourceData subresource;
+    SubresourceData subresource;
     subresource.data = imageData;
     subresource.memPitch = width * 4;
     subresource.memSlicePitch = 0;
@@ -42,11 +41,11 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
     uint32_t mipCount = ddsFile.GetMipCount();
 
     // Subresources
-    TextureSubresourceData* subresources = (TextureSubresourceData*) alloca(sizeof(TextureSubresourceData) * arraySize * mipCount);
+    SubresourceData* subresources = (SubresourceData*) alloca(sizeof(SubresourceData) * arraySize * mipCount);
     for (uint32_t arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex) {
         for (uint32_t mipIndex = 0; mipIndex < mipCount; ++mipIndex) {
             const tinyddsloader::DDSFile::ImageData* imageData = ddsFile.GetImageData(mipIndex, arrayIndex);
-            TextureSubresourceData* subresource = subresources + (arrayIndex * mipCount + mipIndex);
+            SubresourceData* subresource = subresources + (arrayIndex * mipCount + mipIndex);
             subresource->data = imageData->m_mem;
             subresource->memPitch = imageData->m_memPitch;
             subresource->memSlicePitch = imageData->m_memSlicePitch;
@@ -71,7 +70,7 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
     return texture;
 }
 
-PGTexture::PGTexture(Texture2DDesc* initParams, TextureSubresourceData* subresources) {
+PGTexture::PGTexture(Texture2DDesc* initParams, SubresourceData* subresources) {
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
     m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, subresources);
     m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);

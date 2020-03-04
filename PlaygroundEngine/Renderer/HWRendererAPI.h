@@ -26,26 +26,24 @@ public:
 
     virtual void ClearScreen(const float* color) = 0;
     virtual void Draw(size_t vertexCount, size_t vertexBaseLocation) = 0;
-    virtual void DrawIndexed(HWIndexBuffer* indexBuffer) = 0;
+    virtual void DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t baseVertexIndex) = 0;
     virtual void Present() = 0;
 
     virtual HWRenderTargetView* GetBackbufferRenderTargetView() = 0;
     virtual HWViewport GetDefaultViewport() = 0;
 
-    virtual HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName = 0) = 0;
-    virtual HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName = 0) = 0;
-    virtual HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, uint32_t flags, const char* debugName = 0) = 0;
+    virtual HWBuffer* CreateBuffer(SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName = 0) = 0;
     virtual HWVertexShader* CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName = 0) = 0;
     virtual HWPixelShader* CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName = 0) = 0;
     virtual HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName = 0) = 0;
-    virtual HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName = 0) = 0;
+    virtual HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName = 0) = 0;
     virtual HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1, const char* debugName = 0) = 0;
     virtual HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip = 0, uint32_t mipCount = 1, const char* debugName = 0) = 0;
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName = 0) = 0;
     virtual HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName = 0) = 0;
 
-    virtual void SetVertexBuffers(HWVertexBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strides, uint32_t* offsets) = 0;
-    virtual void SetIndexBuffer(HWIndexBuffer* indexBuffer) = 0;
+    virtual void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) = 0;
+    virtual void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) = 0;
     virtual void SetInputLayout(HWVertexInputLayout* vertexInputLayout) = 0;
     virtual void SetVertexShader(HWVertexShader* vertexShader) = 0;
     virtual void SetPixelShader(HWPixelShader* pixelShader) = 0;
@@ -58,8 +56,8 @@ public:
 
     virtual void SetViewport(HWViewport* viewport) = 0;
     
-    virtual void SetConstanBuffersVS(size_t startSlot, HWConstantBuffer** constantBuffers, size_t count) = 0;
-    virtual void SetConstanBuffersPS(size_t startSlot, HWConstantBuffer** constantBuffers, size_t count) = 0;
+    virtual void SetConstantBuffersVS(size_t startSlot, HWBuffer** constantBuffers, size_t count) = 0;
+    virtual void SetConstantBuffersPS(size_t startSlot, HWBuffer** constantBuffers, size_t count) = 0;
 
     virtual void ClearRenderTarget(HWRenderTargetView* renderTargetView, float color[4]) = 0;
     virtual void ClearDepthStencilView(HWDepthStencilView* depthStencilView, bool clearStencil, float depthClearData, uint8_t stencilClearData) = 0;

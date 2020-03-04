@@ -6,7 +6,7 @@
 
 class DX11Texture2D : public HWTexture2D {
 public:
-    DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName = 0);
+    DX11Texture2D(ID3D11Device* device, Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName = 0);
     ~DX11Texture2D();
 
     Texture2DDesc GetDesc() override;

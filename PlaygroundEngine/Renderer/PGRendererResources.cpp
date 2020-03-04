@@ -1,9 +1,9 @@
 #include "PGRendererResources.h"
 
-HWConstantBuffer* PGRendererResources::s_PerFrameGlobalConstantBuffer;
-HWConstantBuffer* PGRendererResources::s_PerDrawGlobalConstantBuffer;
-HWConstantBuffer* PGRendererResources::s_PostProcessConstantBuffer;
-HWConstantBuffer* PGRendererResources::s_RendererVarsConstantBuffer;
+HWBuffer* PGRendererResources::s_PerFrameGlobalConstantBuffer;
+HWBuffer* PGRendererResources::s_PerDrawGlobalConstantBuffer;
+HWBuffer* PGRendererResources::s_PostProcessConstantBuffer;
+HWBuffer* PGRendererResources::s_RendererVarsConstantBuffer;
 
 std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> PGRendererResources::s_DefaultSamplers;
 std::array<HWVertexInputLayout*, RENDERER_DEFAULT_INPUT_LAYOUT_SIZE> PGRendererResources::s_DefaultInputLayouts;
@@ -15,22 +15,24 @@ GPUResource* PGRendererResources::s_ShadowMapCascadesTexture;
 
 void PGRendererResources::CreateDefaultBuffers(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig) {
     // Default resources init
-    uint32_t constantBufferFlags = HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE;
-    PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
-    s_PerFrameGlobalConstantBuffer = rendererAPI->CreateConstantBuffer(&perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer), constantBufferFlags);
-
-    PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
-    s_PerDrawGlobalConstantBuffer = rendererAPI->CreateConstantBuffer(&perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer), constantBufferFlags);
+    uint32_t constantBufferFlags = HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE | HWResourceFlags::BIND_CONSTANT_BUFFER;
+    s_PerFrameGlobalConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerFrameGlobalConstantBuffer), constantBufferFlags);
+    s_PerDrawGlobalConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerDrawGlobalConstantBuffer), constantBufferFlags);
 
     PostProcessConstantBuffer postProcessConstantBuffer = {};
     postProcessConstantBuffer.g_PPExposure = rendererConfig.exposure;
     postProcessConstantBuffer.g_PPGamma = rendererConfig.gamma;
-    s_PostProcessConstantBuffer = rendererAPI->CreateConstantBuffer(&postProcessConstantBuffer, sizeof(PostProcessConstantBuffer), constantBufferFlags);
+
+    SubresourceData constantSubresourceData = {};
+    constantSubresourceData.data = &postProcessConstantBuffer;
+    s_PostProcessConstantBuffer = rendererAPI->CreateBuffer(&constantSubresourceData, sizeof(PostProcessConstantBuffer), constantBufferFlags);
 
     RendererVariablesConstantBuffer rendererVariablesConstantBuffer = {};
     rendererVariablesConstantBuffer.g_ShadowCascadeCount = rendererConfig.shadowCascadeCount;
     rendererVariablesConstantBuffer.g_ShadowMapSize = rendererConfig.shadowMapSize;
-    s_RendererVarsConstantBuffer = rendererAPI->CreateConstantBuffer(&rendererVariablesConstantBuffer, sizeof(RendererVariablesConstantBuffer), constantBufferFlags);
+
+    constantSubresourceData.data = &rendererVariablesConstantBuffer;
+    s_RendererVarsConstantBuffer = rendererAPI->CreateBuffer(&constantSubresourceData, sizeof(RendererVariablesConstantBuffer), constantBufferFlags);
 }
 
 void PGRendererResources::CreateDefaultSamplerStates(HWRendererAPI* rendererAPI) {
@@ -73,7 +75,7 @@ void PGRendererResources::CreateDefaultInputLayout(HWRendererAPI* rendererAPI, P
     std::vector<VertexInputElement> inputElements = {
         { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
         { "NORMAL", 0, VertexDataFormat_FLOAT3, 1, PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, VertexDataFormat_FLOAT2, 1, PER_VERTEX_DATA, 0 }
+        { "TEXCOORD", 0, VertexDataFormat_FLOAT2, 2, PER_VERTEX_DATA, 0 }
     };
 
     PGShader* pbrForwardShader = shaderLib->GetDefaultShader("PBRForward");

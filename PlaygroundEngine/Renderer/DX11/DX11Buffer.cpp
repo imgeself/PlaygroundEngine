@@ -2,6 +2,11 @@
 
 static inline D3D11_BIND_FLAG GetBindFlagsFromResourceFlags(uint32_t resourceFlags) {
     return D3D11_BIND_FLAG(
+        ((resourceFlags & HWResourceFlags::BIND_DEPTH_STENCIL) ? D3D11_BIND_DEPTH_STENCIL : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_RENDER_TARGET) ? D3D11_BIND_RENDER_TARGET : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_VERTEX_BUFFER) ? D3D11_BIND_VERTEX_BUFFER : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_INDEX_BUFFER) ? D3D11_BIND_INDEX_BUFFER : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_CONSTANT_BUFFER) ? D3D11_BIND_CONSTANT_BUFFER : 0) |
         ((resourceFlags & HWResourceFlags::BIND_SHADER_RESOURCE) ? D3D11_BIND_SHADER_RESOURCE : 0)
     );
 }
@@ -22,20 +27,27 @@ static inline D3D11_CPU_ACCESS_FLAG GetCPUAccessFlagFromResourceFlags(uint32_t r
     );
 }
 
-DX11ConstantBuffer::DX11ConstantBuffer(ID3D11Device* device, void* data, size_t size, uint32_t flags, const char* debugName) {
-    D3D11_BUFFER_DESC constantBufferDescriptor = {};
-    constantBufferDescriptor.ByteWidth = (UINT) size;
-    constantBufferDescriptor.Usage = GetUsageFromResourceFlags(flags);
-    constantBufferDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER | GetBindFlagsFromResourceFlags(flags);
-    constantBufferDescriptor.CPUAccessFlags = GetCPUAccessFlagFromResourceFlags(flags);
-    constantBufferDescriptor.MiscFlags = 0;
-    constantBufferDescriptor.StructureByteStride = 0;
+DX11Buffer::DX11Buffer(ID3D11Device* device, SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName) {
+    D3D11_BUFFER_DESC bufferDesc = {};
+    bufferDesc.ByteWidth = (UINT) size;
+    bufferDesc.Usage = GetUsageFromResourceFlags(flags);
+    bufferDesc.BindFlags = GetBindFlagsFromResourceFlags(flags);
+    bufferDesc.CPUAccessFlags = GetCPUAccessFlagFromResourceFlags(flags);
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
 
-    D3D11_SUBRESOURCE_DATA constantBufferSubresourceData = {};
-    constantBufferSubresourceData.pSysMem = data;
+    if (subresource) {
+        D3D11_SUBRESOURCE_DATA bufferSubresourceData = {};
+        bufferSubresourceData.pSysMem = subresource->data;
+        bufferSubresourceData.SysMemPitch = subresource->memPitch;
+        bufferSubresourceData.SysMemSlicePitch = subresource->memSlicePitch;
 
-    HRESULT result = device->CreateBuffer(&constantBufferDescriptor, &constantBufferSubresourceData, &m_Buffer);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating constant buffer");
+        HRESULT result = device->CreateBuffer(&bufferDesc, &bufferSubresourceData, &m_Buffer);
+        PG_ASSERT(SUCCEEDED(result), "Error at creating buffer");
+    } else {
+        HRESULT result = device->CreateBuffer(&bufferDesc, nullptr, &m_Buffer);
+        PG_ASSERT(SUCCEEDED(result), "Error at creating buffer");
+    }
 
 #ifdef PG_DEBUG_GPU_DEVICE
     if (debugName) {
@@ -45,62 +57,6 @@ DX11ConstantBuffer::DX11ConstantBuffer(ID3D11Device* device, void* data, size_t 
 #endif
 }
 
-DX11ConstantBuffer::~DX11ConstantBuffer() {
+DX11Buffer::~DX11Buffer() {
     SAFE_RELEASE(m_Buffer);
 }
-
-DX11VertexBuffer::DX11VertexBuffer(ID3D11Device* device, void* data, size_t size, uint32_t flags, const char* debugName) {
-    D3D11_BUFFER_DESC vertexBufferDescriptor = {};
-    vertexBufferDescriptor.ByteWidth = (UINT) size;
-    vertexBufferDescriptor.Usage = GetUsageFromResourceFlags(flags);
-    vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER | GetBindFlagsFromResourceFlags(flags);
-    vertexBufferDescriptor.CPUAccessFlags = GetCPUAccessFlagFromResourceFlags(flags);
-    vertexBufferDescriptor.MiscFlags = 0;
-    vertexBufferDescriptor.StructureByteStride = 0;
-
-    D3D11_SUBRESOURCE_DATA vertexBufferSubresourceData = {};
-    vertexBufferSubresourceData.pSysMem = data;
-
-    HRESULT result = device->CreateBuffer(&vertexBufferDescriptor, &vertexBufferSubresourceData, &m_Buffer);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating vertex buffer");
-
-#ifdef PG_DEBUG_GPU_DEVICE
-    if (debugName) {
-        size_t debugNameLen = strlen(debugName);
-        m_Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
-    }
-#endif
-}
-
-DX11VertexBuffer::~DX11VertexBuffer() {
-    SAFE_RELEASE(m_Buffer);
-}
-
-DX11IndexBuffer::DX11IndexBuffer(ID3D11Device* device, uint32_t* data, size_t count, uint32_t flags, const char* debugName)
-    : m_Count(count) {
-    D3D11_BUFFER_DESC vertexBufferDescriptor = {};
-    vertexBufferDescriptor.ByteWidth = (UINT) (count * sizeof(uint32_t));
-    vertexBufferDescriptor.Usage = GetUsageFromResourceFlags(flags);
-    vertexBufferDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER | GetBindFlagsFromResourceFlags(flags);
-    vertexBufferDescriptor.CPUAccessFlags = GetCPUAccessFlagFromResourceFlags(flags);
-    vertexBufferDescriptor.MiscFlags = 0;
-    vertexBufferDescriptor.StructureByteStride = 0;
-
-    D3D11_SUBRESOURCE_DATA vertexBufferSubresourceData = {};
-    vertexBufferSubresourceData.pSysMem = data;
-
-    HRESULT result = device->CreateBuffer(&vertexBufferDescriptor, &vertexBufferSubresourceData, &m_Buffer);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating vertex buffer");
-
-#ifdef PG_DEBUG_GPU_DEVICE
-    if (debugName) {
-        size_t debugNameLen = strlen(debugName);
-        m_Buffer->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT) debugNameLen, debugName);
-    }
-#endif
-}
-
-DX11IndexBuffer::~DX11IndexBuffer() {
-    SAFE_RELEASE(m_Buffer);
-}
-

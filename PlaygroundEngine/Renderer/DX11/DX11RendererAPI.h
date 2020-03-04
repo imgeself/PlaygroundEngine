@@ -22,27 +22,25 @@ public:
 
     void ClearScreen(const float* color) override;
     void Draw(size_t vertexCount, size_t vertexBaseLocation) override;
-    void DrawIndexed(HWIndexBuffer* indexBuffer) override;
+    void DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t baseVertexIndex) override;
     void Present() override;
 
     HWRenderTargetView* GetBackbufferRenderTargetView() override;
     HWViewport GetDefaultViewport() override;
 
-    HWConstantBuffer* CreateConstantBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) override;
-    HWVertexBuffer* CreateVertexBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) override;
-    HWIndexBuffer* CreateIndexBuffer(uint32_t* bufferData, size_t count, uint32_t flags, const char* debugName) override;
+    HWBuffer* CreateBuffer(SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName) override;
     HWVertexShader* CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName = 0) override;
     HWPixelShader* CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName = 0) override;
     HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName = 0) override;
-    HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) override;
+    HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) override;
     HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
     HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
     HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
 
-    void SetVertexBuffers(HWVertexBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strides, uint32_t* offsets) override;
-    void SetIndexBuffer(HWIndexBuffer* indexBuffer) override;
+    void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) override;
+    void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) override;
     void SetInputLayout(HWVertexInputLayout* vertexInputLayout) override;
     void SetVertexShader(HWVertexShader* vertexShader) override;
     void SetPixelShader(HWPixelShader* pixelShader) override;
@@ -54,8 +52,8 @@ public:
 
     void SetViewport(HWViewport* viewport) override;
 
-    void SetConstanBuffersVS(size_t startSlot, HWConstantBuffer** constantBuffers, size_t count) override;
-    void SetConstanBuffersPS(size_t startSlot, HWConstantBuffer** constantBuffers, size_t count) override;
+    void SetConstantBuffersVS(size_t startSlot, HWBuffer** constantBuffers, size_t count) override;
+    void SetConstantBuffersPS(size_t startSlot, HWBuffer** constantBuffers, size_t count) override;
 
     void ClearRenderTarget(HWRenderTargetView* renderTargetView, float color[4]) override;
     void ClearDepthStencilView(HWDepthStencilView* depthStencilView, bool clearStencil, float depthClearData, uint8_t stencilClearData) override;

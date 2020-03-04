@@ -9,10 +9,9 @@ void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI, GPUResource* shadowM
 
     m_ShadowMapTarget = shadowMapTarget->dsv;
 
-    PerShadowGenConstantBuffer initData = {};
-    m_PerShadowGenConstantBuffer = rendererAPI->CreateConstantBuffer(&initData, sizeof(PerShadowGenConstantBuffer), 
-                                                                     HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE, "ShadowGenCB");
-    rendererAPI->SetConstanBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
+    uint32_t flags = HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE | HWResourceFlags::BIND_CONSTANT_BUFFER;
+    m_PerShadowGenConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerShadowGenConstantBuffer), flags, "ShadowGenCB");
+    rendererAPI->SetConstantBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
 }
 
 void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shadowCasterList, PGShaderLib* shaderLib) {

@@ -2,18 +2,7 @@
 
 #include "HWResource.h"
 
-class HWConstantBuffer : public HWResource {
+class HWBuffer : public HWResource {
 public:
-    virtual ~HWConstantBuffer() = default;
+    virtual ~HWBuffer() = default;
 };
-
-class HWVertexBuffer : public HWResource {
-public:
-    virtual ~HWVertexBuffer() = default;
-};
-
-class HWIndexBuffer : public HWResource {
-public:
-    virtual ~HWIndexBuffer() = default;
-};
-

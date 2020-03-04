@@ -26,7 +26,7 @@ struct GPUResource {
     HWDepthStencilView* dsv = nullptr;
     HWRenderTargetView* rtv = nullptr;
 
-    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) {
+    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) {
         HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams, subresources, debugName);
         resource = (HWResource*)texture;
 
@@ -61,10 +61,10 @@ const size_t RENDERER_DEFAULT_SAMPLER_SIZE = 5;
 const size_t RENDERER_DEFAULT_INPUT_LAYOUT_SIZE = InputLayoutType::INPUT_TYPE_COUNT;
 
 struct PGRendererResources {
-    static HWConstantBuffer* s_PerFrameGlobalConstantBuffer;
-    static HWConstantBuffer* s_PerDrawGlobalConstantBuffer;
-    static HWConstantBuffer* s_PostProcessConstantBuffer;
-    static HWConstantBuffer* s_RendererVarsConstantBuffer;
+    static HWBuffer* s_PerFrameGlobalConstantBuffer;
+    static HWBuffer* s_PerDrawGlobalConstantBuffer;
+    static HWBuffer* s_PostProcessConstantBuffer;
+    static HWBuffer* s_RendererVarsConstantBuffer;
 
     static std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> s_DefaultSamplers;
     static std::array<HWVertexInputLayout*, RENDERER_DEFAULT_INPUT_LAYOUT_SIZE> s_DefaultInputLayouts;

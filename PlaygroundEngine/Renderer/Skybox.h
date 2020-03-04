@@ -13,8 +13,8 @@ public:
     void RenderSkybox();
 
 private:
-    HWVertexBuffer* m_VertexBuffer;
-    HWIndexBuffer* m_IndexBuffer;
+    HWBuffer* m_VertexBuffer;
+    HWBuffer* m_IndexBuffer;
     HWVertexInputLayout* m_VertexInputLayout;
     PGShader* m_Shader;
     PGTexture* m_SkyboxCubemap;

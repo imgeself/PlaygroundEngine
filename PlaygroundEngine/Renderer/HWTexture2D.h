@@ -7,12 +7,6 @@
 #include <d3d11.h>
 typedef DXGI_FORMAT TextureDataFormat;
 
-struct TextureSubresourceData {
-    const void* data = nullptr;
-    uint32_t memPitch = 0;
-    uint32_t memSlicePitch = 0;
-};
-
 struct Texture2DDesc {
     size_t width;
     size_t height;

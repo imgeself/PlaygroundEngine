@@ -118,13 +118,13 @@ bool PGRenderer::Initialize(PGWindow* window) {
     PGRendererResources::CreateDefaultInputLayout(s_RendererAPI, s_ShaderLib);
 
     PGRendererResources::CreateDefaultBuffers(s_RendererAPI, s_RendererConfig);
-    HWConstantBuffer* constantBuffers[8] = {0};
+    HWBuffer* constantBuffers[8] = {0};
     constantBuffers[PER_DRAW_CBUFFER_SLOT] = PGRendererResources::s_PerDrawGlobalConstantBuffer;
     constantBuffers[PER_FRAME_CBUFFER_SLOT] = PGRendererResources::s_PerFrameGlobalConstantBuffer;
     constantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = PGRendererResources::s_RendererVarsConstantBuffer;
     constantBuffers[POST_PROCESS_CBUFFER_SLOT] = PGRendererResources::s_PostProcessConstantBuffer;
-    s_RendererAPI->SetConstanBuffersVS(0, constantBuffers, ARRAYSIZE(constantBuffers));
-    s_RendererAPI->SetConstanBuffersPS(0, constantBuffers, ARRAYSIZE(constantBuffers));
+    s_RendererAPI->SetConstantBuffersVS(0, constantBuffers, ARRAYSIZE(constantBuffers));
+    s_RendererAPI->SetConstantBuffersPS(0, constantBuffers, ARRAYSIZE(constantBuffers));
 
     // Bind default sampler states
     PGRendererResources::CreateDefaultSamplerStates(s_RendererAPI);

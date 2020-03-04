@@ -173,10 +173,10 @@ void DX11RendererAPI::Draw(size_t vertexCount, size_t vertexBaseLocation) {
     m_DeviceContext->Draw((UINT) vertexCount, (UINT) vertexBaseLocation);
 }
 
-void DX11RendererAPI::DrawIndexed(HWIndexBuffer* indexBuffer) {
-    DX11IndexBuffer* dx11IndexBuffer = (DX11IndexBuffer*)indexBuffer;
-    m_DeviceContext->DrawIndexed((UINT) dx11IndexBuffer->GetCount(), 0, 0);
+void DX11RendererAPI::DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t baseVertexIndex) {
+    m_DeviceContext->DrawIndexed((UINT) indexCount, (UINT) startIndex, (UINT) baseVertexIndex);
 }
+
 
 void DX11RendererAPI::Present() {
     HRESULT result = m_SwapChain->Present(1, 0);
@@ -197,16 +197,8 @@ HWViewport DX11RendererAPI::GetDefaultViewport() {
     return result;
 }
 
-HWConstantBuffer* DX11RendererAPI::CreateConstantBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) {
-    return new DX11ConstantBuffer(m_Device, bufferData, size, flags, debugName);
-}
-
-HWVertexBuffer* DX11RendererAPI::CreateVertexBuffer(void* bufferData, size_t size, uint32_t flags, const char* debugName) {
-    return new DX11VertexBuffer(m_Device, bufferData, size, flags, debugName);
-}
-
-HWIndexBuffer* DX11RendererAPI::CreateIndexBuffer(uint32_t* bufferData, size_t count, uint32_t flags, const char* debugName) {
-    return new DX11IndexBuffer(m_Device, bufferData, count, flags, debugName);
+HWBuffer* DX11RendererAPI::CreateBuffer(SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName) {
+    return new DX11Buffer(m_Device, subresource, size, flags, debugName);
 }
 
 HWVertexShader* DX11RendererAPI::CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName) {
@@ -221,7 +213,7 @@ HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<Vertex
     return new DX11VertexInputLayout(m_Device, inputElements, (DX11VertexShader*) vertexShader, debugName);
 }
 
-HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, TextureSubresourceData* subresources, const char* debugName) {
+HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) {
     return new DX11Texture2D(m_Device, initParams, subresources, debugName);
 }
 
@@ -247,22 +239,38 @@ HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* init
 
 
 // Bindings
-void DX11RendererAPI::SetVertexBuffers(HWVertexBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strides, uint32_t* offsets) {
-    DX11VertexBuffer** dx11VertexBuffers = (DX11VertexBuffer**) vertexBuffers;
+void DX11RendererAPI::SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) {
+    DX11Buffer** dx11VertexBuffers = (DX11Buffer**) vertexBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * vertexBufferCount);
     for (size_t i = 0; i < vertexBufferCount; ++i) {
-        DX11VertexBuffer* vertexBuffer = *dx11VertexBuffers;
+        DX11Buffer* vertexBuffer = *dx11VertexBuffers;
         *(buffers + i) = vertexBuffer ? vertexBuffer->GetDXBuffer() : nullptr;
         dx11VertexBuffers++;
     }
 
-    m_DeviceContext->IASetVertexBuffers(0, vertexBufferCount, buffers, (UINT*) strides, (UINT*) offsets);
+    m_DeviceContext->IASetVertexBuffers(0, vertexBufferCount, buffers, (UINT*) strideByteCounts, (UINT*) offsets);
 }
 
-void DX11RendererAPI::SetIndexBuffer(HWIndexBuffer* indexBuffer) {
-    DX11IndexBuffer* dx11IndexBuffer = (DX11IndexBuffer*) indexBuffer;
+void DX11RendererAPI::SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) {
+    DXGI_FORMAT indexFormat;
+    switch (strideByteCount) {
+        case 1:
+            indexFormat = DXGI_FORMAT_R8_UINT;
+            break;
+        case 2:
+            indexFormat = DXGI_FORMAT_R16_UINT;
+            break;
+        case 4:
+            indexFormat = DXGI_FORMAT_R32_UINT;
+            break;
+        default:
+            PG_ASSERT(false, "Unsupported index buffer byte stride!");
+            break;
+    }
+
+    DX11Buffer* dx11IndexBuffer = (DX11Buffer*) indexBuffer;
     ID3D11Buffer* buffer = dx11IndexBuffer->GetDXBuffer();
-    m_DeviceContext->IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
+    m_DeviceContext->IASetIndexBuffer(buffer, indexFormat, (UINT) offset);
 }
 
 void DX11RendererAPI::SetInputLayout(HWVertexInputLayout* vertexInputLayout) {
@@ -308,11 +316,11 @@ void DX11RendererAPI::SetRenderTargets(HWRenderTargetView** renderTargets, size_
 }
 
 
-void DX11RendererAPI::SetConstanBuffersVS(size_t startSlot, HWConstantBuffer** constantBuffers, size_t count) {
-    DX11ConstantBuffer** dx11ConstantBuffers = (DX11ConstantBuffer**) constantBuffers;
+void DX11RendererAPI::SetConstantBuffersVS(size_t startSlot, HWBuffer** constantBuffers, size_t count) {
+    DX11Buffer** dx11ConstantBuffers = (DX11Buffer**) constantBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * count);
     for (size_t i = 0; i < count; ++i) {
-        DX11ConstantBuffer* dxConstantBuffer = *dx11ConstantBuffers;
+        DX11Buffer* dxConstantBuffer = *dx11ConstantBuffers;
         *(buffers + i) = dxConstantBuffer ? dxConstantBuffer->GetDXBuffer() : nullptr;
         dx11ConstantBuffers++;
     }
@@ -320,11 +328,11 @@ void DX11RendererAPI::SetConstanBuffersVS(size_t startSlot, HWConstantBuffer** c
     m_DeviceContext->VSSetConstantBuffers((UINT) startSlot, (UINT) count, buffers);
 }
 
-void DX11RendererAPI::SetConstanBuffersPS(size_t startSlot, HWConstantBuffer** constantBuffers, size_t count) {
-    DX11ConstantBuffer** dx11ConstantBuffers = (DX11ConstantBuffer **) constantBuffers;
+void DX11RendererAPI::SetConstantBuffersPS(size_t startSlot, HWBuffer** constantBuffers, size_t count) {
+    DX11Buffer** dx11ConstantBuffers = (DX11Buffer **) constantBuffers;
     ID3D11Buffer** buffers = (ID3D11Buffer **) alloca(sizeof(ID3D11Buffer*) * count);
     for (size_t i = 0; i < count; ++i) {
-        DX11ConstantBuffer* dxConstantBuffer = *dx11ConstantBuffers;
+        DX11Buffer* dxConstantBuffer = *dx11ConstantBuffers;
         *(buffers + i) = dxConstantBuffer ? dxConstantBuffer->GetDXBuffer() : nullptr;
         dx11ConstantBuffers++;
     }

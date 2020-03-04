@@ -20,10 +20,6 @@ private:
     PGSystem* m_System;
     PGCamera m_MainCamera;
 
-
-    std::shared_ptr<HWIndexBuffer> m_IndexBuffer;
-    std::shared_ptr<HWVertexBuffer> m_VertexBuffer;
-
     Material* m_DefaultMaterial;
 
     ShaderRef m_PBRShader;

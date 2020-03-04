@@ -7,6 +7,8 @@
 #include <Math/math_util.h>
 #include <Platform/PGTime.h>
 
+#include <MeshUtils.h>
+
 #include <PGLog.h>
 
 Application::Application(PGSystem* system) 
@@ -25,7 +27,7 @@ void Application::OnInit() {
     PGShaderLib* shaderLib = m_System->GetShaderLib();
     m_PBRShader = shaderLib->GetDefaultShader("PBRForward");
 
-    Vector3 lightPosition(20.0f, 24.0f, -20.0f);
+    Vector3 lightPosition(20.0f, 54.0f, -20.0f);
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
 
@@ -39,40 +41,13 @@ void Application::OnInit() {
 
     m_Scene.skybox = new Skybox(skybox);
 
-    PGTexture* albedoTexture = (PGTexture*) PGResourceManager::CreateResource("./assets/monkey/albedo.png");
-    PGTexture* roughnessTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/roughness.png");
-    PGTexture* metallicTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/metallic.png");
-    PGTexture* aoTexture = (PGTexture*)PGResourceManager::CreateResource("./assets/monkey/ao.png");
-
     PGRenderer::BeginScene(&m_Scene);
-
-    Material* monkeyMaterial = new Material;
-    memset(monkeyMaterial, 0, sizeof(Material));
-    monkeyMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
-    monkeyMaterial->opacity = 1.0f;
-    monkeyMaterial->indexOfRefraction = 1.0f;
-    monkeyMaterial->shader = m_PBRShader;
-
-    monkeyMaterial->albedoTexture = albedoTexture;
-    monkeyMaterial->roughnessTexture = roughnessTexture;
-    monkeyMaterial->metallicTexture = metallicTexture;
-    monkeyMaterial->aoTexture = aoTexture;
-    monkeyMaterial->radianceMap = radiance;
-    monkeyMaterial->irradianceMap = irradiance;
-    monkeyMaterial->envBrdf = brdf;
-
-    monkeyMaterial->hasAlbedoTexture = 1;
-    monkeyMaterial->hasRoughnessTexture = 1;
-    monkeyMaterial->hasMetallicTexture = 1;
-    monkeyMaterial->hasAOTexture = 1;
-
 
     m_DefaultMaterial = new Material;
     memset(m_DefaultMaterial, 0, sizeof(Material));
     m_DefaultMaterial->diffuseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
     m_DefaultMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
     m_DefaultMaterial->opacity = 1.0f;
-    m_DefaultMaterial->indexOfRefraction = 1.0f;
     m_DefaultMaterial->roughness = 0.0f;
     m_DefaultMaterial->metallic = 0.0f;
     m_DefaultMaterial->shader = m_PBRShader;
@@ -80,68 +55,11 @@ void Application::OnInit() {
     m_DefaultMaterial->irradianceMap = irradiance;
     m_DefaultMaterial->envBrdf = brdf;
 
-    Transform planeTransform;
-    planeTransform.Scale(Vector3(100.0f, 1.0f, 100.0f));
-    MeshRef planeMesh = CreatePlaneMesh(PGRenderer::GetRendererAPI());
-    planeMesh->material = m_DefaultMaterial;
-    PGSceneObject planeSceneObject = { planeMesh, planeTransform };
-    //m_Scene.sceneObjects.push_back(planeSceneObject);
-
-    
-    MeshRef sphereMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/uvsphere.obj");
-    for (int i = 0; i < 7; ++i) {
-        for (int j = 0; j < 7; ++j) {
-            // Transform
-            Transform sphereTransform = {};
-            sphereTransform.Translate(Vector3(-8.0f + i * 2.5f, 10.0f - j * 2.5f, 6.0f));
-            // Material
-            Material* sphereMaterial = new Material;
-            memcpy(sphereMaterial, m_DefaultMaterial, sizeof(Material));
-            sphereMaterial->roughness = i / 6.0f;
-            sphereMaterial->metallic = j / 6.0f;
-            MeshRef sphereMeshInstance = new Mesh();
-            // TODO: Do not copy mesh struct! It is not safe!!!!
-            *sphereMeshInstance = *sphereMesh;
-            sphereMeshInstance->material = sphereMaterial;
-
-            PGSceneObject sceneObject = { sphereMeshInstance, sphereTransform };
-            m_Scene.sceneObjects.push_back(sceneObject);
-
-        }
-    }
-
-    MeshRef monkeyMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/monkey/monkey.obj");
-    monkeyMesh->material = monkeyMaterial;
-    Transform monkeyTransform;
-    monkeyTransform.Translate(Vector3(0.0f, 3.0f, 0.0f));
-    PGSceneObject sceneObject = { monkeyMesh, monkeyTransform };
-    m_Scene.sceneObjects.push_back(sceneObject);
-
-    /*
-    uint32_t randomSeed = 38689 * 643 / 6 + 4;
-    MeshRef cubeMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/cube.obj");
-    for (int i = 0; i < 5; ++i) {
-        Transform cubeTransform;
-        float random = RandomBilateral(&randomSeed) * 5;
-        cubeTransform.Translate(Vector3(-8.0f + i * 4, 1.0f, 2.0f+random));
-        MeshRef cubeMeshInstance = new Mesh;
-        // TODO: Do not copy mesh struct! It is not safe!!!!
-        *cubeMeshInstance = *cubeMesh;
-        cubeMeshInstance->material = m_DefaultMaterial;
-
-        PGSceneObject cubeSceneObject = { cubeMeshInstance, cubeTransform };
-        m_Scene.sceneObjects.push_back(cubeSceneObject);
-
-    }
-
-    
-
-    MeshRef sphereMesh = LoadMeshFromOBJFile(PGRenderer::GetRendererAPI(), "./assets/uvsphere.obj");
-    sphereMesh->material = m_DefaultMaterial;
-    Transform sphereTransform;
-    sphereTransform.Translate(Vector3(3.0f, 3.0f, 1.0f));
-    PGSceneObject sphereSceneObject = { sphereMesh, sphereTransform };
-    m_Scene.sceneObjects.push_back(sphereSceneObject);*/
+    LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf");
+    //LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf");
+    Transform cameraTransform;
+    cameraTransform.Translate(Vector3(0.0f,-0.5f, -4.0f));
+    m_MainCamera.TransformCamera(&cameraTransform);
 
     PGRenderer::EndScene();
 }

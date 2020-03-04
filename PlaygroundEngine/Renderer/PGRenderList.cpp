@@ -12,7 +12,7 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
     for (size_t elementIndex = 0; elementIndex < renderList.elementCount; ++elementIndex) {
         RenderList::Element element = renderList.elements[elementIndex];
 
-        MeshRef mesh = element.mesh;
+        SubMesh* submesh = element.mesh;
         Material* material = element.mesh->material;
 
         PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
@@ -25,7 +25,7 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
 
         bool bindGeometry = false;
         bool bindMaterial = false;
-        if (lastMeshIndex != stringHasher(mesh->name)) {
+        if (lastMeshIndex != (uint64_t) submesh) {
             bindGeometry = true;
         }
         if (lastMaterialIndex != (uint64_t)material && !depthOnlyPass) {
@@ -37,6 +37,7 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
             PGTexture* roughnessTexture = material->roughnessTexture;
             PGTexture* metallicTexture = material->metallicTexture;
             PGTexture* aoTexture = material->aoTexture;
+            PGTexture* metallicRoughnessTexture = material->metallicRoughnessTexture;
             PGTexture* radianceMap = material->radianceMap;
             PGTexture* irradianceMap = material->irradianceMap;
             PGTexture* envBrdf = material->envBrdf;
@@ -45,6 +46,7 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
                 roughnessTexture ? roughnessTexture->GetHWResourceView() : nullptr,
                 metallicTexture ? metallicTexture->GetHWResourceView() : nullptr,
                 aoTexture ? aoTexture->GetHWResourceView() : nullptr,
+                metallicRoughnessTexture ? metallicRoughnessTexture->GetHWResourceView() : nullptr,
                 radianceMap ? radianceMap->GetHWResourceView() : nullptr,
                 irradianceMap ? irradianceMap->GetHWResourceView() : nullptr,
                 envBrdf ? envBrdf->GetHWResourceView() : nullptr,
@@ -59,27 +61,22 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
 
         if (bindGeometry) {
             if (depthOnlyPass) {
-                uint32_t vertexBufferStride = sizeof(Vertex_POS);
-                uint32_t offset = 0;
-                rendererAPI->SetVertexBuffers(&mesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS], 1, &vertexBufferStride, &offset);
-                rendererAPI->SetIndexBuffer(mesh->indexBuffer);
-                rendererAPI->SetInputLayout(PGRendererResources::s_DefaultInputLayouts[InputLayoutType::POS_NOR_TC]);
+                uint32_t vertexBufferStride = submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS];
+                uint32_t offset = submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_POSITIONS];
+                rendererAPI->SetVertexBuffers(&submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS], 1, &vertexBufferStride, &offset);
+                rendererAPI->SetIndexBuffer(submesh->indexBuffer, submesh->indexBufferStride, submesh->indexBufferOffset);
+                rendererAPI->SetInputLayout(PGRendererResources::s_DefaultInputLayouts[InputLayoutType::POS]);
             }
             else {
-                uint32_t vertexBufferStrides[VertexBuffers::VERTEX_BUFFER_COUNT] = {
-                    sizeof(Vertex_POS),
-                    sizeof(Vertex_NOR_TEXCOORD),
-                };
-                uint32_t offsets[VertexBuffers::VERTEX_BUFFER_COUNT] = { 0 };
-                rendererAPI->SetVertexBuffers(mesh->vertexBuffers, VertexBuffers::VERTEX_BUFFER_COUNT, vertexBufferStrides, offsets);
-                rendererAPI->SetIndexBuffer(mesh->indexBuffer);
+                rendererAPI->SetVertexBuffers(submesh->vertexBuffers, VertexBuffers::VERTEX_BUFFER_COUNT, submesh->vertexStrides, submesh->vertexOffsets);
+                rendererAPI->SetIndexBuffer(submesh->indexBuffer, submesh->indexBufferStride, submesh->indexBufferOffset);
                 rendererAPI->SetInputLayout(PGRendererResources::s_DefaultInputLayouts[InputLayoutType::POS_NOR_TC]);
             }
         }
 
-        rendererAPI->DrawIndexed(mesh->indexBuffer);
+        rendererAPI->DrawIndexed(submesh->indexCount, submesh->indexStart, 0);
 
-        lastMeshIndex = stringHasher(mesh->name);
+        lastMeshIndex = (uint64_t) submesh;
         lastMaterialIndex = (uint64_t)material;
     }
 }

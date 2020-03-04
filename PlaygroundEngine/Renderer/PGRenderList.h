@@ -8,11 +8,11 @@
 
 #include "PGRendererResources.h"
 
-const size_t MAX_RENDER_LIST_ELEMENT_COUNT = 256;
+const size_t MAX_RENDER_LIST_ELEMENT_COUNT = 1024;
 
 struct RenderList {
     struct Element {
-        MeshRef mesh;
+        SubMesh* mesh;
         Transform transform;
 
         union DepthKey {
@@ -44,24 +44,26 @@ struct RenderList {
         for (size_t sceneObjectIndex = 0; sceneObjectIndex < sceneObjectCount; ++sceneObjectIndex) {
             const PGSceneObject* sceneObject = sceneObjects + sceneObjectIndex;
 
-            RenderList::Element& element = elements[elementCount++];
-            element.mesh = sceneObject->mesh;
-            element.transform = sceneObject->transform;
+            for (SubMesh* submesh : sceneObject->mesh->submeshes) {
+                RenderList::Element& element = elements[elementCount++];
+                element.mesh = submesh;
+                element.transform = sceneObject->transform;
 
-            // Calculate depth 
-            Vector3 distanceVector = element.transform.position - sceneCamera->GetPosition();
-            float distance = sqrtf(DotProduct(distanceVector, distanceVector));
+                // Calculate depth 
+                Vector3 distanceVector = element.transform.position - sceneCamera->GetPosition();
+                float distance = sqrtf(DotProduct(distanceVector, distanceVector));
 
-            element.depthKey.depth = (uint32_t) (distance * 10);
-            element.sortKey.depth = (uint64_t) (distance * 10);
+                element.depthKey.depth = (uint32_t)(distance * 10);
+                element.sortKey.depth = (uint64_t)(distance * 10);
 
-            // Mesh hash
-            size_t meshNameHash = stringHasher(element.mesh->name);
-            element.depthKey.mesh = (uint32_t) meshNameHash;
-            element.sortKey.mesh = (uint64_t) meshNameHash;
+                // Mesh hash
+                size_t meshNameHash = stringHasher(sceneObject->mesh->name);
+                element.depthKey.mesh = (uint32_t)meshNameHash;
+                element.sortKey.mesh = (uint64_t)meshNameHash;
 
-            // Material
-            element.sortKey.material = (uint64_t) element.mesh->material;
+                // Material
+                element.sortKey.material = (uint64_t) submesh->material;
+            }
         }
     }
 

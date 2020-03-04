@@ -218,6 +218,7 @@
     <ClCompile Include="Imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="Imgui\imgui_widgets.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MeshUtils.cpp" />
     <ClCompile Include="PGCamera.cpp" />
     <ClCompile Include="PGLog.cpp" />
     <ClCompile Include="PGProfiler.cpp" />
@@ -311,8 +312,10 @@
     <ClInclude Include="Renderer\Skybox.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Utility\json.hpp" />
     <ClInclude Include="Utility\stb_image.h" />
     <ClInclude Include="Utility\tinyddsloader.h" />
+    <ClInclude Include="Utility\tiny_gltf.h" />
     <ClInclude Include="Utility\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>

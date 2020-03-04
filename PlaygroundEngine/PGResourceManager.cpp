@@ -32,7 +32,7 @@ IResource* PGResourceManager::CreateResource(const std::string& resourceFilePath
         IResource* pResource = PGTexture::CreateTextureFromDDSFile(resourceFilePath);
         s_ResourcePool[resourceFilePath] = pResource;
         return pResource;
-    } else if (!extension.compare("png")) {
+    } else if (!extension.compare("png") || !extension.compare("jpg")) {
         IResource* pResource = PGTexture::CreateTexture2D(resourceFilePath);
         s_ResourcePool[resourceFilePath] = pResource;
         return pResource;

@@ -38,9 +38,14 @@ float4 PSMain(VSOut input) : SV_Target {
     float3 lightVector = normalize(lightPos - input.worldPos);
 
     float3 albedoColor = g_Material.diffuseColor.rgb;
+    float alpha = g_Material.diffuseColor.a;
     if (g_Material.hasAlbedoTexture) {
-        albedoColor = g_AlbedoTexture.Sample(g_LinearWrapSampler, input.texCoord).rgb;
+        float4 color = g_AlbedoTexture.Sample(g_LinearWrapSampler, input.texCoord);
+        albedoColor = color.rgb;
+        alpha = color.a;
     }
+
+    clip(alpha - 0.1f);
 
     float roughness = g_Material.roughness;
     if (g_Material.hasRoughnessTexture) {
@@ -97,9 +102,9 @@ float4 PSMain(VSOut input) : SV_Target {
     
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
     float3 ambient = diffuseAmbient + radiance * (f0 * envBRDF.x + envBRDF.y);
-    ambient *= ao;
+    ambient *= ao * 0.15f;
 
     float3 color = Lo * lightColor * intensity * shadowFactor + ambient;
 
-    return float4(color, 1.0f);
+    return float4(color, alpha);
 }

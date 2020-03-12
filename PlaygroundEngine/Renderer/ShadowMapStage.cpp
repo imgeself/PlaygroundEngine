@@ -14,15 +14,13 @@ void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI, GPUResource* shadowM
     rendererAPI->SetConstantBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
 }
 
-void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shadowCasterList, PGShaderLib* shaderLib) {
+void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shadowCasterList, PGShaderLib* shaderLib, bool clear) {
     PG_PROFILE_FUNCTION();
-    rendererAPI->SetRenderTargets(nullptr, 0, m_ShadowMapTarget);
-    rendererAPI->ClearDepthStencilView(m_ShadowMapTarget, false, 1.0f, 0);
-    rendererAPI->SetViewport(&m_ShadowMapViewport);
-
-    PGShader* shadowGenShader = shaderLib->GetDefaultShader("ShadowGen");
-    rendererAPI->SetVertexShader(shadowGenShader->GetHWVertexShader());
-    rendererAPI->SetPixelShader(nullptr); // We don't need a pixel shader in shadow generation stage
+    if (clear) {
+        rendererAPI->SetRenderTargets(nullptr, 0, m_ShadowMapTarget);
+        rendererAPI->ClearDepthStencilView(m_ShadowMapTarget, false, 1.0f, 0);
+        rendererAPI->SetViewport(&m_ShadowMapViewport);
+    }
 
     for (uint32_t cascadeIndex = 0; cascadeIndex < CASCADE_COUNT; ++cascadeIndex) {
         void* gpuBuffer = rendererAPI->Map(m_PerShadowGenConstantBuffer);
@@ -31,7 +29,7 @@ void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shado
         memcpy(gpuBuffer, &data, sizeof(PerShadowGenConstantBuffer));
         rendererAPI->Unmap(m_PerShadowGenConstantBuffer);
 
-        RenderScene(rendererAPI, shadowCasterList, SceneRenderPassType::SHADOW_GEN);
+        RenderScene(rendererAPI, shadowCasterList, SceneRenderPassType::DEPTH_PASS);
     }
 }
 

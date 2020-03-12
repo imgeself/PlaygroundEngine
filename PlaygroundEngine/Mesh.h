@@ -30,8 +30,6 @@ enum VertexBuffers : uint8_t {
 };
 
 struct SubMesh {
-    Material* material = nullptr;
-
     // TODO: Instead of storing raw pointers we should have handles for buffers. Because this is not a safe struct to copy.
     // If one of the copies get deleted, other's buffers will be invalidated.
     HWBuffer* vertexBuffers[VertexBuffers::VERTEX_BUFFER_COUNT] = {0};
@@ -45,6 +43,16 @@ struct SubMesh {
 
     uint32_t indexStart;
     uint32_t indexCount;
+
+    // Not included in hash
+    Material* material = nullptr;
+
+    size_t GetGeometryHash() {
+        size_t materialOffset = offsetof(SubMesh, material);
+        size_t hash = Hash(((const uint8_t*) this), materialOffset);
+
+        return hash;
+    }
 
     ~SubMesh() {
         for (size_t i = 0; i < VertexBuffers::VERTEX_BUFFER_COUNT; ++i) {

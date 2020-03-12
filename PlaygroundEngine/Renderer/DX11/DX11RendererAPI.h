@@ -10,6 +10,7 @@
 #include "DX11Texture2D.h"
 #include "DX11ShaderResourceView.h"
 #include "DX11SamplerState.h"
+#include "DX11PipelineStates.h"
 
 #include <d3d11_4.h>
 
@@ -38,6 +39,9 @@ public:
     HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
+    HWBlendState* CreateBlendState(const HWBlendDesc& blendDesc, const char* debugName = 0) override;
+    HWRasterizerState* CreateRasterizerState(const HWRasterizerDesc& rasterizerDesc, const char* debugName = 0) override;
+
 
     void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) override;
     void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) override;
@@ -49,6 +53,9 @@ public:
     void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
     void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
+
+    void SetBlendState(HWBlendState* blendState, const float blendFactor[4], uint32_t sampleMask) override;
+    void SetRasterizerState(HWRasterizerState* rasterizerState) override;
 
     void SetViewport(HWViewport* viewport) override;
 

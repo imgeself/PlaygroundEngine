@@ -7,6 +7,7 @@
 #include "HWRenderTarget.h"
 #include "HWShaderResourceView.h"
 #include "HWSamplerState.h"
+#include "HWPipelineStates.h"
 
 #include <vector>
 #include <string>
@@ -42,6 +43,9 @@ public:
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName = 0) = 0;
     virtual HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName = 0) = 0;
 
+    virtual HWBlendState* CreateBlendState(const HWBlendDesc& blendDesc, const char* debugName = 0) = 0;
+    virtual HWRasterizerState* CreateRasterizerState(const HWRasterizerDesc& rasterizerDesc, const char* debugName = 0) = 0;
+
     virtual void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) = 0;
     virtual void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) = 0;
     virtual void SetInputLayout(HWVertexInputLayout* vertexInputLayout) = 0;
@@ -53,6 +57,9 @@ public:
     virtual void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) = 0;
     virtual void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) = 0;
     virtual void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) = 0;
+
+    virtual void SetBlendState(HWBlendState* blendState, const float blendFactor[4], uint32_t sampleMask) = 0;
+    virtual void SetRasterizerState(HWRasterizerState* rasterizerState) = 0;
 
     virtual void SetViewport(HWViewport* viewport) = 0;
     

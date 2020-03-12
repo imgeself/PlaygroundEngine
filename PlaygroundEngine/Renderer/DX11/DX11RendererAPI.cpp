@@ -86,25 +86,6 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     
     m_DeviceContext->RSSetViewports(1, &m_DefaultViewport);
 
-    D3D11_RASTERIZER_DESC rasterizerDesc = {};
-    rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-    rasterizerDesc.CullMode = D3D11_CULL_BACK;
-    rasterizerDesc.FrontCounterClockwise = FALSE;
-    rasterizerDesc.DepthBias = 0;
-    rasterizerDesc.DepthBiasClamp = 0.0f;
-    rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-    rasterizerDesc.DepthClipEnable = TRUE;
-    rasterizerDesc.ScissorEnable = FALSE;
-    rasterizerDesc.MultisampleEnable = FALSE;
-    rasterizerDesc.AntialiasedLineEnable = FALSE;
-
-    ID3D11RasterizerState* rasterizerState = nullptr;
-    result = m_Device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating rasterizer state");
-
-    m_DeviceContext->RSSetState(rasterizerState);
-    rasterizerState->Release();
-
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
     depthStencilDesc.DepthEnable = TRUE;
     depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -234,6 +215,14 @@ HWShaderResourceView* DX11RendererAPI::CreateShaderResourceView(HWTexture2D* tex
 
 HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) {
     return new DX11SamplerState(m_Device, initParams, debugName);
+}
+
+HWBlendState* DX11RendererAPI::CreateBlendState(const HWBlendDesc& blendDesc, const char* debugName) {
+    return new DX11BlendState(m_Device, blendDesc, debugName);
+}
+
+HWRasterizerState* DX11RendererAPI::CreateRasterizerState(const HWRasterizerDesc& rasterizerDesc, const char* debugName) {
+    return new DX11RasterizerState(m_Device, rasterizerDesc, debugName);
 }
 
 
@@ -386,6 +375,20 @@ void DX11RendererAPI::SetSamplerStatesPS(size_t startSlot, HWSamplerState** samp
     }
 
     m_DeviceContext->PSSetSamplers((UINT) startSlot, (UINT) samplerStateCount, destSamplerStates);
+}
+
+void DX11RendererAPI::SetBlendState(HWBlendState* blendState, const float blendFactor[4], uint32_t sampleMask) {
+    DX11BlendState* dxBlendState = (DX11BlendState*) blendState;
+    ID3D11BlendState* bind = dxBlendState ? dxBlendState->GetDXBlendState() : nullptr;
+
+    m_DeviceContext->OMSetBlendState(bind, blendFactor, (UINT) sampleMask);
+}
+
+void DX11RendererAPI::SetRasterizerState(HWRasterizerState* rasterizerState) {
+    DX11RasterizerState* dxRasterizerState = (DX11RasterizerState*) rasterizerState;
+    ID3D11RasterizerState* bind = dxRasterizerState ? dxRasterizerState->GetDXRasterizerState() : nullptr;
+
+    m_DeviceContext->RSSetState(bind);
 }
 
 void DX11RendererAPI::SetViewport(HWViewport* viewport) {

@@ -135,6 +135,9 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_ShadowGenStage.Initialize(s_RendererAPI, PGRendererResources::s_ShadowMapCascadesTexture, s_RendererConfig.shadowMapSize);
     s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
 
+    PGShader* tonemappingShader = s_ShaderLib->GetDefaultShader("HDRPostProcess");
+    s_ToneMappingPass.SetShader(tonemappingShader);
+
     return true;
 }
 
@@ -153,10 +156,8 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
     s_SceneRenderPass.SetViewport(defaultViewport);
 
     // Post process
-    PGShader* tonemappingShader = s_ShaderLib->GetDefaultShader("HDRPostProcess");
     s_ToneMappingPass.SetRenderTarget(0, s_RendererAPI->GetBackbufferRenderTargetView());
     s_ToneMappingPass.SetViewport(defaultViewport);
-    s_ToneMappingPass.SetShader(tonemappingShader);
     if (s_RendererConfig.msaaSampleCount > 1) {
         s_ToneMappingPass.SetShaderResource(POST_PROCESS_TEXTURE0_SLOT, PGRendererResources::s_ResolvedHDRRenderTarget->srv, ShaderStage::PIXEL);
     } else {
@@ -174,6 +175,7 @@ void PGRenderer::RenderFrame() {
     //TODO: We are adding all the scene objects into the render list. Needs culling to eleminate some of the scene objects
     s_RenderList.Clear();
     s_RenderList.AddSceneObjects(s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), s_ActiveSceneData->camera);
+    s_RenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
 
     //TODO: This function should be create gpu commands and pass them to render thread.
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};

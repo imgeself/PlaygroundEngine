@@ -8,10 +8,53 @@ HWBuffer* PGRendererResources::s_RendererVarsConstantBuffer;
 std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> PGRendererResources::s_DefaultSamplers;
 std::array<HWVertexInputLayout*, RENDERER_DEFAULT_INPUT_LAYOUT_SIZE> PGRendererResources::s_DefaultInputLayouts;
 
+PGCachedPipelineState* PGRendererResources::s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE] = {0};
+
 GPUResource* PGRendererResources::s_HDRRenderTarget;
 GPUResource* PGRendererResources::s_DepthStencilTarget;
 GPUResource* PGRendererResources::s_ResolvedHDRRenderTarget; // if msaa enabled
 GPUResource* PGRendererResources::s_ShadowMapCascadesTexture;
+
+uint8_t PGRendererResources::CreatePipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc) {
+    size_t checksumPSO = Hash((const uint8_t*)&pipelineDesc, sizeof(PGPipelineDesc));
+    for (uint8_t i = 0; i < MAX_CACHED_PIPELINE_STATE_PER_STAGE; i++) {
+        PGCachedPipelineState* ps = s_CachedPipelineStates[scenePassType][i];
+        if (ps) {
+            if (ps->hash == checksumPSO) {
+                return i;
+            }
+        } else {
+            PGCachedPipelineState* ps = new PGCachedPipelineState;
+            ps->hash = checksumPSO;
+
+            HWBlendDesc blendDesc;
+            HWBlendState* blendState = rendererAPI->CreateBlendState(blendDesc);
+            ps->blendState = blendState;
+
+            HWRasterizerDesc rasterizerDesc;
+            rasterizerDesc.multisampleEnable = true;
+            if (pipelineDesc.doubleSided) {
+                rasterizerDesc.cullMode = CULL_NONE;
+            } else {
+                rasterizerDesc.cullMode = CULL_BACK;
+            }
+
+            HWRasterizerState* rasterizerState = rendererAPI->CreateRasterizerState(rasterizerDesc);
+            ps->rasterizerState = rasterizerState;
+
+            HWVertexInputLayout* inputLayout = s_DefaultInputLayouts[pipelineDesc.layoutType];
+            ps->inputLayout = inputLayout;
+
+            ps->shader = pipelineDesc.shader;
+
+            s_CachedPipelineStates[scenePassType][i] = ps;
+            return i;
+        }
+    }
+
+    PG_ASSERT(false, "Cached pipeline array is full!");
+    return 0xFF;
+}
 
 void PGRendererResources::CreateDefaultBuffers(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig) {
     // Default resources init
@@ -66,11 +109,19 @@ void PGRendererResources::CreateDefaultSamplerStates(HWRendererAPI* rendererAPI)
 
 void PGRendererResources::CreateDefaultInputLayout(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
     std::vector<VertexInputElement> posInputElements = {
-        { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
+        { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 }
     };
 
     PGShader* shadowGenShader = shaderLib->GetDefaultShader("ShadowGen");
     s_DefaultInputLayouts[InputLayoutType::POS] = rendererAPI->CreateVertexInputLayout(posInputElements, shadowGenShader->GetHWVertexShader());
+
+    std::vector<VertexInputElement> posTCInputElements = {
+        { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, VertexDataFormat_FLOAT2, 2, PER_VERTEX_DATA, 0 }
+    };
+
+    PGShader* shadowGenAlphaShader = shaderLib->GetDefaultShader("ShadowGenAlphaTest");
+    s_DefaultInputLayouts[InputLayoutType::POS_TC] = rendererAPI->CreateVertexInputLayout(posTCInputElements, shadowGenAlphaShader->GetHWVertexShader());
 
     std::vector<VertexInputElement> inputElements = {
         { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },

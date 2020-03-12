@@ -8,13 +8,13 @@
 #include <array>
 
 struct PGRendererConfig {
-    size_t width = 1280;
-    size_t height = 720;
+    uint32_t width = 1280;
+    uint32_t height = 720;
 
     float exposure = 1.0f;
     float gamma = 2.2f;
 
-    size_t shadowMapSize = 1024;
+    uint32_t shadowMapSize = 1024;
     uint8_t shadowCascadeCount = 4;
 
     uint8_t msaaSampleCount = 1;
@@ -50,15 +50,51 @@ struct GPUResource {
     }
 };
 
+
 enum InputLayoutType : uint8_t {
     POS,
+    POS_TC,
     POS_NOR_TC,
 
     INPUT_TYPE_COUNT
 };
 
+struct PGPipelineDesc {
+    PGShader* shader;
+    bool doubleSided;
+    bool transparency;
+    InputLayoutType layoutType;
+};
+
+// TODO: Pipeline state objects is going to be part of HWRendererAPI when we redesign the RHI. 
+struct PGCachedPipelineState {
+    PGShader* shader;
+    HWBlendState* blendState;
+    HWRasterizerState* rasterizerState;
+    HWVertexInputLayout* inputLayout;
+
+    void Bind(HWRendererAPI* rendererAPI) {
+        rendererAPI->SetVertexShader(shader->GetHWVertexShader());
+        rendererAPI->SetPixelShader(shader->GetHWPixelShader());
+        rendererAPI->SetBlendState(blendState, nullptr, 0xFFFFFFFF);
+        rendererAPI->SetRasterizerState(rasterizerState);
+        rendererAPI->SetInputLayout(inputLayout);
+    }
+
+    size_t hash;
+};
+
 const size_t RENDERER_DEFAULT_SAMPLER_SIZE = 5;
 const size_t RENDERER_DEFAULT_INPUT_LAYOUT_SIZE = InputLayoutType::INPUT_TYPE_COUNT;
+
+const size_t MAX_CACHED_PIPELINE_STATE_PER_STAGE = 4;
+
+enum SceneRenderPassType {
+    DEPTH_PASS, // Used for depth prepass, shadow mapping, etc.
+    FORWARD,
+
+    SCENE_PASS_TYPE_COUNT
+};
 
 struct PGRendererResources {
     static HWBuffer* s_PerFrameGlobalConstantBuffer;
@@ -68,6 +104,10 @@ struct PGRendererResources {
 
     static std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> s_DefaultSamplers;
     static std::array<HWVertexInputLayout*, RENDERER_DEFAULT_INPUT_LAYOUT_SIZE> s_DefaultInputLayouts;
+
+    static PGCachedPipelineState* s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE];
+
+    static uint8_t CreatePipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc);
 
     static GPUResource* s_HDRRenderTarget;
     static GPUResource* s_DepthStencilTarget;

@@ -122,6 +122,14 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             material->aoTexture = (PGTexture*)PGResourceManager::CreateResource(directory + occlusionImage.uri);
         }
 
+        if (!mtl.alphaMode.compare("MASK")) {
+            material->alphaMode = AlphaMode_ALPHA_TEST;
+        } else {
+            material->alphaMode = AlphaMode_ALWAYS_PASS;
+        }
+
+        material->doubleSided = mtl.doubleSided;
+
         material->radianceMap = defaultMaterial->radianceMap;
         material->irradianceMap = defaultMaterial->irradianceMap;
         material->envBrdf = defaultMaterial->envBrdf;

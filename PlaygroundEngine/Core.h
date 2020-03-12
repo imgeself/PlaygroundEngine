@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
+#include <functional>
 
 #define PG_ASSERT(x, string) { if(!(x)) { printf("Assertion Failed: %s\n", string); __debugbreak(); } }
 
@@ -24,6 +25,17 @@
 #endif
 
 #define PG_DEBUG_GPU_DEVICE 1
+
+// Simple stupid hash function
+static size_t Hash(const uint8_t* data, size_t size) {
+    std::hash<uint8_t> hasher;
+    size_t hash = 0;
+    for (size_t i = 0; i < size; ++i) {
+        hash += hasher(*(data + i));
+    }
+
+    return hash;
+}
 
 struct SystemInitArguments {
     const char* executablePath;

@@ -4,11 +4,11 @@
 void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, SceneRenderPassType scenePassType) {
     PG_PROFILE_FUNCTION();
     // TODO: We need some sort of batching to take advantage of instanced drawing!
-    uint64_t lastMeshIndex = 0;
-    uint64_t lastMaterialIndex = 0;
-    bool depthOnlyPass = scenePassType == SceneRenderPassType::SHADOW_GEN || scenePassType == SceneRenderPassType::PRE_DEPTH;
+    SubMesh* lastMesh = nullptr;
+    Material* lastMaterial = nullptr;
+    uint64_t lastPipelineIndex = ~0;
+    bool depthOnlyPass = scenePassType == SceneRenderPassType::DEPTH_PASS;
 
-    std::hash<std::string> stringHasher;
     for (size_t elementIndex = 0; elementIndex < renderList.elementCount; ++elementIndex) {
         RenderList::Element element = renderList.elements[elementIndex];
 
@@ -25,11 +25,21 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
 
         bool bindGeometry = false;
         bool bindMaterial = false;
-        if (lastMeshIndex != (uint64_t) submesh) {
+        if (lastMesh != submesh) {
             bindGeometry = true;
         }
-        if (lastMaterialIndex != (uint64_t)material && !depthOnlyPass) {
-            bindMaterial = true;
+
+        if (lastMaterial != material) {
+            if (depthOnlyPass) {
+                bindMaterial = material->alphaMode != AlphaMode_ALWAYS_PASS;
+            } else {
+                bindMaterial = true;
+            }
+        }
+
+        uint8_t pipelineIndex = element.pipelineStates[scenePassType];
+        if (lastPipelineIndex != pipelineIndex) {
+            PGRendererResources::s_CachedPipelineStates[scenePassType][pipelineIndex]->Bind(rendererAPI);
         }
 
         if (bindMaterial) {
@@ -53,31 +63,18 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
             };
 
             rendererAPI->SetShaderResourcesPS(ALBEDO_TEXTURE2D_SLOT, textureResources, ARRAYSIZE(textureResources));
-
-            PGShader* shader = material->shader;
-            rendererAPI->SetVertexShader(shader->GetHWVertexShader());
-            rendererAPI->SetPixelShader(shader->GetHWPixelShader());
         }
 
         if (bindGeometry) {
-            if (depthOnlyPass) {
-                uint32_t vertexBufferStride = submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS];
-                uint32_t offset = submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_POSITIONS];
-                rendererAPI->SetVertexBuffers(&submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS], 1, &vertexBufferStride, &offset);
-                rendererAPI->SetIndexBuffer(submesh->indexBuffer, submesh->indexBufferStride, submesh->indexBufferOffset);
-                rendererAPI->SetInputLayout(PGRendererResources::s_DefaultInputLayouts[InputLayoutType::POS]);
-            }
-            else {
-                rendererAPI->SetVertexBuffers(submesh->vertexBuffers, VertexBuffers::VERTEX_BUFFER_COUNT, submesh->vertexStrides, submesh->vertexOffsets);
-                rendererAPI->SetIndexBuffer(submesh->indexBuffer, submesh->indexBufferStride, submesh->indexBufferOffset);
-                rendererAPI->SetInputLayout(PGRendererResources::s_DefaultInputLayouts[InputLayoutType::POS_NOR_TC]);
-            }
+            rendererAPI->SetVertexBuffers(submesh->vertexBuffers, VertexBuffers::VERTEX_BUFFER_COUNT, submesh->vertexStrides, submesh->vertexOffsets);
+            rendererAPI->SetIndexBuffer(submesh->indexBuffer, submesh->indexBufferStride, submesh->indexBufferOffset);
         }
 
         rendererAPI->DrawIndexed(submesh->indexCount, submesh->indexStart, 0);
 
-        lastMeshIndex = (uint64_t) submesh;
-        lastMaterialIndex = (uint64_t)material;
+        lastMesh = submesh;
+        lastMaterial = material;
+        lastPipelineIndex = pipelineIndex;
     }
 }
 

@@ -6,20 +6,24 @@
 #include <string>
 #include <unordered_map>
 
+#include <d3dcompiler.h>
+
 class PGShader {
 public:
     PGShader();
     ~PGShader();
 
-    void LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename);
-    void LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* fileData);
-    void Reload(HWRendererAPI* rendererAPI, const char* filename);
+    HWShaderBytecode GetVertexBytecode();
+    HWShaderBytecode GetPixelBytecode();
 
-    inline HWVertexShader* GetHWVertexShader() { return m_HWVertexShader; }
-    inline HWPixelShader* GetHWPixelShader() { return m_HWPixelShader; }
+    void LoadFromFilename(const std::string& filename);
+    void Reload();
+
+    bool needsUpdate = false;
 
 private:
-    HWVertexShader* m_HWVertexShader;
-    HWPixelShader* m_HWPixelShader;
+    std::string m_Filepath;
+    ID3DBlob* m_VertexShaderBlob = nullptr;
+    ID3DBlob* m_PixelShaderBlob = nullptr;
 };
 

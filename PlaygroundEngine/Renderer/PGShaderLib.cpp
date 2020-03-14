@@ -23,7 +23,7 @@ ShaderRef PGShaderLib::LoadShaderFromDisk(const std::filesystem::path& shaderFil
     m_ShaderFileLastWriteTimeMap[shaderFilePath.string()] = fileTime;
 
     PGShader* shader = new PGShader();
-    shader->LoadFromFilename(m_RendererAPI, shaderFilePath.string().c_str());
+    shader->LoadFromFilename(shaderFilePath.string());
     m_Shaders[name] = shader;
     return shader;
 }
@@ -39,7 +39,7 @@ void PGShaderLib::ReloadShadersIfNeeded() {
             if (newFileTime.time_since_epoch() - oldFileTime.time_since_epoch() > std::chrono::seconds(0)) {
                 auto shaderSearch = m_Shaders.find(filepath.stem().string());
                 if (shaderSearch != m_Shaders.end()) {
-                    shaderSearch->second->Reload(m_RendererAPI, filepath.string().c_str());
+                    shaderSearch->second->needsUpdate = true;
                     m_ShaderFileLastWriteTimeMap[filepath.string()] = newFileTime;
                 }
                 else {

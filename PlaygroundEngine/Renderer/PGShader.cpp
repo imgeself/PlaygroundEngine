@@ -1,29 +1,13 @@
 #include "PGShader.h"
 #include "../PGLog.h"
 
-#include <d3dcompiler.h>
-
 PGShader::PGShader() {
 
 }
 
 PGShader::~PGShader() {
-    delete m_HWVertexShader;
-    delete m_HWPixelShader;
-}
-
-static ID3DBlob* CompileShader(ShaderFileData* source, const char* mainFunctionName, const char* version) {
-    ID3DBlob* shaderBlob = nullptr;
-    ID3DBlob* errorBlob = nullptr;
-    D3D_SHADER_MACRO compileDefines[] = { "_HLSL", "1", NULL, NULL };
-    HRESULT status = D3DCompile(source->fileData, source->fileSize, NULL, compileDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-        mainFunctionName, version, D3DCOMPILE_DEBUG, 0, &shaderBlob, &errorBlob);
-    if (errorBlob) {
-        PG_LOG_ERROR("Shader compilation errors: %s", (char*)errorBlob->GetBufferPointer());
-        errorBlob->Release();
-    }
-
-    return shaderBlob;
+    SAFE_RELEASE(m_VertexShaderBlob);
+    SAFE_RELEASE(m_PixelShaderBlob);
 }
 
 static bool CompileShader(const char* filename, const char* mainFunctionName, const char* version, ID3DBlob** shaderBlob) {
@@ -46,59 +30,37 @@ static bool CompileShader(const char* filename, const char* mainFunctionName, co
     return SUCCEEDED(status);
 }
 
-void PGShader::LoadFromFilename(HWRendererAPI* rendererAPI, const char* filename) {
-    PG_LOG_DEBUG("Compiling shader: %s", filename);
-    ID3DBlob* vertexShaderBlob = nullptr;
-    bool vertexCompilationSuccess = CompileShader(filename, "VSMain", "vs_5_0", &vertexShaderBlob);
-    ID3DBlob* pixelShaderBlob = nullptr;
-    bool pixelCompilationSuccess = CompileShader(filename, "PSMain", "ps_5_0", &pixelShaderBlob);
-    PG_ASSERT(vertexCompilationSuccess && pixelCompilationSuccess, "Shader compilation failed!")
-
-    ShaderFileData vertexShaderData = { (char*)vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-    ShaderFileData pixelShaderData = { (char*)pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
-
-    m_HWVertexShader = rendererAPI->CreateVertexShaderFromBinarySource(&vertexShaderData);
-    m_HWPixelShader = rendererAPI->CreatePixelShaderFromBinarySource(&pixelShaderData);
-
-    SAFE_RELEASE(vertexShaderBlob);
-    SAFE_RELEASE(pixelShaderBlob);
-}
-
-
-void PGShader::LoadFromFileData(HWRendererAPI* rendererAPI, ShaderFileData* fileData) {
-    ID3DBlob* vertexShaderBlob = CompileShader(fileData, "VSMain", "vs_5_0");
-    ID3DBlob* pixelShaderBlob = CompileShader(fileData, "PSMain", "ps_5_0");
-    ShaderFileData vertexShaderData = { (char*) vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-    ShaderFileData pixelShaderData = { (char*) pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
-
-    m_HWVertexShader = rendererAPI->CreateVertexShaderFromBinarySource(&vertexShaderData);
-    m_HWPixelShader = rendererAPI->CreatePixelShaderFromBinarySource(&pixelShaderData);
-
-    SAFE_RELEASE(vertexShaderBlob);
-    SAFE_RELEASE(pixelShaderBlob);
-}
-
-void PGShader::Reload(HWRendererAPI* rendererAPI, const char* filename) {
-    PG_LOG_DEBUG("Reloading shader: %s", filename);
-    ID3DBlob* vertexShaderBlob = nullptr;
-    bool vertexCompilationSuccess = CompileShader(filename, "VSMain", "vs_5_0", &vertexShaderBlob);
-    ID3DBlob* pixelShaderBlob = nullptr;
-    bool pixelCompilationSuccess = CompileShader(filename, "PSMain", "ps_5_0", &pixelShaderBlob);
-
-    if (!vertexCompilationSuccess || !pixelCompilationSuccess) {
-        PG_LOG_ERROR("Shader reload failed!");
-        return;
+HWShaderBytecode PGShader::GetVertexBytecode() {
+    if (!m_VertexShaderBlob) {
+        PG_LOG_DEBUG("Compiling vertex shader: %s", m_Filepath.c_str());
+        bool vertexCompilationSuccess = CompileShader(m_Filepath.c_str(), "VSMain", "vs_5_0", &m_VertexShaderBlob);
+        PG_ASSERT(vertexCompilationSuccess, "Shader compilation failed!")
     }
 
-    ShaderFileData vertexShaderData = { (char*)vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
-    ShaderFileData pixelShaderData = { (char*)pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
+    HWShaderBytecode bytecode = { m_VertexShaderBlob->GetBufferPointer(), m_VertexShaderBlob->GetBufferSize() };
+    return bytecode;
+}
 
-    delete m_HWVertexShader;
-    delete m_HWPixelShader;
-    m_HWVertexShader = rendererAPI->CreateVertexShaderFromBinarySource(&vertexShaderData);
-    m_HWPixelShader = rendererAPI->CreatePixelShaderFromBinarySource(&pixelShaderData);
+HWShaderBytecode PGShader::GetPixelBytecode() {
+    if (!m_PixelShaderBlob) {
+        PG_LOG_DEBUG("Compiling pixel shader: %s", m_Filepath.c_str());
+        ID3DBlob* pixelShaderBlob = nullptr;
+        bool pixelCompilationSuccess = CompileShader(m_Filepath.c_str(), "PSMain", "ps_5_0", &m_PixelShaderBlob);
+        PG_ASSERT(pixelCompilationSuccess, "Shader compilation failed!")
+    }
 
-    SAFE_RELEASE(vertexShaderBlob);
-    SAFE_RELEASE(pixelShaderBlob);
-    PG_LOG_DEBUG("Shader reloaded sucessfully");
+    HWShaderBytecode bytecode = { m_PixelShaderBlob->GetBufferPointer(), m_PixelShaderBlob->GetBufferSize() };
+    return bytecode;
+}
+
+void PGShader::LoadFromFilename(const std::string& filename) {
+    m_Filepath = filename;
+}
+
+void PGShader::Reload() {
+    if (needsUpdate) {
+        needsUpdate = false;
+        SAFE_RELEASE(m_VertexShaderBlob);
+        SAFE_RELEASE(m_PixelShaderBlob);
+    }
 }

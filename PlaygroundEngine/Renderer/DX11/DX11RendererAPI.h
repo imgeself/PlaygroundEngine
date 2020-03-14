@@ -4,8 +4,6 @@
 #include "../../Platform/PGWindow.h"
 
 #include "DX11Buffer.h"
-#include "DX11Shader.h"
-#include "DX11InputLayout.h"
 #include "DX11RenderTargets.h"
 #include "DX11Texture2D.h"
 #include "DX11ShaderResourceView.h"
@@ -30,32 +28,23 @@ public:
     HWViewport GetDefaultViewport() override;
 
     HWBuffer* CreateBuffer(SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName) override;
-    HWVertexShader* CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName = 0) override;
-    HWPixelShader* CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName = 0) override;
-    HWVertexInputLayout* CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName = 0) override;
     HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) override;
     HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
     HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
     HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
-    HWBlendState* CreateBlendState(const HWBlendDesc& blendDesc, const char* debugName = 0) override;
-    HWRasterizerState* CreateRasterizerState(const HWRasterizerDesc& rasterizerDesc, const char* debugName = 0) override;
-
+    HWPipelineState* CreatePipelineState(const HWPipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
 
     void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) override;
     void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) override;
-    void SetInputLayout(HWVertexInputLayout* vertexInputLayout) override;
-    void SetVertexShader(HWVertexShader* vertexShader) override;
-    void SetPixelShader(HWPixelShader* pixelShader) override;
     void SetRenderTargets(HWRenderTargetView** renderTargets, size_t renderTargetCount, HWDepthStencilView* depthStencilView) override;
     void SetShaderResourcesVS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
     void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
 
-    void SetBlendState(HWBlendState* blendState, const float blendFactor[4], uint32_t sampleMask) override;
-    void SetRasterizerState(HWRasterizerState* rasterizerState) override;
+    void SetPipelineState(HWPipelineState* pipelineState) override;
 
     void SetViewport(HWViewport* viewport) override;
 

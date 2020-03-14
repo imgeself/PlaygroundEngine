@@ -75,8 +75,6 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, 0, 1, 0, swapChainDescriptor.SampleDesc.Count);
     backbuffer->Release();
 
-    m_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
     m_DefaultViewport.TopLeftX = 0;
     m_DefaultViewport.TopLeftY = 0;
     m_DefaultViewport.Width = clientSize.x;
@@ -85,29 +83,6 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     m_DefaultViewport.MaxDepth = 1.0f;
     
     m_DeviceContext->RSSetViewports(1, &m_DefaultViewport);
-
-    D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
-    depthStencilDesc.DepthEnable = TRUE;
-    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-    depthStencilDesc.StencilEnable = FALSE;
-    depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-    depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-    depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-    depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-    depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-    depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-    depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-    depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-
-    ID3D11DepthStencilState* depthStencilState = nullptr;
-    result = m_Device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating depth-stencil state");
-
-    m_DeviceContext->OMSetDepthStencilState(depthStencilState, 0);
-    depthStencilState->Release();
 }
 
 DX11RendererAPI::~DX11RendererAPI() {
@@ -182,18 +157,6 @@ HWBuffer* DX11RendererAPI::CreateBuffer(SubresourceData* subresource, size_t siz
     return new DX11Buffer(m_Device, subresource, size, flags, debugName);
 }
 
-HWVertexShader* DX11RendererAPI::CreateVertexShaderFromBinarySource(ShaderFileData* vertexShaderFileData, const char* debugName) {
-    return new DX11VertexShader(m_Device, vertexShaderFileData);
-}
-
-HWPixelShader* DX11RendererAPI::CreatePixelShaderFromBinarySource(ShaderFileData* pixelShaderFileData, const char* debugName) {
-    return new DX11PixelShader(m_Device, pixelShaderFileData);
-}
-
-HWVertexInputLayout* DX11RendererAPI::CreateVertexInputLayout(std::vector<VertexInputElement> inputElements, HWVertexShader* vertexShader, const char* debugName) {
-    return new DX11VertexInputLayout(m_Device, inputElements, (DX11VertexShader*) vertexShader, debugName);
-}
-
 HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) {
     return new DX11Texture2D(m_Device, initParams, subresources, debugName);
 }
@@ -217,14 +180,9 @@ HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* init
     return new DX11SamplerState(m_Device, initParams, debugName);
 }
 
-HWBlendState* DX11RendererAPI::CreateBlendState(const HWBlendDesc& blendDesc, const char* debugName) {
-    return new DX11BlendState(m_Device, blendDesc, debugName);
+HWPipelineState* DX11RendererAPI::CreatePipelineState(const HWPipelineStateDesc& pipelineDesc, const char* debugName) {
+    return new DX11PipelineState(m_Device, pipelineDesc, debugName);
 }
-
-HWRasterizerState* DX11RendererAPI::CreateRasterizerState(const HWRasterizerDesc& rasterizerDesc, const char* debugName) {
-    return new DX11RasterizerState(m_Device, rasterizerDesc, debugName);
-}
-
 
 
 // Bindings
@@ -260,34 +218,6 @@ void DX11RendererAPI::SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteC
     DX11Buffer* dx11IndexBuffer = (DX11Buffer*) indexBuffer;
     ID3D11Buffer* buffer = dx11IndexBuffer->GetDXBuffer();
     m_DeviceContext->IASetIndexBuffer(buffer, indexFormat, (UINT) offset);
-}
-
-void DX11RendererAPI::SetInputLayout(HWVertexInputLayout* vertexInputLayout) {
-    if (vertexInputLayout) {
-        DX11VertexInputLayout* dx11VertexInputLayout = (DX11VertexInputLayout*)vertexInputLayout;
-        ID3D11InputLayout* inputLayout = dx11VertexInputLayout->GetDXInputLayout();
-        m_DeviceContext->IASetInputLayout(inputLayout);
-    } else {
-        m_DeviceContext->IASetInputLayout(nullptr);
-    }
-}
-
-void DX11RendererAPI::SetVertexShader(HWVertexShader* vertexShader) {
-    if (vertexShader) {
-        ID3D11VertexShader* dx11VertexShader = ((DX11VertexShader*)vertexShader)->GetDXVertexShader();
-        m_DeviceContext->VSSetShader(dx11VertexShader, nullptr, 0);
-    } else {
-        m_DeviceContext->VSSetShader(nullptr, nullptr, 0);
-    }
-}
-
-void DX11RendererAPI::SetPixelShader(HWPixelShader* pixelShader) {
-    if (pixelShader) {
-        ID3D11PixelShader* dx11PixelShader = ((DX11PixelShader*)pixelShader)->GetDXPixelShader();
-        m_DeviceContext->PSSetShader(dx11PixelShader, nullptr, 0);
-    } else {
-        m_DeviceContext->PSSetShader(nullptr, nullptr, 0);
-    }
 }
 
 void DX11RendererAPI::SetRenderTargets(HWRenderTargetView** renderTargets, size_t renderTargetCount, HWDepthStencilView* depthStencilView) {
@@ -377,18 +307,17 @@ void DX11RendererAPI::SetSamplerStatesPS(size_t startSlot, HWSamplerState** samp
     m_DeviceContext->PSSetSamplers((UINT) startSlot, (UINT) samplerStateCount, destSamplerStates);
 }
 
-void DX11RendererAPI::SetBlendState(HWBlendState* blendState, const float blendFactor[4], uint32_t sampleMask) {
-    DX11BlendState* dxBlendState = (DX11BlendState*) blendState;
-    ID3D11BlendState* bind = dxBlendState ? dxBlendState->GetDXBlendState() : nullptr;
+void DX11RendererAPI::SetPipelineState(HWPipelineState* pipelineState) {
+    DX11PipelineState* dxPipelineState = (DX11PipelineState*) pipelineState;
 
-    m_DeviceContext->OMSetBlendState(bind, blendFactor, (UINT) sampleMask);
-}
+    m_DeviceContext->IASetPrimitiveTopology(dxPipelineState->GetDXPrimitiveTopology());
+    m_DeviceContext->IASetInputLayout(dxPipelineState->GetDXInputLayout());
+    m_DeviceContext->RSSetState(dxPipelineState->GetDXRasterizerState());
+    m_DeviceContext->OMSetBlendState(dxPipelineState->GetDXBlendState(), nullptr, dxPipelineState->GetSampleMask());
+    m_DeviceContext->OMSetDepthStencilState(dxPipelineState->GetDXDepthStencilState(), 0xFF);
 
-void DX11RendererAPI::SetRasterizerState(HWRasterizerState* rasterizerState) {
-    DX11RasterizerState* dxRasterizerState = (DX11RasterizerState*) rasterizerState;
-    ID3D11RasterizerState* bind = dxRasterizerState ? dxRasterizerState->GetDXRasterizerState() : nullptr;
-
-    m_DeviceContext->RSSetState(bind);
+    m_DeviceContext->VSSetShader(dxPipelineState->GetDXVertexShader(), nullptr, 0);
+    m_DeviceContext->PSSetShader(dxPipelineState->GetDXPixelShader(), nullptr, 0);
 }
 
 void DX11RendererAPI::SetViewport(HWViewport* viewport) {

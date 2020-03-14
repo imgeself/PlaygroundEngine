@@ -4,24 +4,31 @@
 
 #include <d3d11.h>
 
-class DX11BlendState : public HWBlendState {
+class DX11PipelineState : public HWPipelineState {
 public:
-    DX11BlendState(ID3D11Device* device, const HWBlendDesc& blendDesc, const char* debugName);
-    ~DX11BlendState() override;
+    DX11PipelineState(ID3D11Device* device, const HWPipelineStateDesc& pipelineDesc, const char* debugName);
+    ~DX11PipelineState() override;
+
+    inline ID3D11VertexShader* GetDXVertexShader() { return m_VertexShader; }
+    inline ID3D11PixelShader* GetDXPixelShader() { return m_PixelShader; }
 
     inline ID3D11BlendState* GetDXBlendState() { return m_BlendState; }
-
-private:
-    ID3D11BlendState* m_BlendState = nullptr;
-};
-
-class DX11RasterizerState : public HWRasterizerState {
-public:
-    DX11RasterizerState(ID3D11Device* device, const HWRasterizerDesc& blendDesc, const char* debugName);
-    ~DX11RasterizerState() override;
-
     inline ID3D11RasterizerState* GetDXRasterizerState() { return m_RasterizerState; }
+    inline ID3D11InputLayout* GetDXInputLayout() { return m_InputLayout; }
+    inline ID3D11DepthStencilState* GetDXDepthStencilState() { return m_DepthStencilState; }
+
+    inline D3D11_PRIMITIVE_TOPOLOGY GetDXPrimitiveTopology() { return m_PrimitiveTopology; }
+    inline uint32_t GetSampleMask() { return m_SampleMask; }
 
 private:
+    ID3D11VertexShader* m_VertexShader = nullptr;
+    ID3D11PixelShader* m_PixelShader = nullptr;
+
+    ID3D11BlendState* m_BlendState = nullptr;
     ID3D11RasterizerState* m_RasterizerState = nullptr;
+    ID3D11InputLayout* m_InputLayout = nullptr;
+    ID3D11DepthStencilState* m_DepthStencilState = nullptr;
+
+    D3D11_PRIMITIVE_TOPOLOGY m_PrimitiveTopology;
+    uint32_t m_SampleMask;
 };

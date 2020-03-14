@@ -39,7 +39,8 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
 
         uint8_t pipelineIndex = element.pipelineStates[scenePassType];
         if (lastPipelineIndex != pipelineIndex) {
-            PGRendererResources::s_CachedPipelineStates[scenePassType][pipelineIndex]->Bind(rendererAPI);
+            HWPipelineState* pipelineState = PGRendererResources::s_CachedPipelineStates[scenePassType][pipelineIndex].pipelineState;
+            rendererAPI->SetPipelineState(pipelineState);
         }
 
         if (bindMaterial) {

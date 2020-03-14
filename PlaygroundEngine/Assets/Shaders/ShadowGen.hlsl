@@ -1,4 +1,4 @@
-#include "../PlaygroundEngine/Assets/Shaders/ShaderDefinitions.h"
+#include "ShaderDefinitions.h"
 
 ///////////////////////////////////////////////////////////////////////////
 /////// VERTEX SHADER

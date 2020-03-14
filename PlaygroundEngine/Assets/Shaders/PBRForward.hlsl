@@ -1,6 +1,6 @@
-#include "../PlaygroundEngine/Assets/Shaders/ShaderDefinitions.h"
-#include "../PlaygroundEngine/Assets/Shaders/ShadowUtils.hlsli"
-#include "../PlaygroundEngine/Assets/Shaders/BRDF.hlsli"
+#include "ShaderDefinitions.h"
+#include "ShadowUtils.hlsli"
+#include "BRDF.hlsli"
 
 
 ///////////////////////////////////////////////////////////////////////////

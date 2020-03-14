@@ -1,7 +1,7 @@
 #include "Skybox.h"
-#include "PGRenderer.h"
+#include "../Assets/Shaders/ShaderDefinitions.h"
+#include "../Math/math_vector.h"
 #include "../PGProfiler.h"
-
 
 const Vector3 vertices[] = {
     { -1, 1, 1 },
@@ -30,10 +30,6 @@ const Vector3 vertices[] = {
     { -1, 1, 1 }
 };
 
-// Winding directions are reversed. Because we are rendering a cube from the inside.
-// Back face culling will cull skybox. To be able to render skybox, we have to disable culling, or change culling face to front from back 
-// or we can load hardcoded reversed-winding cube. 
-// TODO: Disable backface culling instead of hardcoded reverse-winding cube.
 const uint16_t indices[] = {
     0, 3, 1,
     1, 3, 2,
@@ -49,11 +45,7 @@ const uint16_t indices[] = {
     21, 23, 22
 };
 
-Skybox::Skybox(PGTexture* skyboxCubemap) : m_SkyboxCubemap(skyboxCubemap) {
-    HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
-    PGShaderLib* shaderLib = PGRenderer::GetShaderLib();
-
-
+Skybox::Skybox(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
     SubresourceData bufferSubresourceData = {};
     bufferSubresourceData.data = vertices;
     m_VertexBuffer = rendererAPI->CreateBuffer(&bufferSubresourceData, sizeof(vertices), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_VERTEX_BUFFER);
@@ -61,34 +53,48 @@ Skybox::Skybox(PGTexture* skyboxCubemap) : m_SkyboxCubemap(skyboxCubemap) {
     bufferSubresourceData.data = indices;
     m_IndexBuffer = rendererAPI->CreateBuffer(&bufferSubresourceData, sizeof(indices), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_INDEX_BUFFER);
 
-    m_Shader = shaderLib->GetDefaultShader("Skybox");
-
-    std::vector<VertexInputElement> inputElements = {
+    PGShader* shader = shaderLib->GetDefaultShader("Skybox");
+    HWVertexInputElement inputElements[] = {
         { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
     };
+    HWInputLayoutDesc inputLayoutDesc = {};
+    inputLayoutDesc.elements = inputElements;
+    inputLayoutDesc.elementCount = ARRAYSIZE(inputElements);
 
-    m_VertexInputLayout = rendererAPI->CreateVertexInputLayout(inputElements, m_Shader->GetHWVertexShader());
+    HWRasterizerDesc rasterizerDesc = {};
+    rasterizerDesc.cullMode = CULL_NONE; // We need to disable back-face culling because we are rendering a cube from inside
+
+    HWDepthStencilDesc depthStencilDesc = {};
+    depthStencilDesc.depthFunc = COMPARISON_LESS_EQUAL; // Skybox z value is always 1.
+
+    HWPipelineStateDesc pipelineDesc;
+    pipelineDesc.rasterizerDesc = rasterizerDesc;
+    pipelineDesc.depthStencilDesc = depthStencilDesc;
+    pipelineDesc.inputLayoutDesc = inputLayoutDesc;
+    pipelineDesc.primitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+    pipelineDesc.vertexShader = shader->GetVertexBytecode();
+    pipelineDesc.pixelShader = shader->GetPixelBytecode();
+
+    m_PipelineState = rendererAPI->CreatePipelineState(pipelineDesc);
+
 }
 
 Skybox::~Skybox() {
     delete m_VertexBuffer;
     delete m_IndexBuffer;
-    delete m_VertexInputLayout;
+    delete m_PipelineState;
 }
 
-void Skybox::RenderSkybox() {
+void Skybox::RenderSkybox(HWRendererAPI* rendererAPI, PGTexture* skyboxCubemap) {
     PG_PROFILE_FUNCTION();
-    HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
-
     uint32_t offset = 0;
     uint32_t stride = sizeof(Vector3);
     rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
     rendererAPI->SetIndexBuffer(m_IndexBuffer, sizeof(indices[0]), 0);
-    rendererAPI->SetInputLayout(m_VertexInputLayout);
-    rendererAPI->SetVertexShader(m_Shader->GetHWVertexShader());
-    rendererAPI->SetPixelShader(m_Shader->GetHWPixelShader());
+    rendererAPI->SetPipelineState(m_PipelineState);
 
-    HWShaderResourceView* skyboxView = m_SkyboxCubemap->GetHWResourceView();
+    HWShaderResourceView* skyboxView = skyboxCubemap->GetHWResourceView();
     rendererAPI->SetShaderResourcesPS(SKYBOX_TEXTURECUBE_SLOT, &skyboxView, 1);
 
     rendererAPI->DrawIndexed(ARRAYSIZE(indices), 0, 0);

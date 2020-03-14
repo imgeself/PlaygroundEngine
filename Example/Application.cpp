@@ -39,7 +39,7 @@ void Application::OnInit() {
     PGTexture* radiance = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/radiance.dds");
     PGTexture* brdf = (PGTexture*)PGResourceManager::CreateResource("./assets/envmap/brdfLUT.dds");
 
-    m_Scene.skybox = new Skybox(skybox);
+    m_Scene.skyboxTexture = skybox;
 
     PGRenderer::BeginScene(&m_Scene);
 
@@ -55,8 +55,8 @@ void Application::OnInit() {
     m_DefaultMaterial->irradianceMap = irradiance;
     m_DefaultMaterial->envBrdf = brdf;
 
-    LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf");
-    //LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf");
+    //LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf");
+    LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf");
     Transform cameraTransform;
     cameraTransform.Translate(Vector3(0.0f,-0.5f, -4.0f));
     m_MainCamera.TransformCamera(&cameraTransform);

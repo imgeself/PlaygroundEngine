@@ -17,8 +17,12 @@ ShadowGenStage PGRenderer::s_ShadowGenStage = ShadowGenStage();
 SceneRenderPass PGRenderer::s_SceneRenderPass = SceneRenderPass();
 FullscreenPass PGRenderer::s_ToneMappingPass = FullscreenPass();
 
+Skybox* g_SkyboxRenderer = nullptr;
+
 void PGRenderer::Uninitialize() {
     PGRendererResources::ClearResources();
+
+    SAFE_DELETE(g_SkyboxRenderer);
 
     delete s_ShaderLib;
     delete s_RendererAPI;
@@ -115,7 +119,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_ShaderLib = new PGShaderLib(s_RendererAPI);
     s_ShaderLib->LoadDefaultShaders();
 
-    PGRendererResources::CreateDefaultInputLayout(s_RendererAPI, s_ShaderLib);
+    PGRendererResources::CreateDefaultInputLayout(s_RendererAPI);
 
     PGRendererResources::CreateDefaultBuffers(s_RendererAPI, s_RendererConfig);
     HWBuffer* constantBuffers[8] = {0};
@@ -136,7 +140,9 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
 
     PGShader* tonemappingShader = s_ShaderLib->GetDefaultShader("HDRPostProcess");
-    s_ToneMappingPass.SetShader(tonemappingShader);
+    s_ToneMappingPass.SetShader(s_RendererAPI, tonemappingShader);
+
+    g_SkyboxRenderer = new Skybox(s_RendererAPI, s_ShaderLib);
 
     return true;
 }
@@ -171,6 +177,7 @@ void PGRenderer::BeginFrame() {
 
 void PGRenderer::RenderFrame() {
     s_ShaderLib->ReloadShadersIfNeeded();
+    PGRendererResources::UpdateShaders(s_RendererAPI);
 
     //TODO: We are adding all the scene objects into the render list. Needs culling to eleminate some of the scene objects
     s_RenderList.Clear();
@@ -201,8 +208,8 @@ void PGRenderer::RenderFrame() {
     s_SceneRenderPass.Execute(s_RendererAPI, s_RenderList, SceneRenderPassType::FORWARD);
 
     // Render skybox
-    if (s_ActiveSceneData->skybox) {
-        s_ActiveSceneData->skybox->RenderSkybox();
+    if (s_ActiveSceneData->skyboxTexture) {
+        g_SkyboxRenderer->RenderSkybox(s_RendererAPI, s_ActiveSceneData->skyboxTexture);
     }
 
     if (s_RendererConfig.msaaSampleCount > 1) {

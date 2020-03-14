@@ -39,12 +39,6 @@
     <ClCompile Include="Renderer\DX11\DX11Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer\DX11\DX11Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer\DX11\DX11InputLayout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer\DX11\DX11RendererAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -170,12 +164,6 @@
     <ClInclude Include="Renderer\DX11\DX11Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\DX11\DX11Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer\DX11\DX11InputLayout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer\DX11\DX11RendererAPI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -242,13 +230,7 @@
     <ClInclude Include="Assets\Shaders\ShaderDefinitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\HWShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer\HWBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer\HWInputLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderer\HWRendererAPI.h">

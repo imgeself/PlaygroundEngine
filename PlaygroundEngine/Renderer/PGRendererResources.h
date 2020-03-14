@@ -68,20 +68,9 @@ struct PGPipelineDesc {
 
 // TODO: Pipeline state objects is going to be part of HWRendererAPI when we redesign the RHI. 
 struct PGCachedPipelineState {
-    PGShader* shader;
-    HWBlendState* blendState;
-    HWRasterizerState* rasterizerState;
-    HWVertexInputLayout* inputLayout;
-
-    void Bind(HWRendererAPI* rendererAPI) {
-        rendererAPI->SetVertexShader(shader->GetHWVertexShader());
-        rendererAPI->SetPixelShader(shader->GetHWPixelShader());
-        rendererAPI->SetBlendState(blendState, nullptr, 0xFFFFFFFF);
-        rendererAPI->SetRasterizerState(rasterizerState);
-        rendererAPI->SetInputLayout(inputLayout);
-    }
-
-    size_t hash;
+    HWPipelineState* pipelineState = nullptr;
+    HWPipelineStateDesc pipelineDesc;
+    size_t hash = 0;
 };
 
 const size_t RENDERER_DEFAULT_SAMPLER_SIZE = 5;
@@ -102,12 +91,14 @@ struct PGRendererResources {
     static HWBuffer* s_PostProcessConstantBuffer;
     static HWBuffer* s_RendererVarsConstantBuffer;
 
+    static std::array<HWInputLayoutDesc, InputLayoutType::INPUT_TYPE_COUNT> s_DefaultInputLayoutDescs;
     static std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> s_DefaultSamplers;
-    static std::array<HWVertexInputLayout*, RENDERER_DEFAULT_INPUT_LAYOUT_SIZE> s_DefaultInputLayouts;
 
-    static PGCachedPipelineState* s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE];
+    static PGCachedPipelineState s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE];
+    static PGShader* s_PipelineStateShaders[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE]; // For shader hot-reloading
 
     static uint8_t CreatePipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc);
+    static void UpdateShaders(HWRendererAPI* rendererAPI);
 
     static GPUResource* s_HDRRenderTarget;
     static GPUResource* s_DepthStencilTarget;
@@ -116,7 +107,7 @@ struct PGRendererResources {
 
     static void CreateDefaultBuffers(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig);
     static void CreateDefaultSamplerStates(HWRendererAPI* rendererAPI);
-    static void CreateDefaultInputLayout(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib);
+    static void CreateDefaultInputLayout(HWRendererAPI* rendererAPI);
     static void CreateSizeDependentResources(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig);
     static void CreateShadowMapResources(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig);
 

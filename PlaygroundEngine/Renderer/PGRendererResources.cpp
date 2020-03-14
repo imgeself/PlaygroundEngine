@@ -5,10 +5,12 @@ HWBuffer* PGRendererResources::s_PerDrawGlobalConstantBuffer;
 HWBuffer* PGRendererResources::s_PostProcessConstantBuffer;
 HWBuffer* PGRendererResources::s_RendererVarsConstantBuffer;
 
+std::array<HWInputLayoutDesc, InputLayoutType::INPUT_TYPE_COUNT> PGRendererResources::s_DefaultInputLayoutDescs;
 std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> PGRendererResources::s_DefaultSamplers;
-std::array<HWVertexInputLayout*, RENDERER_DEFAULT_INPUT_LAYOUT_SIZE> PGRendererResources::s_DefaultInputLayouts;
 
-PGCachedPipelineState* PGRendererResources::s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE] = {0};
+PGCachedPipelineState PGRendererResources::s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE] = {0};
+PGShader* PGRendererResources::s_PipelineStateShaders[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE] = {0};
+
 
 GPUResource* PGRendererResources::s_HDRRenderTarget;
 GPUResource* PGRendererResources::s_DepthStencilTarget;
@@ -16,22 +18,21 @@ GPUResource* PGRendererResources::s_ResolvedHDRRenderTarget; // if msaa enabled
 GPUResource* PGRendererResources::s_ShadowMapCascadesTexture;
 
 uint8_t PGRendererResources::CreatePipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc) {
-    size_t checksumPSO = Hash((const uint8_t*)&pipelineDesc, sizeof(PGPipelineDesc));
+    size_t hashPSO = Hash((const uint8_t*)&pipelineDesc, sizeof(PGPipelineDesc));
     for (uint8_t i = 0; i < MAX_CACHED_PIPELINE_STATE_PER_STAGE; i++) {
-        PGCachedPipelineState* ps = s_CachedPipelineStates[scenePassType][i];
-        if (ps) {
-            if (ps->hash == checksumPSO) {
+        PGCachedPipelineState& cachedPipelineState = s_CachedPipelineStates[scenePassType][i];
+        if (cachedPipelineState.pipelineState) {
+            if (cachedPipelineState.hash == hashPSO) {
                 return i;
             }
         } else {
-            PGCachedPipelineState* ps = new PGCachedPipelineState;
-            ps->hash = checksumPSO;
+            PGCachedPipelineState newCachedPipelineState = {};
+            newCachedPipelineState.hash = hashPSO;
 
-            HWBlendDesc blendDesc;
-            HWBlendState* blendState = rendererAPI->CreateBlendState(blendDesc);
-            ps->blendState = blendState;
+            HWBlendDesc blendDesc = {};
+            HWDepthStencilDesc depthStencilDesc = {};
 
-            HWRasterizerDesc rasterizerDesc;
+            HWRasterizerDesc rasterizerDesc = {};
             rasterizerDesc.multisampleEnable = true;
             if (pipelineDesc.doubleSided) {
                 rasterizerDesc.cullMode = CULL_NONE;
@@ -39,21 +40,52 @@ uint8_t PGRendererResources::CreatePipelineState(HWRendererAPI* rendererAPI, Sce
                 rasterizerDesc.cullMode = CULL_BACK;
             }
 
-            HWRasterizerState* rasterizerState = rendererAPI->CreateRasterizerState(rasterizerDesc);
-            ps->rasterizerState = rasterizerState;
+            HWInputLayoutDesc inputLayoutDesc = s_DefaultInputLayoutDescs[pipelineDesc.layoutType];
 
-            HWVertexInputLayout* inputLayout = s_DefaultInputLayouts[pipelineDesc.layoutType];
-            ps->inputLayout = inputLayout;
+            HWShaderBytecode vsBytecode = pipelineDesc.shader->GetVertexBytecode();
+            HWShaderBytecode psBytecode = pipelineDesc.shader->GetPixelBytecode();
 
-            ps->shader = pipelineDesc.shader;
+            HWPipelineStateDesc desc;
+            desc.blendDesc = blendDesc;
+            desc.depthStencilDesc = depthStencilDesc;
+            desc.inputLayoutDesc = inputLayoutDesc;
+            desc.rasterizerDesc = rasterizerDesc;
+            desc.primitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            desc.vertexShader = vsBytecode;
+            desc.pixelShader = psBytecode;
 
-            s_CachedPipelineStates[scenePassType][i] = ps;
+            HWPipelineState* hwPipelineState = rendererAPI->CreatePipelineState(desc);
+            newCachedPipelineState.pipelineState = hwPipelineState;
+            newCachedPipelineState.pipelineDesc = desc;
+
+            s_CachedPipelineStates[scenePassType][i] = newCachedPipelineState;
+            s_PipelineStateShaders[scenePassType][i] = pipelineDesc.shader;
             return i;
         }
     }
 
     PG_ASSERT(false, "Cached pipeline array is full!");
     return 0xFF;
+}
+
+void PGRendererResources::UpdateShaders(HWRendererAPI* rendererAPI) {
+    for (SceneRenderPassType passType = SceneRenderPassType::DEPTH_PASS; passType < SCENE_PASS_TYPE_COUNT; passType = SceneRenderPassType(passType + 1)) {
+        for (uint8_t i = 0; i < MAX_CACHED_PIPELINE_STATE_PER_STAGE; i++) {
+            PGShader* shader = s_PipelineStateShaders[passType][i];
+            if (shader && shader->needsUpdate) {
+                shader->Reload();
+
+                PGCachedPipelineState& cachedPipelineState = s_CachedPipelineStates[passType][i];
+                HWPipelineStateDesc& pipelineDesc = cachedPipelineState.pipelineDesc;
+                pipelineDesc.vertexShader = shader->GetVertexBytecode();
+                pipelineDesc.pixelShader = shader->GetPixelBytecode();
+
+                delete cachedPipelineState.pipelineState;
+
+                cachedPipelineState.pipelineState = rendererAPI->CreatePipelineState(pipelineDesc);
+            }
+        }
+    }
 }
 
 void PGRendererResources::CreateDefaultBuffers(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig) {
@@ -107,30 +139,30 @@ void PGRendererResources::CreateDefaultSamplerStates(HWRendererAPI* rendererAPI)
     s_DefaultSamplers[POINT_WRAP_SAMPLER_STATE_SLOT] = rendererAPI->CreateSamplerState(&samplerStateInitParams);
 }
 
-void PGRendererResources::CreateDefaultInputLayout(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
-    std::vector<VertexInputElement> posInputElements = {
+void PGRendererResources::CreateDefaultInputLayout(HWRendererAPI* rendererAPI) {
+    HWVertexInputElement* posInputElements =  new HWVertexInputElement[1] {
         { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 }
     };
 
-    PGShader* shadowGenShader = shaderLib->GetDefaultShader("ShadowGen");
-    s_DefaultInputLayouts[InputLayoutType::POS] = rendererAPI->CreateVertexInputLayout(posInputElements, shadowGenShader->GetHWVertexShader());
+    s_DefaultInputLayoutDescs[InputLayoutType::POS].elements = posInputElements;
+    s_DefaultInputLayoutDescs[InputLayoutType::POS].elementCount = 1;
 
-    std::vector<VertexInputElement> posTCInputElements = {
+    HWVertexInputElement* posTCInputElements = new HWVertexInputElement[2] {
         { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, VertexDataFormat_FLOAT2, 2, PER_VERTEX_DATA, 0 }
     };
 
-    PGShader* shadowGenAlphaShader = shaderLib->GetDefaultShader("ShadowGenAlphaTest");
-    s_DefaultInputLayouts[InputLayoutType::POS_TC] = rendererAPI->CreateVertexInputLayout(posTCInputElements, shadowGenAlphaShader->GetHWVertexShader());
+    s_DefaultInputLayoutDescs[InputLayoutType::POS_TC].elements = posTCInputElements;
+    s_DefaultInputLayoutDescs[InputLayoutType::POS_TC].elementCount = 2;
 
-    std::vector<VertexInputElement> inputElements = {
+    HWVertexInputElement* inputElements = new HWVertexInputElement[3] {
         { "POSITION", 0, VertexDataFormat_FLOAT3, 0, PER_VERTEX_DATA, 0 },
         { "NORMAL", 0, VertexDataFormat_FLOAT3, 1, PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, VertexDataFormat_FLOAT2, 2, PER_VERTEX_DATA, 0 }
     };
 
-    PGShader* pbrForwardShader = shaderLib->GetDefaultShader("PBRForward");
-    s_DefaultInputLayouts[InputLayoutType::POS_NOR_TC] = rendererAPI->CreateVertexInputLayout(inputElements, pbrForwardShader->GetHWVertexShader());
+    s_DefaultInputLayoutDescs[InputLayoutType::POS_NOR_TC].elements = inputElements;
+    s_DefaultInputLayoutDescs[InputLayoutType::POS_NOR_TC].elementCount = 3;
 }
 
 void PGRendererResources::CreateSizeDependentResources(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig) {
@@ -203,9 +235,18 @@ void PGRendererResources::ClearResources() {
         }
     }
 
-    for (HWVertexInputLayout* inputLayout : s_DefaultInputLayouts) {
-        if (inputLayout) {
-            delete inputLayout;
+    for (HWInputLayoutDesc inputLayoutDesc : s_DefaultInputLayoutDescs) {
+        if (inputLayoutDesc.elements) {
+            delete[] inputLayoutDesc.elements;
+        }
+    }
+
+    for (SceneRenderPassType passType = SceneRenderPassType::DEPTH_PASS; passType < SCENE_PASS_TYPE_COUNT; passType = SceneRenderPassType(passType + 1)) {
+        for (uint8_t i = 0; i < MAX_CACHED_PIPELINE_STATE_PER_STAGE; i++) {
+            PGCachedPipelineState cachedPipelineState = s_CachedPipelineStates[passType][i];
+            if (cachedPipelineState.pipelineState) {
+                delete cachedPipelineState.pipelineState;
+            }
         }
     }
 }

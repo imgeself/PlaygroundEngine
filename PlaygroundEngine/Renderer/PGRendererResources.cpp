@@ -143,6 +143,14 @@ void PGRendererResources::CreateDefaultSamplerStates(HWRendererAPI* rendererAPI)
 
     samplerStateInitParams.filterMode = TextureFilterMode_MIN_MAG_MIP_POINT;
     s_DefaultSamplers[POINT_WRAP_SAMPLER_STATE_SLOT] = rendererAPI->CreateSamplerState(&samplerStateInitParams);
+
+    SamplerStateInitParams objectSamplerStateInitParams = {};
+    objectSamplerStateInitParams.filterMode = TextureFilterMode_ANISOTROPIC;
+    objectSamplerStateInitParams.addressModeU = TextureAddressMode_WRAP;
+    objectSamplerStateInitParams.addressModeV = TextureAddressMode_WRAP;
+    objectSamplerStateInitParams.addressModeW = TextureAddressMode_WRAP;
+    objectSamplerStateInitParams.maxAnisotropy = 16;
+    s_DefaultSamplers[OBJECT_SAMPLER_STATE_SLOT] = rendererAPI->CreateSamplerState(&objectSamplerStateInitParams);
 }
 
 void PGRendererResources::CreateDefaultInputLayout(HWRendererAPI* rendererAPI) {

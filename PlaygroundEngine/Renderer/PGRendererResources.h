@@ -75,7 +75,7 @@ struct PGCachedPipelineState {
     size_t hash = 0;
 };
 
-const size_t RENDERER_DEFAULT_SAMPLER_SIZE = 5;
+const size_t RENDERER_DEFAULT_SAMPLER_SIZE = 6;
 const size_t RENDERER_DEFAULT_INPUT_LAYOUT_SIZE = InputLayoutType::INPUT_TYPE_COUNT;
 
 const size_t MAX_CACHED_PIPELINE_STATE_PER_STAGE = 4;

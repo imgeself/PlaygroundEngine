@@ -49,6 +49,7 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
             PGTexture* metallicTexture = material->metallicTexture;
             PGTexture* aoTexture = material->aoTexture;
             PGTexture* metallicRoughnessTexture = material->metallicRoughnessTexture;
+            PGTexture* normalTexture = material->normalTexture;
             PGTexture* radianceMap = material->radianceMap;
             PGTexture* irradianceMap = material->irradianceMap;
             PGTexture* envBrdf = material->envBrdf;
@@ -58,6 +59,7 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
                 metallicTexture ? metallicTexture->GetHWResourceView() : nullptr,
                 aoTexture ? aoTexture->GetHWResourceView() : nullptr,
                 metallicRoughnessTexture ? metallicRoughnessTexture->GetHWResourceView() : nullptr,
+                normalTexture ? normalTexture->GetHWResourceView() : nullptr,
                 radianceMap ? radianceMap->GetHWResourceView() : nullptr,
                 irradianceMap ? irradianceMap->GetHWResourceView() : nullptr,
                 envBrdf ? envBrdf->GetHWResourceView() : nullptr,

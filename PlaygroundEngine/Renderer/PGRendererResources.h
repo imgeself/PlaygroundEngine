@@ -55,14 +55,15 @@ enum InputLayoutType : uint8_t {
     POS,
     POS_TC,
     POS_NOR_TC,
+    POS_NOR_TC_TANGENT,
 
     INPUT_TYPE_COUNT
 };
 
 struct PGPipelineDesc {
     PGShader* shader;
-    bool doubleSided;
-    bool transparency;
+    uint32_t shaderFlags;
+    uint8_t doubleSided;
     InputLayoutType layoutType;
 };
 
@@ -70,6 +71,7 @@ struct PGPipelineDesc {
 struct PGCachedPipelineState {
     HWPipelineState* pipelineState = nullptr;
     HWPipelineStateDesc pipelineDesc;
+    uint32_t shaderFlags = 0;
     size_t hash = 0;
 };
 
@@ -95,7 +97,6 @@ struct PGRendererResources {
     static std::array<HWSamplerState*, RENDERER_DEFAULT_SAMPLER_SIZE> s_DefaultSamplers;
 
     static PGCachedPipelineState s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE];
-    static PGShader* s_PipelineStateShaders[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE]; // For shader hot-reloading
 
     static uint8_t CreatePipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc);
     static void UpdateShaders(HWRendererAPI* rendererAPI);

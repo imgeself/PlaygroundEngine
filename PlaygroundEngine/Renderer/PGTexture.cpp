@@ -6,7 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../Utility/stb_image.h"
 
-PGTexture* PGTexture::CreateTexture2D(const std::string& filepath) {
+PGTexture* PGTexture::CreateTexture2D(const std::string& filepath, bool generateMips) {
     int32_t width, height, bytesPerPixel;
     void* imageData = stbi_load(filepath.c_str(), &width, &height, &bytesPerPixel, STBI_rgb_alpha);
 
@@ -23,10 +23,15 @@ PGTexture* PGTexture::CreateTexture2D(const std::string& filepath) {
     initParams.width = width;
     initParams.height = height;
     initParams.sampleCount = 1;
-    initParams.mipCount = 1;
-    initParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE | HWResourceFlags::USAGE_IMMUTABLE;
+    initParams.mipCount = generateMips ? 0 : 1;
+    initParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE;
+    if (generateMips) {
+        initParams.flags |= (HWResourceFlags::MISC_GENERATE_MIPS | HWResourceFlags::BIND_RENDER_TARGET);
+    } else {
+        initParams.flags |= HWResourceFlags::USAGE_IMMUTABLE;
+    }
 
-    PGTexture* texture = new PGTexture(&initParams, &subresource);
+    PGTexture* texture = new PGTexture(&initParams, &subresource, generateMips);
 
     stbi_image_free(imageData);
     return texture;
@@ -66,14 +71,22 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
         initParams.flags |= HWResourceFlags::MISC_TEXTURE_CUBE;
     }
 
-    PGTexture* texture = new PGTexture(&initParams, subresources);
+    PGTexture* texture = new PGTexture(&initParams, subresources, false);
     return texture;
 }
 
-PGTexture::PGTexture(Texture2DDesc* initParams, SubresourceData* subresources) {
+PGTexture::PGTexture(Texture2DDesc* initParams, SubresourceData* subresources, bool generateMips) {
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
-    m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, subresources);
-    m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);
+    if (generateMips) {
+        m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, nullptr);
+        m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);
+
+        rendererAPI->UpdateSubresource(m_HWTexture2D, 0, nullptr, subresources[0]);
+        rendererAPI->GenerateMips(m_HWShaderResourceView);
+    } else {
+        m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, subresources);
+        m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);
+    }
 }
 
 

@@ -101,23 +101,34 @@ struct RenderList {
 private:
     inline void BuildPSODesc(SceneRenderPassType passType, const RenderList::Element& element, PGShaderLib* shaderLib, PGPipelineDesc& outDesc) {
         Material* material = element.mesh->material;
+        uint32_t shaderFlags = 0;
+
         outDesc.doubleSided = material->doubleSided;
         outDesc.shader = material->shader;
-        outDesc.layoutType = InputLayoutType::POS_NOR_TC;
+
+        if (material->alphaMode == AlphaMode_ALPHA_TEST) {
+            shaderFlags |= PGShaderFlags::ALPHA_TEST;
+        }
 
         if (passType == SceneRenderPassType::DEPTH_PASS) {
+            outDesc.shader = shaderLib->GetDefaultShader("ShadowGen");
             if (material->alphaMode == AlphaMode_ALWAYS_PASS) {
                 outDesc.layoutType = InputLayoutType::POS;
-                outDesc.shader = shaderLib->GetDefaultShader("ShadowGen");
-            }
-            else if (material->alphaMode == AlphaMode_ALPHA_TEST) {
+            } else if (material->alphaMode == AlphaMode_ALPHA_TEST) {
                 outDesc.layoutType = InputLayoutType::POS_TC;
-                outDesc.shader = shaderLib->GetDefaultShader("ShadowGenAlphaTest");
-            }
-            else {
+            } else {
                 PG_ASSERT(false, "Unsupported alpha mode");
             }
+        } else {
+            if (material->normalMappingEnabled) {
+                outDesc.layoutType = InputLayoutType::POS_NOR_TC_TANGENT;
+                shaderFlags |= PGShaderFlags::NORMAL_MAPPING;
+            } else {
+                outDesc.layoutType = InputLayoutType::POS_NOR_TC;
+            }
         }
+
+        outDesc.shaderFlags = shaderFlags;
     }
 
 };

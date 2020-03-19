@@ -58,7 +58,7 @@ public:
     void Unmap(HWResource* resource) override;
 
     void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) override;
-
+    void GenerateMips(HWShaderResourceView* shaderResourceView) override;
 
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }

@@ -63,6 +63,7 @@ public:
     virtual void Unmap(HWResource* resource) = 0;
 
     virtual void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) = 0;
+    virtual void GenerateMips(HWShaderResourceView* shaderResourceView) = 0;
 
     virtual size_t GetWidth() = 0;
     virtual size_t GetHeight() = 0;

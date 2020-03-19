@@ -369,4 +369,10 @@ void DX11RendererAPI::MSAAResolve(HWTexture2D* dest, HWTexture2D* source) {
     m_DeviceContext->ResolveSubresource(dst, 0, dxSourceTexture->GetDXTexture2D(), 0, destDesc.Format);
 }
 
+void DX11RendererAPI::GenerateMips(HWShaderResourceView* shaderResourceView) {
+    DX11ShaderResourceView* dxSRV = (DX11ShaderResourceView*) shaderResourceView;
+    m_DeviceContext->GenerateMips(dxSRV->GetDXShaderResouceView());
+}
+
+
 

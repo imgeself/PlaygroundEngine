@@ -18,6 +18,7 @@ struct Material : DrawMaterial {
     PGTexture* aoTexture;
     PGTexture* metallicRoughnessTexture;
     PGTexture* normalTexture;
+    PGTexture* emmisiveTexture;
 
     PGTexture* radianceMap;
     PGTexture* irradianceMap;

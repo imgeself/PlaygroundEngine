@@ -17,10 +17,11 @@
 #define AO_TEXTURE2D_SLOT 4
 #define METALLIC_ROUGHNESS_TEXTURE2D_SLOT 5
 #define NORMAL_TEXTURE2D_SLOT 6
+#define EMISSIVE_TEXTURE2D_SLOT 7
 
-#define RADIANCE_TEXTURECUBE_SLOT 7
-#define IRRADIANCE_TEXTURECUBE_SLOT 8
-#define BRDF_LUT_TEXTURE_SLOT 9
+#define RADIANCE_TEXTURECUBE_SLOT 8
+#define IRRADIANCE_TEXTURECUBE_SLOT 9
+#define BRDF_LUT_TEXTURE_SLOT 10
 
 #define SKYBOX_TEXTURECUBE_SLOT 5
 
@@ -72,7 +73,7 @@ struct DrawMaterial {
     uint32_t hasAOTexture;
 
     uint32_t hasMetallicRoughnessTexture;
-    uint32_t pad;
+    uint32_t hasEmissiveTexture;
 };
 
 ///////////// Constant buffers
@@ -120,6 +121,7 @@ TEXTURE2D(g_MetallicTexture, METALLIC_TEXTURE2D_SLOT);
 TEXTURE2D(g_AOTexture, AO_TEXTURE2D_SLOT);
 TEXTURE2D(g_MetallicRoughnessTexture, METALLIC_ROUGHNESS_TEXTURE2D_SLOT);
 TEXTURE2D(g_NormalTexture, NORMAL_TEXTURE2D_SLOT);
+TEXTURE2D(g_EmissiveTexture, EMISSIVE_TEXTURE2D_SLOT);
 
 
 TEXTURECUBE(g_RadianceTexture, RADIANCE_TEXTURECUBE_SLOT);

@@ -69,6 +69,11 @@ float4 PSMain(VSOut input) : SV_Target {
         alpha = color.a;
     }
 
+    float3 emissiveColor = g_Material.emissiveColor.rgb;
+    if (g_Material.hasEmissiveTexture) {
+        emissiveColor = g_EmissiveTexture.Sample(g_LinearWrapSampler, input.texCoord).rgb;
+    }
+
 #ifdef ALPHA_TEST
     clip(alpha - 0.1f);
 #endif
@@ -139,9 +144,9 @@ float4 PSMain(VSOut input) : SV_Target {
     
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
     float3 ambient = diffuseAmbient + radiance * (kS * envBRDF.x + envBRDF.y);
-    ambient *= ao * 0.1f;
+    ambient *= ao * 0.5f;
 
-    float3 color = Lo * lightColor * intensity * shadowFactor + ambient;
+    float3 color = Lo * lightColor * intensity * shadowFactor + ambient + emissiveColor;
 
     return float4(color, alpha);
 }

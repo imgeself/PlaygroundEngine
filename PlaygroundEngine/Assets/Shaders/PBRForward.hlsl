@@ -64,14 +64,14 @@ float4 PSMain(VSOut input) : SV_Target {
     float3 albedoColor = g_Material.diffuseColor.rgb;
     float alpha = g_Material.diffuseColor.a;
     if (g_Material.hasAlbedoTexture) {
-        float4 color = g_AlbedoTexture.Sample(g_LinearWrapSampler, input.texCoord);
+        float4 color = g_AlbedoTexture.Sample(g_ObjectSampler, input.texCoord);
         albedoColor = color.rgb;
         alpha = color.a;
     }
 
     float3 emissiveColor = g_Material.emissiveColor.rgb;
     if (g_Material.hasEmissiveTexture) {
-        emissiveColor = g_EmissiveTexture.Sample(g_LinearWrapSampler, input.texCoord).rgb;
+        emissiveColor = g_EmissiveTexture.Sample(g_ObjectSampler, input.texCoord).rgb;
     }
 
 #ifdef ALPHA_TEST
@@ -80,16 +80,16 @@ float4 PSMain(VSOut input) : SV_Target {
 
     float roughness = g_Material.roughness;
     if (g_Material.hasRoughnessTexture) {
-        roughness = g_RoughnessTexture.Sample(g_LinearWrapSampler, input.texCoord).r;
+        roughness = g_RoughnessTexture.Sample(g_ObjectSampler, input.texCoord).r;
     }
 
     float metallic = g_Material.metallic;
     if (g_Material.hasMetallicTexture) {
-        metallic = g_MetallicTexture.Sample(g_LinearWrapSampler, input.texCoord).r;
+        metallic = g_MetallicTexture.Sample(g_ObjectSampler, input.texCoord).r;
     }
 
     if (g_Material.hasMetallicRoughnessTexture) {
-        float4 t = g_MetallicRoughnessTexture.Sample(g_LinearWrapSampler, input.texCoord);
+        float4 t = g_MetallicRoughnessTexture.Sample(g_ObjectSampler, input.texCoord);
         // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0
         metallic = t.b;
         roughness = t.g;
@@ -97,11 +97,11 @@ float4 PSMain(VSOut input) : SV_Target {
 
     float ao = 1.0f;
     if (g_Material.hasAOTexture) {
-        ao = g_AOTexture.Sample(g_LinearWrapSampler, input.texCoord).r;
+        ao = g_AOTexture.Sample(g_ObjectSampler, input.texCoord).r;
     }
 
 #ifdef NORMAL_MAPPING
-    float3 normalMap = g_NormalTexture.Sample(g_LinearWrapSampler, input.texCoord).xyz;
+    float3 normalMap = g_NormalTexture.Sample(g_ObjectSampler, input.texCoord).xyz;
     normalMap = normalMap * 2.0f - 1.0f;
 
     float3 normalVector = normalize(normalMap);
@@ -144,7 +144,7 @@ float4 PSMain(VSOut input) : SV_Target {
     
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
     float3 ambient = diffuseAmbient + radiance * (kS * envBRDF.x + envBRDF.y);
-    ambient *= ao * 0.5f;
+    ambient *= ao * 0.2f;
 
     float3 color = Lo * lightColor * intensity * shadowFactor + ambient + emissiveColor;
 

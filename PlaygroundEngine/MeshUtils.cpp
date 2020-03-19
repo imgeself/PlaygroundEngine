@@ -65,7 +65,97 @@ static void LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, T
     }
 }
 
-void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename) {
+void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftHandedNormalMap, const tinygltf::Model& model, const tinygltf::Primitive& prim, 
+                        const tinygltf::BufferView& positionBufferView, const tinygltf::BufferView& normalBufferView, const tinygltf::BufferView& texCoordBufferView) {
+    if (prim.indices >= 0) {
+        const tinygltf::Accessor& indexBufferAccessor = model.accessors[prim.indices];
+        const tinygltf::BufferView& indexBufferView = model.bufferViews[indexBufferAccessor.bufferView];
+        const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
+
+        const tinygltf::Buffer& positionBuffer = model.buffers[positionBufferView.buffer];
+        const tinygltf::Buffer& normalBuffer = model.buffers[normalBufferView.buffer];
+        const tinygltf::Buffer& texCoordBuffer = model.buffers[texCoordBufferView.buffer];
+
+        const Vector3* positions = (Vector3*) (positionBuffer.data.data() + positionBufferView.byteOffset);
+        const Vector3* normals = (Vector3*) (normalBuffer.data.data() + normalBufferView.byteOffset);
+        const Vector2* texCoords = (Vector2*) (texCoordBuffer.data.data() + texCoordBufferView.byteOffset);
+
+        uint32_t stride = indexBufferAccessor.ByteStride(indexBufferView);
+
+        size_t vertexCount = positionBufferView.byteLength / sizeof(Vector3);
+        size_t tangentBufferSize = sizeof(Vector4) * vertexCount;
+        Vector4* tangents = (Vector4*) alloca(tangentBufferSize);
+
+        for (size_t i = 0; i < indexBufferView.byteLength / stride; i += 3) {
+            uint32_t i0;
+            uint32_t i1;
+            uint32_t i2;
+
+            if (stride == 2) {
+                const uint16_t* data = (uint16_t*)(indexBuffer.data.data() + indexBufferView.byteOffset);
+                i0 = *(data + i);
+                i1 = *(data + i + 1);
+                i2 = *(data + i + 2);
+            } else {
+                const uint32_t* data = (uint32_t*)(indexBuffer.data.data() + indexBufferView.byteOffset);
+                i0 = *(data + i);
+                i1 = *(data + i + 1);
+                i2 = *(data + i + 2);
+            }
+
+            Vector3 p0 = *(positions + i0);
+            Vector3 p1 = *(positions + i1);
+            Vector3 p2 = *(positions + i2);
+
+            Vector2 t0 = *(texCoords + i0);
+            Vector2 t1 = *(texCoords + i1);
+            Vector2 t2 = *(texCoords + i2);
+
+            Vector3 e1 = p1 - p0;
+            Vector3 e2 = p2 - p0;
+
+            Vector2 d1 = t1 - t0;
+            Vector2 d2 = t2 - t0;
+
+            float f = 1 / (d1.x * d2.y - d2.x * d1.y);
+
+            float tx = f * (d2.y * e1.x - d1.y * e2.x);
+            float ty = f * (d2.y * e1.y - d1.y * e2.y);
+            float tz = f * (d2.y * e1.z - d1.y * e2.z);
+
+            Vector3 tangent(tx, ty, tz);
+            Normalize(tangent);
+
+            float bx = f * (-d2.x * e1.x + d1.x * e2.x);
+            float by = f * (-d2.x * e1.y + d1.x * e2.y);
+            float bz = f * (-d2.x * e1.z + d1.x * e2.z);
+
+            Vector3 bitangent(bx, by, bz);
+            Normalize(bitangent);
+
+            Vector3 normal = *(normals + i0);
+
+            float handedness = leftHandedNormalMap ? 1.0f : -1.0f;
+            if (DotProduct(CrossProduct(normal, tangent), bitangent) < 0.0f) {
+                handedness *= -1.0f;
+            }
+
+            *(tangents + i0) = Vector4(tangent, handedness);
+            *(tangents + i1) = Vector4(tangent, handedness);
+            *(tangents + i2) = Vector4(tangent, handedness);
+        }
+
+        SubresourceData subresource = {};
+        subresource.data = tangents;
+        HWBuffer* buffer = rendererAPI->CreateBuffer(&subresource, tangentBufferSize, HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_VERTEX_BUFFER);
+        submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TANGENT] = buffer;
+        submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TANGENT] = 16;
+        submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TANGENT] = 0;
+
+    }
+}
+
+void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename, bool leftHandedNormal) {
     tinygltf::TinyGLTF loader;
     std::string errors;
     std::string warnings;
@@ -103,7 +193,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture baseColorTexture = model.textures[baseColor.index];
             tinygltf::Image baseColorImage = model.images[baseColorTexture.source];
             material->hasAlbedoTexture = true;
-            material->albedoTexture = (PGTexture*)PGResourceManager::CreateResource(directory + baseColorImage.uri);
+            material->albedoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + baseColorImage.uri);
         }
 
         tinygltf::TextureInfo metallicRoughness = pbr.metallicRoughnessTexture;
@@ -111,7 +201,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture metallicRoughnessTexture = model.textures[metallicRoughness.index];
             tinygltf::Image metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
             material->hasMetallicRoughnessTexture = true;
-            material->metallicRoughnessTexture = (PGTexture*)PGResourceManager::CreateResource(directory + metallicRoughnessImage.uri);
+            material->metallicRoughnessTexture = (PGTexture*) PGResourceManager::CreateResource(directory + metallicRoughnessImage.uri);
         }
 
         tinygltf::OcclusionTextureInfo occlusion = mtl.occlusionTexture;
@@ -119,7 +209,15 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture occlusionTexture = model.textures[occlusion.index];
             tinygltf::Image occlusionImage = model.images[occlusionTexture.source];
             material->hasAOTexture = true;
-            material->aoTexture = (PGTexture*)PGResourceManager::CreateResource(directory + occlusionImage.uri);
+            material->aoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + occlusionImage.uri);
+        }
+
+        tinygltf::NormalTextureInfo normals = mtl.normalTexture;
+        if (normals.index >= 0) {
+            tinygltf::Texture normalTexture = model.textures[normals.index];
+            tinygltf::Image normalImage = model.images[normalTexture.source];
+            material->normalMappingEnabled = true;
+            material->normalTexture = (PGTexture*) PGResourceManager::CreateResource(directory + normalImage.uri);
         }
 
         if (!mtl.alphaMode.compare("MASK")) {
@@ -189,6 +287,11 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
                 submesh->indexCount = (uint32_t) indexBufferAccessor.count;
             }
 
+            bool hasTangents = false;
+            tinygltf::BufferView positionBufferView;
+            tinygltf::BufferView normalBufferView;
+            tinygltf::BufferView texCoordBufferView;
+
             for (auto& attr : prim.attributes) {
                 const std::string& attrName = attr.first;
                 int attrData = attr.second;
@@ -203,18 +306,30 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_POSITIONS] = (uint32_t) accessor.byteOffset;
+                    positionBufferView = bufferView;
                 } else if (!attrName.compare("NORMAL")) {
                     PG_ASSERT(stride == 12, "Unsupported vertex stride");
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NORMAL] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_NORMAL] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_NORMAL] = (uint32_t) accessor.byteOffset;
+                    normalBufferView = bufferView;
                 } else if (!attrName.compare("TEXCOORD_0")) {
                     PG_ASSERT(stride == 8, "Unsupported vertex stride");
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = (uint32_t) accessor.byteOffset;
-
+                    texCoordBufferView = bufferView;
+                } else if (!attrName.compare("TANGENT")) {
+                    PG_ASSERT(stride == 16, "Unsupported vertex stride");
+                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TANGENT] = buffers[accessor.bufferView];
+                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TANGENT] = stride;
+                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TANGENT] = (uint32_t)accessor.byteOffset;
+                    hasTangents = true;
                 }
+            }
+
+            if (submesh->material->normalMappingEnabled && !hasTangents) {
+                CreateTangentsGLTF(rendererAPI, submesh, leftHandedNormal, model, prim, positionBufferView, normalBufferView, texCoordBufferView);
             }
 
             newMesh->submeshes.push_back(submesh);
@@ -230,9 +345,75 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         const tinygltf::Node& node = model.nodes[i];
         LoadNode(model, node, rootTransform, meshes, scene);
     }
-
-
-
-
 }
+
+void CreateQuad(HWRendererAPI* rendererAPI, PGSceneObject* outSceneObject, Material* defaultMaterial, Vector2 leftBottom, Vector2 rightTop, float zVal) {
+    Mesh* mesh = new Mesh;
+    mesh->name = "Quad";
+
+    SubMesh* submesh = new SubMesh;
+    submesh->material = defaultMaterial;
+
+    const Vector3 positions[] = {
+        { leftBottom.x, leftBottom.y, zVal },
+        { leftBottom.x, rightTop.y, zVal},
+        { rightTop.x, rightTop.y, zVal },
+        { rightTop.x, leftBottom.y, zVal }
+    };
+
+    const Vector3 normals[] = {
+        { 0.0f, 0.0f, -1.0f },
+        { 0.0f, 0.0f, -1.0f },
+        { 0.0f, 0.0f, -1.0f },
+        { 0.0f, 0.0f, -1.0f }
+    };
+
+    const Vector2 texCoords[] = {
+        { 0.0f, 1.0f },
+        { 0.0f, 0.0f },
+        { 1.0f, 0.0f },
+        { 1.0f, 1.0f },
+    };
+
+    const Vector4 tangents[] = {
+        { 1.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, 0.0f, 0.0f, 1.0f }
+    };
+
+    const uint16_t indices[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    SubresourceData bufferSubresource = {};
+    bufferSubresource.data = positions;
+    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = rendererAPI->CreateBuffer(&bufferSubresource, sizeof(positions), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_VERTEX_BUFFER);
+    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS] = sizeof(positions[0]);
+
+    bufferSubresource.data = normals;
+    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NORMAL] = rendererAPI->CreateBuffer(&bufferSubresource, sizeof(normals), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_VERTEX_BUFFER);
+    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_NORMAL] = sizeof(normals[0]);
+
+    bufferSubresource.data = texCoords;
+    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = rendererAPI->CreateBuffer(&bufferSubresource, sizeof(texCoords), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_VERTEX_BUFFER);
+    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = sizeof(texCoords[0]);
+
+    bufferSubresource.data = tangents;
+    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TANGENT] = rendererAPI->CreateBuffer(&bufferSubresource, sizeof(tangents), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_VERTEX_BUFFER);
+    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TANGENT] = sizeof(tangents[0]);
+
+    bufferSubresource.data = indices;
+    submesh->indexBuffer = rendererAPI->CreateBuffer(&bufferSubresource, sizeof(indices), HWResourceFlags::USAGE_IMMUTABLE | HWResourceFlags::BIND_INDEX_BUFFER);
+    submesh->indexBufferStride = sizeof(indices[0]);
+
+    submesh->indexCount = ARRAYSIZE(indices);
+    submesh->indexStart = 0;
+
+    mesh->submeshes.push_back(submesh);
+
+    outSceneObject->mesh = mesh;
+}
+
 

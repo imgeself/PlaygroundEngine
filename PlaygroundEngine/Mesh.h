@@ -25,8 +25,9 @@ enum VertexBuffers : uint8_t {
     VERTEX_BUFFER_POSITIONS,
     VERTEX_BUFFER_NORMAL,
     VERTEX_BUFFER_TEXCOORD,
+    VERTEX_BUFFER_TANGENT,
 
-    VERTEX_BUFFER_COUNT,
+    VERTEX_BUFFER_COUNT
 };
 
 struct SubMesh {
@@ -38,11 +39,11 @@ struct SubMesh {
 
 
     HWBuffer* indexBuffer = nullptr;
-    uint32_t indexBufferStride;
-    uint32_t indexBufferOffset;
+    uint32_t indexBufferStride = 0;
+    uint32_t indexBufferOffset = 0;
 
-    uint32_t indexStart;
-    uint32_t indexCount;
+    uint32_t indexStart = 0;
+    uint32_t indexCount = 0;
 
     // Not included in hash
     Material* material = nullptr;

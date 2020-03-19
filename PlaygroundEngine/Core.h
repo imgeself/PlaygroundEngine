@@ -31,7 +31,7 @@ static size_t Hash(const uint8_t* data, size_t size) {
     std::hash<uint8_t> hasher;
     size_t hash = 0;
     for (size_t i = 0; i < size; ++i) {
-        hash += hasher(*(data + i));
+        hash += hasher(*(data + i)) | *(data + i);
     }
 
     return hash;

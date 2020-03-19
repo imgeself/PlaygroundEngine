@@ -18,7 +18,7 @@ void PGResourceManager::ReleaseResourcePool() {
 }
 
 
-IResource* PGResourceManager::CreateResource(const std::string& resourceFilePath) {
+IResource* PGResourceManager::CreateResource(const std::string& resourceFilePath, bool generateMips) {
     auto searchIndex = s_ResourcePool.find(resourceFilePath);
     if (searchIndex != s_ResourcePool.end()) {
         return searchIndex->second;
@@ -33,7 +33,7 @@ IResource* PGResourceManager::CreateResource(const std::string& resourceFilePath
         s_ResourcePool[resourceFilePath] = pResource;
         return pResource;
     } else if (!extension.compare("png") || !extension.compare("jpg")) {
-        IResource* pResource = PGTexture::CreateTexture2D(resourceFilePath);
+        IResource* pResource = PGTexture::CreateTexture2D(resourceFilePath, generateMips);
         s_ResourcePool[resourceFilePath] = pResource;
         return pResource;
     } else {

@@ -185,7 +185,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         tinygltf::PbrMetallicRoughness pbr = mtl.pbrMetallicRoughness;
 
         material->diffuseColor = Vector4((float) pbr.baseColorFactor[0], (float) pbr.baseColorFactor[1], (float) pbr.baseColorFactor[2], (float) pbr.baseColorFactor[3]);
-        material->emissiveColor = Vector4((float) mtl.emissiveFactor[0], (float) mtl.emissiveFactor[1], (float) mtl.emissiveFactor[2], (float) mtl.emissiveFactor[3]);
+        material->emissiveColor = Vector4((float) mtl.emissiveFactor[0], (float) mtl.emissiveFactor[1], (float) mtl.emissiveFactor[2], 1.0f);
         material->roughness = (float) pbr.roughnessFactor;
         material->metallic = (float) pbr.metallicFactor;
 
@@ -194,7 +194,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture baseColorTexture = model.textures[baseColor.index];
             tinygltf::Image baseColorImage = model.images[baseColorTexture.source];
             material->hasAlbedoTexture = true;
-            material->albedoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + baseColorImage.uri);
+            material->albedoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + baseColorImage.uri, true);
         }
 
         tinygltf::TextureInfo metallicRoughness = pbr.metallicRoughnessTexture;
@@ -202,7 +202,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture metallicRoughnessTexture = model.textures[metallicRoughness.index];
             tinygltf::Image metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
             material->hasMetallicRoughnessTexture = true;
-            material->metallicRoughnessTexture = (PGTexture*) PGResourceManager::CreateResource(directory + metallicRoughnessImage.uri);
+            material->metallicRoughnessTexture = (PGTexture*) PGResourceManager::CreateResource(directory + metallicRoughnessImage.uri, true);
         }
 
         tinygltf::TextureInfo emissive = mtl.emissiveTexture;
@@ -210,7 +210,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture emissiveTexture = model.textures[emissive.index];
             tinygltf::Image emissiveImage = model.images[emissiveTexture.source];
             material->hasEmissiveTexture = true;
-            material->emmisiveTexture = (PGTexture*)PGResourceManager::CreateResource(directory + emissiveImage.uri);
+            material->emmisiveTexture = (PGTexture*)PGResourceManager::CreateResource(directory + emissiveImage.uri, true);
         }
 
         tinygltf::OcclusionTextureInfo occlusion = mtl.occlusionTexture;
@@ -218,7 +218,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture occlusionTexture = model.textures[occlusion.index];
             tinygltf::Image occlusionImage = model.images[occlusionTexture.source];
             material->hasAOTexture = true;
-            material->aoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + occlusionImage.uri);
+            material->aoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + occlusionImage.uri, true);
         }
 
         tinygltf::NormalTextureInfo normals = mtl.normalTexture;
@@ -226,7 +226,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             tinygltf::Texture normalTexture = model.textures[normals.index];
             tinygltf::Image normalImage = model.images[normalTexture.source];
             material->normalMappingEnabled = true;
-            material->normalTexture = (PGTexture*) PGResourceManager::CreateResource(directory + normalImage.uri);
+            material->normalTexture = (PGTexture*) PGResourceManager::CreateResource(directory + normalImage.uri, true);
         }
 
         if (!mtl.alphaMode.compare("MASK")) {

@@ -249,25 +249,27 @@ DX11PipelineState::DX11PipelineState(ID3D11Device* device, const HWPipelineState
 
     // Input layout
     HWInputLayoutDesc inputLayoutDesc = pipelineDesc.inputLayoutDesc;
-    D3D11_INPUT_ELEMENT_DESC* dxInputElements = (D3D11_INPUT_ELEMENT_DESC*) alloca(sizeof(D3D11_INPUT_ELEMENT_DESC) * inputLayoutDesc.elementCount);
-    for (size_t i = 0; i < inputLayoutDesc.elementCount; ++i) {
-        const HWVertexInputElement* element = inputLayoutDesc.elements + i;
-        D3D11_INPUT_ELEMENT_DESC dx11Element = {};
-        dx11Element.SemanticName = element->semanticName;
-        dx11Element.SemanticIndex = element->semanticIndex;
-        dx11Element.Format = ConvertInputFormatToDXGIFormat(element->format);
-        dx11Element.InputSlot = element->inputSlot;
-        dx11Element.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-        dx11Element.InputSlotClass = InputClassificationToD3D11(element->classification);
-        dx11Element.InstanceDataStepRate = element->instanceStepRate;
+    if (inputLayoutDesc.elements && inputLayoutDesc.elementCount > 0) {
+        D3D11_INPUT_ELEMENT_DESC* dxInputElements = (D3D11_INPUT_ELEMENT_DESC*)alloca(sizeof(D3D11_INPUT_ELEMENT_DESC) * inputLayoutDesc.elementCount);
+        for (size_t i = 0; i < inputLayoutDesc.elementCount; ++i) {
+            const HWVertexInputElement* element = inputLayoutDesc.elements + i;
+            D3D11_INPUT_ELEMENT_DESC dx11Element = {};
+            dx11Element.SemanticName = element->semanticName;
+            dx11Element.SemanticIndex = element->semanticIndex;
+            dx11Element.Format = ConvertInputFormatToDXGIFormat(element->format);
+            dx11Element.InputSlot = element->inputSlot;
+            dx11Element.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+            dx11Element.InputSlotClass = InputClassificationToD3D11(element->classification);
+            dx11Element.InstanceDataStepRate = element->instanceStepRate;
 
-        memcpy(dxInputElements + i, &dx11Element, sizeof(D3D11_INPUT_ELEMENT_DESC));
+            memcpy(dxInputElements + i, &dx11Element, sizeof(D3D11_INPUT_ELEMENT_DESC));
+        }
+
+        result = device->CreateInputLayout(dxInputElements, (UINT)inputLayoutDesc.elementCount,
+                                           vertexBytecode.shaderBytecode, vertexBytecode.bytecodeLength,
+                                           &m_InputLayout);
+        PG_ASSERT(SUCCEEDED(result), "Error at creating input layout");
     }
-
-    result = device->CreateInputLayout(dxInputElements, (UINT) inputLayoutDesc.elementCount, 
-                                               vertexBytecode.shaderBytecode, vertexBytecode.bytecodeLength, 
-                                               &m_InputLayout);
-    PG_ASSERT(SUCCEEDED(result), "Error at creating input layout");
 
     // DepthStencil state
     HWDepthStencilDesc depthStencilDesc = pipelineDesc.depthStencilDesc;

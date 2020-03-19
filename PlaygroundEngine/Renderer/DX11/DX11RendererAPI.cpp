@@ -201,9 +201,6 @@ void DX11RendererAPI::SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBu
 void DX11RendererAPI::SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) {
     DXGI_FORMAT indexFormat;
     switch (strideByteCount) {
-        case 1:
-            indexFormat = DXGI_FORMAT_R8_UINT;
-            break;
         case 2:
             indexFormat = DXGI_FORMAT_R16_UINT;
             break;

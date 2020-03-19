@@ -88,7 +88,7 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGR
 
         float radius = 0;
         for (size_t i = 0; i < ARRAYSIZE(points); i++) {
-            radius = max(radius, Lenght(points[i].xyz() - center));
+            radius = std::max(radius, Lenght(points[i].xyz() - center));
         }
 
         // We make cascade projection matrix as a cube so that we can snap cascade to texel size
@@ -97,8 +97,8 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGR
 
         // Extrude min/max z values for avoid shadow camera being too close to scene and causing clipping
         // TODO: Instead of this method we need to clamp max/min z values to scene's bounding box's top and bottom lines
-        minCorner.z = min(minCorner.z, -50.0f);
-        maxCorner.z = min(maxCorner.z, 50.0f);
+        minCorner.z = std::min(minCorner.z, -50.0f);
+        maxCorner.z = std::min(maxCorner.z, 50.0f);
 
         float texelSize = 1.0f / rendererConfig.shadowMapSize;
         Vector3 extend = maxCorner - minCorner;

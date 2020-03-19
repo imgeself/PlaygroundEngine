@@ -6,21 +6,46 @@
 ///////////////////////////////////////////////////////////////////////////
 /////// VERTEX SHADER
 ///////////////////////////////////////////////////////////////////////////
-struct VSOut {
-    float3 normal : Normal;
-    float3 worldPos : WorldPos;
+struct VSInput {
+    float3 pos : POSITION;
+    float3 normal : NORMAL;
     float2 texCoord : TEXCOORD;
+#ifdef NORMAL_MAPPING
+    float4 tangent : TANGENT;
+#endif
+};
+
+struct VSOut {
+    float3 normal : NORMAL;
+    float3 worldPos : WORLDPOS;
+    float2 texCoord : TEXCOORD;
+#ifdef NORMAL_MAPPING
+    float3x3 tbn : TANGENTMATRIX;
+#endif
     float4 pos : SV_Position;
 };
 
-VSOut VSMain(float3 pos : POSITION, float3 normal : NORMAL, float2 texCoord : TEXCOORD) {
-    float4 transformedPosition = mul(g_ProjMatrix, mul(g_ViewMatrix, mul(g_ModelMatrix, float4(pos, 1.0f))));
+VSOut VSMain(VSInput input) {
+    float4 transformedPosition = mul(g_ProjMatrix, mul(g_ViewMatrix, mul(g_ModelMatrix, float4(input.pos, 1.0f))));
+
+    float3 normalVector = mul((float3x3) g_ModelMatrix, input.normal);
+    normalVector = normalize(normalVector);
 
     VSOut vertexOut;
-    vertexOut.normal = (float3) mul(g_ModelMatrix, float4(normal, 0.0f));
+    vertexOut.normal = normalVector;
     vertexOut.pos = transformedPosition;
-    vertexOut.worldPos = (float3) mul(g_ModelMatrix, float4(pos, 1.0f));
-    vertexOut.texCoord = texCoord;
+    vertexOut.worldPos = (float3) mul(g_ModelMatrix, float4(input.pos, 1.0f));
+    vertexOut.texCoord = input.texCoord;
+
+#ifdef NORMAL_MAPPING
+    float3 tangentVector = mul((float3x3) g_ModelMatrix, input.tangent.xyz);
+    tangentVector = normalize(tangentVector);
+
+    float3 bitangentVector = normalize(cross(normalVector, tangentVector) * input.tangent.w);
+
+    float3x3 tangentMatrix = float3x3(tangentVector, bitangentVector, normalVector);
+    vertexOut.tbn = transpose(tangentMatrix);
+#endif
 
     return vertexOut;
 }
@@ -33,7 +58,6 @@ float4 PSMain(VSOut input) : SV_Target {
     float3 cameraPos = g_CameraPos.xyz;
     float3 lightPos = g_LightPos.xyz;
 
-    float3 normalVector = normalize(input.normal);
     float3 viewVector = normalize(cameraPos - input.worldPos);
     float3 lightVector = normalize(lightPos - input.worldPos);
 
@@ -45,7 +69,9 @@ float4 PSMain(VSOut input) : SV_Target {
         alpha = color.a;
     }
 
+#ifdef ALPHA_TEST
     clip(alpha - 0.1f);
+#endif
 
     float roughness = g_Material.roughness;
     if (g_Material.hasRoughnessTexture) {
@@ -69,6 +95,16 @@ float4 PSMain(VSOut input) : SV_Target {
         ao = g_AOTexture.Sample(g_LinearWrapSampler, input.texCoord).r;
     }
 
+#ifdef NORMAL_MAPPING
+    float3 normalMap = g_NormalTexture.Sample(g_LinearWrapSampler, input.texCoord).xyz;
+    normalMap = normalMap * 2.0f - 1.0f;
+
+    float3 normalVector = normalize(normalMap);
+    normalVector = normalize(mul(input.tbn, normalVector));
+#else
+    float3 normalVector = normalize(input.normal);
+#endif
+
     float3 Lo = BRDF(lightVector, normalVector, viewVector, albedoColor, roughness, metallic);
 
     uint hitCascadeIndex;
@@ -82,7 +118,8 @@ float4 PSMain(VSOut input) : SV_Target {
                 0.0f, 0.0f, 1.0f,
     };
 
-    float3 lightColor = (float3) 1.0f;
+    float3 lightColor = float3(1.0f, 0.8f, 0.6f);
+    float3 l = lightPos - input.worldPos;
     float intensity = 5.0f;
     float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
@@ -93,16 +130,16 @@ float4 PSMain(VSOut input) : SV_Target {
     kD *= 1.0 - metallic;
 
     float3 eyeVector = -viewVector;
-    float3 reflectedVector = reflect(eyeVector, input.normal);
+    float3 reflectedVector = reflect(eyeVector, normalVector);
     float3 radiance = g_RadianceTexture.SampleLevel(g_LinearWrapSampler, reflectedVector, roughness * 6.0f).rgb;
-    float3 irradiance = g_IrradianceTexture.Sample(g_LinearWrapSampler, input.normal).rgb;
+    float3 irradiance = g_IrradianceTexture.Sample(g_LinearWrapSampler, normalVector).rgb;
     
     float2 lutVector = float2(NdotV, roughness);
     float2 envBRDF = g_EnvBrdfTexture.Sample(g_LinearClampSampler, lutVector).rg;
     
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
-    float3 ambient = diffuseAmbient + radiance * (f0 * envBRDF.x + envBRDF.y);
-    ambient *= ao * 0.15f;
+    float3 ambient = diffuseAmbient + radiance * (kS * envBRDF.x + envBRDF.y);
+    ambient *= ao * 0.1f;
 
     float3 color = Lo * lightColor * intensity * shadowFactor + ambient;
 

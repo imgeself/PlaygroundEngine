@@ -47,16 +47,16 @@ void Application::OnInit() {
     memset(m_DefaultMaterial, 0, sizeof(Material));
     m_DefaultMaterial->diffuseColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
     m_DefaultMaterial->ambientColor = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
-    m_DefaultMaterial->opacity = 1.0f;
-    m_DefaultMaterial->roughness = 0.0f;
+    m_DefaultMaterial->roughness = 1.0f;
     m_DefaultMaterial->metallic = 0.0f;
     m_DefaultMaterial->shader = m_PBRShader;
     m_DefaultMaterial->radianceMap = radiance;
     m_DefaultMaterial->irradianceMap = irradiance;
     m_DefaultMaterial->envBrdf = brdf;
 
-    //LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf");
-    LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf");
+
+    //LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf", false);
+    LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf", true);
     Transform cameraTransform;
     cameraTransform.Translate(Vector3(0.0f,-0.5f, -4.0f));
     m_MainCamera.TransformCamera(&cameraTransform);
@@ -131,17 +131,24 @@ void Application::OnUpdate(float deltaTime) {
 
     Vector3 lightPos = m_Scene.light->position;
     if (PGInput::IsKeyPressed(PGKEY_I)) {
-        lightPos.z += 5.0f * deltaTime;
+        lightPos.z += 15.0f * deltaTime;
     }
     else if (PGInput::IsKeyPressed(PGKEY_K)) {
-        lightPos.z -= 5.0f * deltaTime;
+        lightPos.z -= 15.0f * deltaTime;
     }
 
     if (PGInput::IsKeyPressed(PGKEY_J)) {
-        lightPos.x -= 5.0f * deltaTime;
+        lightPos.x -= 15.0f * deltaTime;
     }
     else if (PGInput::IsKeyPressed(PGKEY_L)) {
-        lightPos.x += 5.0f * deltaTime;
+        lightPos.x += 15.0f * deltaTime;
+    }
+
+    if (PGInput::IsKeyPressed(PGKEY_U)) {
+        lightPos.y -= 15.0f * deltaTime;
+    }
+    else if (PGInput::IsKeyPressed(PGKEY_O)) {
+        lightPos.y += 15.0f * deltaTime;
     }
     m_Scene.light->position = lightPos;
 

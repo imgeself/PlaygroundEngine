@@ -56,6 +56,7 @@ public:
 
     void* Map(HWResource* resource) override;
     void Unmap(HWResource* resource) override;
+    void UpdateSubresource(HWResource* resource, uint32_t dstSubresource, const HWBox* updateBox, const SubresourceData& subresourceData) override;
 
     void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) override;
     void GenerateMips(HWShaderResourceView* shaderResourceView) override;

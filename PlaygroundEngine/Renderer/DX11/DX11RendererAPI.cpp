@@ -360,6 +360,13 @@ void DX11RendererAPI::Unmap(HWResource* resource) {
     m_DeviceContext->Unmap(d3dResource, NULL);
 }
 
+void DX11RendererAPI::UpdateSubresource(HWResource* resource, uint32_t dstSubresource, const HWBox* updateBox, const SubresourceData& subresourceData) {
+    ID3D11Resource* d3dResource = (ID3D11Resource*) resource->GetResourceHandle();
+
+    m_DeviceContext->UpdateSubresource(d3dResource, (UINT)dstSubresource, (const D3D11_BOX*)updateBox,
+                                       subresourceData.data, subresourceData.memPitch, subresourceData.memSlicePitch);
+}
+
 void DX11RendererAPI::MSAAResolve(HWTexture2D* dest, HWTexture2D* source) {
     DX11Texture2D* dxDestTexture = (DX11Texture2D*) dest;
     DX11Texture2D* dxSourceTexture = (DX11Texture2D*) source;

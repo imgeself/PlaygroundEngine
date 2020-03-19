@@ -17,6 +17,15 @@ struct HWViewport {
     float height;
 };
 
+struct HWBox {
+    uint32_t left;
+    uint32_t top;
+    uint32_t front;
+    uint32_t right;
+    uint32_t bottom;
+    uint32_t back;
+};
+
 class HWRendererAPI {
 public:
     virtual ~HWRendererAPI() = default;
@@ -61,6 +70,7 @@ public:
 
     virtual void* Map(HWResource* resource) = 0;
     virtual void Unmap(HWResource* resource) = 0;
+    virtual void UpdateSubresource(HWResource* resource, uint32_t dstSubresource, const HWBox* updateBox, const SubresourceData& subresourceData) = 0;
 
     virtual void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) = 0;
     virtual void GenerateMips(HWShaderResourceView* shaderResourceView) = 0;

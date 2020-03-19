@@ -16,10 +16,11 @@
 #define METALLIC_TEXTURE2D_SLOT 3
 #define AO_TEXTURE2D_SLOT 4
 #define METALLIC_ROUGHNESS_TEXTURE2D_SLOT 5
+#define NORMAL_TEXTURE2D_SLOT 6
 
-#define RADIANCE_TEXTURECUBE_SLOT 6
-#define IRRADIANCE_TEXTURECUBE_SLOT 7
-#define BRDF_LUT_TEXTURE_SLOT 8
+#define RADIANCE_TEXTURECUBE_SLOT 7
+#define IRRADIANCE_TEXTURECUBE_SLOT 8
+#define BRDF_LUT_TEXTURE_SLOT 9
 
 #define SKYBOX_TEXTURECUBE_SLOT 5
 
@@ -64,13 +65,14 @@ struct DrawMaterial {
 
     float roughness;
     float metallic;
-    float opacity;
 
     uint32_t hasAlbedoTexture;
     uint32_t hasRoughnessTexture;
     uint32_t hasMetallicTexture;
     uint32_t hasAOTexture;
+
     uint32_t hasMetallicRoughnessTexture;
+    uint32_t pad;
 };
 
 ///////////// Constant buffers
@@ -117,6 +119,8 @@ TEXTURE2D(g_RoughnessTexture, ROUGHNESS_TEXTURE2D_SLOT);
 TEXTURE2D(g_MetallicTexture, METALLIC_TEXTURE2D_SLOT);
 TEXTURE2D(g_AOTexture, AO_TEXTURE2D_SLOT);
 TEXTURE2D(g_MetallicRoughnessTexture, METALLIC_ROUGHNESS_TEXTURE2D_SLOT);
+TEXTURE2D(g_NormalTexture, NORMAL_TEXTURE2D_SLOT);
+
 
 TEXTURECUBE(g_RadianceTexture, RADIANCE_TEXTURECUBE_SLOT);
 TEXTURECUBE(g_IrradianceTexture, IRRADIANCE_TEXTURECUBE_SLOT);

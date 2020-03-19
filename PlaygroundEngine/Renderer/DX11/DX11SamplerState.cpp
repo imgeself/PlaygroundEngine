@@ -39,6 +39,9 @@ static inline D3D11_FILTER GetD3DFilterFromFilterMode(SamplerStateTextureFilterM
         case TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT:
             result = isComparison ? D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT : D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
             break;
+        case TextureFilterMode_ANISOTROPIC:
+            result = isComparison ? D3D11_FILTER_COMPARISON_ANISOTROPIC: D3D11_FILTER_ANISOTROPIC;
+            break;
         default:
             PG_ASSERT(false, "Unhandled sampler state texture filter mode!");
             break;
@@ -91,6 +94,7 @@ DX11SamplerState::DX11SamplerState(ID3D11Device* device, SamplerStateInitParams*
     samplerStateDesc.AddressV = GetD3DAddressModeFromAddressMode(initParams->addressModeV);
     samplerStateDesc.AddressW = GetD3DAddressModeFromAddressMode(initParams->addressModeW);
     samplerStateDesc.ComparisonFunc = GetD3DComparisonFunc(initParams->comparisonFunction);
+    samplerStateDesc.MaxAnisotropy = initParams->maxAnisotropy;
     samplerStateDesc.MaxLOD = D3D11_FLOAT32_MAX;
     memcpy(samplerStateDesc.BorderColor, initParams->borderColor, sizeof(float) * 4);
 

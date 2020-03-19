@@ -13,7 +13,8 @@ enum SamplerStateTextureAddressMode {
 enum SamplerStateTextureFilterMode {
     TextureFilterMode_MIN_MAG_MIP_LINEAR,
     TextureFilterMode_MIN_MAG_MIP_POINT,
-    TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT
+    TextureFilterMode_MIN_MAG_LINEAR_MIP_POINT,
+    TextureFilterMode_ANISOTROPIC
 };
 
 enum ComparisonFunction {
@@ -34,6 +35,7 @@ struct SamplerStateInitParams {
     SamplerStateTextureAddressMode addressModeV;
     SamplerStateTextureAddressMode addressModeW;
     ComparisonFunction comparisonFunction;
+    uint32_t maxAnisotropy;
     float borderColor[4];
 };
 

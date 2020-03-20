@@ -30,6 +30,11 @@ enum VertexBuffers : uint8_t {
     VERTEX_BUFFER_COUNT
 };
 
+struct Box {
+    Vector3 min;
+    Vector3 max;
+};
+
 struct SubMesh {
     // TODO: Instead of storing raw pointers we should have handles for buffers. Because this is not a safe struct to copy.
     // If one of the copies get deleted, other's buffers will be invalidated.
@@ -47,6 +52,7 @@ struct SubMesh {
 
     // Not included in hash
     Material* material = nullptr;
+    Box boundingBox;
 
     size_t GetGeometryHash() {
         size_t materialOffset = offsetof(SubMesh, material);

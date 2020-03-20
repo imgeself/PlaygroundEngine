@@ -63,6 +63,8 @@ HWShaderBytecode PGShader::GetVertexBytecode(uint32_t shaderFlags) {
             PG_ASSERT(vertexCompilationSuccess, "Shader compilation failed!");
             searchIterator->vertexShaderBlob.shaderBlob = shaderBlob;
             searchIterator->vertexShaderBlob.isDirty = false;
+        } else {
+            shaderBlob = searchIterator->vertexShaderBlob.shaderBlob;
         }
     } else {
         PG_LOG_DEBUG("Compiling vertex shader: %s with flags: %d", m_Filepath.c_str(), shaderFlags);
@@ -96,6 +98,8 @@ HWShaderBytecode PGShader::GetPixelBytecode(uint32_t shaderFlags) {
             PG_ASSERT(pixelCompilationSuccess, "Shader compilation failed!");
             searchIterator->pixelShaderBlob.shaderBlob = shaderBlob;
             searchIterator->pixelShaderBlob.isDirty = false;
+        } else {
+            shaderBlob = searchIterator->pixelShaderBlob.shaderBlob;
         }
     }
     else {

@@ -176,6 +176,31 @@ inline Matrix4 OrthoMatrixOffCenterLH(float left, float right, float top, float 
     return result;
 }
 
+inline Matrix4 OrthoMatrixLH(float width, float height, float nearDistance, float farDistance) {
+    Matrix4 result;
+    result[0][0] = 2.0f / (float) width;
+    result[0][1] = 0.0f;
+    result[0][2] = 0.0f;
+    result[0][3] = 0.0f;
+
+    result[1][0] = 0.0f;
+    result[1][1] = 2.0f / (float)height;
+    result[1][2] = 0.0f;
+    result[1][3] = 0.0f;
+
+    result[2][0] = 0.0f;
+    result[2][1] = 0.0f;
+    result[2][2] = 1 / (farDistance - nearDistance);
+    result[2][3] = nearDistance / (nearDistance - farDistance);
+
+    result[3][0] = 0.0f;
+    result[3][1] = 0.0f;
+    result[3][2] = 0.0f;
+    result[3][3] = 1.0f;
+
+    return result;
+}
+
 inline Matrix4 LookAtLH(const Vector3& position, const Vector3& target, const Vector3& upVector) {
     Matrix4 result;
 

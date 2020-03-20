@@ -19,9 +19,9 @@ struct RenderList {
 
         union DepthKey {
             struct {
-                uint64_t depth : 16;
                 uint64_t mesh  : 16;
-                uint64_t pipeline : 32;
+                uint64_t depth : 32;
+                uint64_t pipeline : 16;
             };
 
             uint64_t key;
@@ -52,7 +52,9 @@ struct RenderList {
                 element.transform = sceneObject->transform;
 
                 // Calculate depth 
-                Vector3 distanceVector = element.transform.position - sceneCamera->GetPosition();
+                Box boundingBox = submesh->boundingBox;
+                Vector3 boxCenter = (boundingBox.max - boundingBox.min) / 2;
+                Vector3 distanceVector = boxCenter - sceneCamera->GetPosition();
                 float distanceSq = DotProduct(distanceVector, distanceVector);
 
                 element.depthKey.depth = (uint32_t)(distanceSq);
@@ -134,3 +136,4 @@ private:
 };
 
 void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, SceneRenderPassType scenePassType);
+void RenderSceneDebug(HWRendererAPI* rendererAPI, const RenderList& renderList, HWBuffer* positionBuffer);

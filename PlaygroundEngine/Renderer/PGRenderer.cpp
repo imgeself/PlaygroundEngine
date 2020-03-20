@@ -74,13 +74,13 @@ void PGRenderer::Destroy() {
     delete s_RendererAPI;
 }
 
-void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGRendererConfig& rendererConfig,
+void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGRendererConfig& rendererConfig, const Box& sceneBoundingBox,
                                   Matrix4* outMatricesData) {
     PG_PROFILE_FUNCTION();
     Matrix4 inverseProjectionViewMatrix = camera->GetInverseProjectionViewMatrix();
 
     // Get frustum points in world space
-    Vector4 frustumPoints[] = {
+    Vector4 frustumCorners[] = {
         (inverseProjectionViewMatrix * Vector4(-1, -1, 0, 1)), // left-bottom-near
         (inverseProjectionViewMatrix * Vector4(-1, 1, 0, 1)),  // left-top-near
         (inverseProjectionViewMatrix * Vector4(1, -1, 0, 1)),  // right-bottom-near
@@ -92,15 +92,64 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGR
     };
 
     Vector4 unprojectedPoints[] = {
-        (frustumPoints[0] / frustumPoints[0].w),
-        (frustumPoints[1] / frustumPoints[1].w),
-        (frustumPoints[2] / frustumPoints[2].w),
-        (frustumPoints[3] / frustumPoints[3].w),
-        (frustumPoints[4] / frustumPoints[4].w),
-        (frustumPoints[5] / frustumPoints[5].w),
-        (frustumPoints[6] / frustumPoints[6].w),
-        (frustumPoints[7] / frustumPoints[7].w)
+        (frustumCorners[0] / frustumCorners[0].w),
+        (frustumCorners[1] / frustumCorners[1].w),
+        (frustumCorners[2] / frustumCorners[2].w),
+        (frustumCorners[3] / frustumCorners[3].w),
+        (frustumCorners[4] / frustumCorners[4].w),
+        (frustumCorners[5] / frustumCorners[5].w),
+        (frustumCorners[6] / frustumCorners[6].w),
+        (frustumCorners[7] / frustumCorners[7].w)
     };
+
+    Vector3 sceneBoundingBoxCorners[] = {
+        sceneBoundingBox.min,
+        Vector3(sceneBoundingBox.min.x, sceneBoundingBox.max.y, sceneBoundingBox.min.z),
+        Vector3(sceneBoundingBox.max.x, sceneBoundingBox.min.y, sceneBoundingBox.min.z),
+        Vector3(sceneBoundingBox.max.x, sceneBoundingBox.max.y, sceneBoundingBox.min.z),
+
+        Vector3(sceneBoundingBox.min.x, sceneBoundingBox.max.y, sceneBoundingBox.max.z),
+        Vector3(sceneBoundingBox.max.x, sceneBoundingBox.min.y, sceneBoundingBox.max.z),
+        Vector3(sceneBoundingBox.min.x, sceneBoundingBox.min.y, sceneBoundingBox.max.z),
+        sceneBoundingBox.max
+    };
+
+    Vector3 sceneBoundingBoxCornersLightSpace[8];
+    for (size_t i = 0; i < ARRAYSIZE(sceneBoundingBoxCorners); i++) {
+        Vector4 v = lightView * Vector4(sceneBoundingBoxCorners[i], 1.0f);
+
+        sceneBoundingBoxCornersLightSpace[i] = (v.xyz() / v.w);
+    }
+
+    float minScenePointLightSpace = sceneBoundingBoxCornersLightSpace[0].x;
+    float maxScenePointLightSpace = sceneBoundingBoxCornersLightSpace[0].x;
+    for (size_t i = 1; i < ARRAYSIZE(sceneBoundingBoxCornersLightSpace); i++) {
+        Vector3 corner = sceneBoundingBoxCornersLightSpace[i];
+
+        if (corner.x < minScenePointLightSpace) {
+            minScenePointLightSpace = corner.x;
+        } else if (corner.x > maxScenePointLightSpace) {
+            maxScenePointLightSpace = corner.x;
+        }
+
+        if (corner.y < minScenePointLightSpace) {
+            minScenePointLightSpace = corner.y;
+        }
+        else if (corner.y > maxScenePointLightSpace) {
+            maxScenePointLightSpace = corner.y;
+        }
+
+        if (corner.z < minScenePointLightSpace) {
+            minScenePointLightSpace = corner.z;
+        }
+        else if (corner.z > maxScenePointLightSpace) {
+            maxScenePointLightSpace = corner.z;
+        }
+    }
+
+    // Little padding for avoiding clipping
+    minScenePointLightSpace -= 2.0f;
+    maxScenePointLightSpace += 2.0f;
 
     float splits[CASCADE_COUNT + 1] = {
         0.0f,
@@ -141,19 +190,14 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGR
         Vector3 minCorner = center + Vector3(-radius, -radius, -radius);
         Vector3 maxCorner = center + Vector3(radius, radius, radius);
 
-        // Extrude min/max z values for avoid shadow camera being too close to scene and causing clipping
-        // TODO: Instead of this method we need to clamp max/min z values to scene's bounding box's top and bottom lines
-        minCorner.z = std::min(minCorner.z, -50.0f);
-        maxCorner.z = std::min(maxCorner.z, 50.0f);
-
         float texelSize = 1.0f / rendererConfig.shadowMapSize;
         Vector3 extend = maxCorner - minCorner;
         Vector3 worldUnitsForTexelSize = extend * texelSize;
         minCorner = Floor(minCorner / worldUnitsForTexelSize) * worldUnitsForTexelSize;
         maxCorner = Floor(maxCorner / worldUnitsForTexelSize) * worldUnitsForTexelSize;
 
-
-        cascadeProjMatrices[cascadeIndex] = OrthoMatrixOffCenterLH(minCorner.x, maxCorner.x, maxCorner.y, minCorner.y, minCorner.z, maxCorner.z);
+        cascadeProjMatrices[cascadeIndex] = OrthoMatrixOffCenterLH(minCorner.x, maxCorner.x, maxCorner.y, minCorner.y, 
+            minScenePointLightSpace, maxScenePointLightSpace);
     }
 
     memcpy(outMatricesData, cascadeProjMatrices, ARRAYSIZE(cascadeProjMatrices) * sizeof(Matrix4));
@@ -241,7 +285,7 @@ void PGRenderer::RenderFrame() {
     perFrameGlobalConstantBuffer.g_LightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
     Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), Normalize(-s_ActiveSceneData->light->position), Vector3(0.0f, 0.0f, 1.0f));
     perFrameGlobalConstantBuffer.g_LightViewMatrix = lightView;
-    CalculateCascadeProjMatrices(s_ActiveSceneData->camera, lightView, s_RendererConfig,
+    CalculateCascadeProjMatrices(s_ActiveSceneData->camera, lightView, s_RendererConfig, s_ActiveSceneData->boundingBox,
                                  perFrameGlobalConstantBuffer.g_LightProjMatrices);
 
     void* data = s_RendererAPI->Map(PGRendererResources::s_PerFrameGlobalConstantBuffer);

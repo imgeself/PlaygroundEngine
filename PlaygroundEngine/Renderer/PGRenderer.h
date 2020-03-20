@@ -19,7 +19,7 @@
 class PG_API PGRenderer {
 public:
     static bool Initialize(PGWindow* window);
-    static void Uninitialize();
+    static void Destroy();
     static void BeginFrame();
     static void RenderFrame();
     static void EndFrame();

@@ -17,12 +17,58 @@ ShadowGenStage PGRenderer::s_ShadowGenStage = ShadowGenStage();
 SceneRenderPass PGRenderer::s_SceneRenderPass = SceneRenderPass();
 FullscreenPass PGRenderer::s_ToneMappingPass = FullscreenPass();
 
+class DebugSceneRenderer {
+public:
+    DebugSceneRenderer(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib, const PGRendererConfig& rendererConfig) {
+        m_VertexBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(Vector3) * 24, HWResourceFlags::BIND_VERTEX_BUFFER | HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE);
+
+        HWRasterizerDesc rasterizerDesc = {};
+        rasterizerDesc.cullMode = CULL_NONE;
+        if (rendererConfig.msaaSampleCount > 1) {
+            rasterizerDesc.antialiasedLineEnable = true;
+            rasterizerDesc.multisampleEnable = true;
+        }
+
+        PGShader* debugShader = shaderLib->GetDefaultShader("DebugShader");
+
+        HWPipelineStateDesc pipelineStateDesc;
+        pipelineStateDesc.rasterizerDesc = rasterizerDesc;
+        pipelineStateDesc.inputLayoutDesc = PGRendererResources::s_DefaultInputLayoutDescs[InputLayoutType::POS];
+        pipelineStateDesc.primitiveTopology = PRIMITIVE_TOPOLOGY_LINELIST;
+
+        pipelineStateDesc.vertexShader = debugShader->GetVertexBytecode();
+        pipelineStateDesc.pixelShader = debugShader->GetPixelBytecode();
+
+        m_PipelineState = rendererAPI->CreatePipelineState(pipelineStateDesc);
+    }
+
+    ~DebugSceneRenderer() {
+        SAFE_DELETE(m_VertexBuffer);
+        SAFE_DELETE(m_PipelineState);
+    }
+
+    void Execute(HWRendererAPI* rendererAPI, const RenderList& renderList) {
+        rendererAPI->SetPipelineState(m_PipelineState);
+        uint32_t stride = sizeof(Vector3);
+        uint32_t offset = 0;
+        rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
+
+        RenderSceneDebug(rendererAPI, renderList, m_VertexBuffer);
+    }
+
+private:
+    HWBuffer* m_VertexBuffer;
+    HWPipelineState* m_PipelineState;
+};
+
+DebugSceneRenderer* g_DebugSceneRenderer = nullptr;
 Skybox* g_SkyboxRenderer = nullptr;
 
-void PGRenderer::Uninitialize() {
+void PGRenderer::Destroy() {
     PGRendererResources::ClearResources();
 
     SAFE_DELETE(g_SkyboxRenderer);
+    SAFE_DELETE(g_DebugSceneRenderer);
 
     delete s_ShaderLib;
     delete s_RendererAPI;
@@ -143,6 +189,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     s_ToneMappingPass.SetShader(s_RendererAPI, tonemappingShader);
 
     g_SkyboxRenderer = new Skybox(s_RendererAPI, s_ShaderLib);
+    g_DebugSceneRenderer = new DebugSceneRenderer(s_RendererAPI, s_ShaderLib, s_RendererConfig);
 
     return true;
 }
@@ -184,7 +231,7 @@ void PGRenderer::RenderFrame() {
     s_RenderList.AddSceneObjects(s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), s_ActiveSceneData->camera);
     s_RenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
 
-    //TODO: This function should be create gpu commands and pass them to render thread.
+    //TODO: This function should be create gpu commands and pass them to the render thread.
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
     perFrameGlobalConstantBuffer.g_ViewMatrix = s_ActiveSceneData->camera->GetViewMatrix();
     perFrameGlobalConstantBuffer.g_ProjMatrix = s_ActiveSceneData->camera->GetProjectionMatrix();
@@ -210,6 +257,10 @@ void PGRenderer::RenderFrame() {
     // Render skybox
     if (s_ActiveSceneData->skyboxTexture) {
         g_SkyboxRenderer->RenderSkybox(s_RendererAPI, s_ActiveSceneData->skyboxTexture);
+    }
+
+    if (s_RendererConfig.debugRendering) {
+        g_DebugSceneRenderer->Execute(s_RendererAPI, s_RenderList);
     }
 
     if (s_RendererConfig.msaaSampleCount > 1) {

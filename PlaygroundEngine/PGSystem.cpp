@@ -52,7 +52,7 @@ void PGSystem::RunMainLoop() {
             s_systemEventDispatcher->DispatchSystemEvent(SystemEvent::CLOSE);
             m_GameApplication->OnExit();
             PGResourceManager::ReleaseResourcePool();
-            PGRenderer::Uninitialize();
+            PGRenderer::Destroy();
             break;
         }
 

@@ -83,3 +83,57 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
     }
 }
 
+void RenderSceneDebug(HWRendererAPI* rendererAPI, const RenderList& renderList, HWBuffer* positionBuffer) {
+    PG_PROFILE_FUNCTION();
+
+    Vector3 positionData[24];
+    for (size_t elementIndex = 0; elementIndex < renderList.elementCount; ++elementIndex) {
+        RenderList::Element element = renderList.elements[elementIndex];
+
+        SubMesh* submesh = element.mesh;
+        Material* material = element.mesh->material;
+
+        Box boundingBox = element.mesh->boundingBox;
+
+        const float x0 = boundingBox.min.x;
+        const float y0 = boundingBox.min.y;
+        const float z0 = boundingBox.min.z;
+        const float x1 = boundingBox.max.x;
+        const float y1 = boundingBox.max.y;
+        const float z1 = boundingBox.max.z;
+
+        positionData[0] = Vector3(x0, y0, z0);
+        positionData[1] = Vector3(x0, y1, z0);
+        positionData[2] = Vector3(x0, y1, z0);
+        positionData[3] = Vector3(x1, y1, z0);
+        positionData[4] = Vector3(x1, y1, z0);
+        positionData[5] = Vector3(x1, y0, z0);
+        positionData[6] = Vector3(x1, y0, z0);
+        positionData[7] = Vector3(x0, y0, z0);
+        positionData[8] = Vector3(x0, y0, z0);
+        positionData[9] = Vector3(x0, y0, z1);
+        positionData[10] = Vector3(x0, y1, z0);
+        positionData[11] = Vector3(x0, y1, z1);
+        positionData[12] = Vector3(x1, y1, z0);
+        positionData[13] = Vector3(x1, y1, z1);
+        positionData[14] = Vector3(x1, y0, z0);
+        positionData[15] = Vector3(x1, y0, z1);
+        positionData[16] = Vector3(x0, y0, z1);
+        positionData[17] = Vector3(x0, y1, z1);
+        positionData[18] = Vector3(x0, y1, z1);
+        positionData[19] = Vector3(x1, y1, z1);
+        positionData[20] = Vector3(x1, y1, z1);
+        positionData[21] = Vector3(x1, y0, z1);
+        positionData[22] = Vector3(x1, y0, z1);
+        positionData[23] = Vector3(x0, y0, z1);
+
+
+        void* positionBufferData = rendererAPI->Map(positionBuffer);
+        memcpy(positionBufferData, positionData, sizeof(positionData));
+        rendererAPI->Unmap(positionBuffer);
+
+        rendererAPI->Draw(ARRAYSIZE(positionData), 0);
+
+    }
+}
+

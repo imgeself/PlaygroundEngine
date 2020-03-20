@@ -18,6 +18,8 @@ struct PGRendererConfig {
     uint8_t shadowCascadeCount = 4;
 
     uint8_t msaaSampleCount = 1;
+
+    bool debugRendering = false;
 };
 
 struct GPUResource {

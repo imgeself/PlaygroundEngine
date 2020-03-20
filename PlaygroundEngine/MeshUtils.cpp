@@ -199,8 +199,30 @@ static void LoadNode(HWRendererAPI* rendererAPI, const tinygltf::Model& model, c
                         Vector4 transformedMin = parentTransform.GetTransformMatrix() * Vector4(minVector, 1.0f);
                         Vector4 transformedMax = parentTransform.GetTransformMatrix() * Vector4(maxVector, 1.0f);
 
-                        submesh->boundingBox.min = transformedMin.xyz() / transformedMin.w;
-                        submesh->boundingBox.max = transformedMax.xyz() / transformedMax.w;
+                        Box meshBoundingBox;
+                        meshBoundingBox.min = transformedMin.xyz() / transformedMin.w;
+                        meshBoundingBox.max = transformedMax.xyz() / transformedMax.w;
+                        submesh->boundingBox = meshBoundingBox;
+
+                        if (meshBoundingBox.min.x < outScene->boundingBox.min.x) {
+                            outScene->boundingBox.min.x = meshBoundingBox.min.x;
+                        }
+                        if (meshBoundingBox.min.y < outScene->boundingBox.min.y) {
+                            outScene->boundingBox.min.y = meshBoundingBox.min.y;
+                        }
+                        if (meshBoundingBox.min.z < outScene->boundingBox.min.z) {
+                            outScene->boundingBox.min.z = meshBoundingBox.min.z;
+                        }
+
+                        if (meshBoundingBox.max.x > outScene->boundingBox.max.x) {
+                            outScene->boundingBox.max.x = meshBoundingBox.max.x;
+                        }
+                        if (meshBoundingBox.max.y > outScene->boundingBox.max.y) {
+                            outScene->boundingBox.max.y = meshBoundingBox.max.y;
+                        }
+                        if (meshBoundingBox.max.z > outScene->boundingBox.max.z) {
+                            outScene->boundingBox.max.z = meshBoundingBox.max.z;
+                        }
                     }
                 }
                 else if (!attrName.compare("NORMAL")) {

@@ -19,6 +19,7 @@ struct PGScene {
     PGCamera* camera;
     PGLight* light;
     PGTexture* skyboxTexture;
+    Box boundingBox;
     std::vector<PGSceneObject> sceneObjects;
 };
 

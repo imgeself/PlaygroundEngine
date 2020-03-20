@@ -5,68 +5,8 @@
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #include "Utility/tiny_gltf.h"
 
-static void LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, Transform& parentTransform, 
-                     const std::vector<MeshRef>& meshes, PGScene* outScene) {
-    if (!node.scale.empty()) {
-        parentTransform.Scale(Vector3((float) node.scale[0], (float) node.scale[1], (float) node.scale[2]));
-    }
-    if (!node.translation.empty()) {
-        parentTransform.Translate(Vector3((float) node.translation[0], (float) node.translation[1], (float) node.translation[2]));
-    }
-    if (!node.rotation.empty()) {
-        Matrix4 rotation;
-        Vector4 q = Vector4((float) node.rotation[0], (float) node.rotation[1], (float) node.rotation[2], (float) node.rotation[3]);
-        float w, x, y, z,
-            xx, yy, zz,
-            xy, yz, xz,
-            wx, wy, wz, norm, s;
-
-        norm = sqrtf(DotProduct(q, q));
-        s = norm > 0.0f ? 2.0f / norm : 0.0f;
-
-        x = q[0];
-        y = q[1];
-        z = q[2];
-        w = q[3];
-
-        xx = s * x * x;   xy = s * x * y;   wx = s * w * x;
-        yy = s * y * y;   yz = s * y * z;   wy = s * w * y;
-        zz = s * z * z;   xz = s * x * z;   wz = s * w * z;
-
-        rotation[0][0] = 1.0f - yy - zz;
-        rotation[1][1] = 1.0f - xx - zz;
-        rotation[2][2] = 1.0f - xx - yy;
-
-        rotation[0][1] = xy + wz;
-        rotation[1][2] = yz + wx;
-        rotation[2][0] = xz + wy;
-
-        rotation[1][0] = xy - wz;
-        rotation[2][1] = yz - wx;
-        rotation[0][2] = xz - wy;
-
-        rotation[0][3] = 0.0f;
-        rotation[1][3] = 0.0f;
-        rotation[2][3] = 0.0f;
-        rotation[3][0] = 0.0f;
-        rotation[3][1] = 0.0f;
-        rotation[3][2] = 0.0f;
-        rotation[3][3] = 1.0f;
-
-        parentTransform.rotationMatrix = parentTransform.rotationMatrix * rotation;
-    }
-
-    PGSceneObject sceneObject = { meshes[node.mesh], parentTransform };
-    outScene->sceneObjects.push_back(sceneObject);
-
-    for (int childrenNodeIndex : node.children) {
-        const tinygltf::Node& children = model.nodes[childrenNodeIndex];
-        LoadNode(model, children, parentTransform, meshes, outScene);
-    }
-}
-
-void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftHandedNormalMap, const tinygltf::Model& model, const tinygltf::Primitive& prim, 
-                        const tinygltf::BufferView& positionBufferView, const tinygltf::BufferView& normalBufferView, const tinygltf::BufferView& texCoordBufferView) {
+void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftHandedNormalMap, const tinygltf::Model& model, const tinygltf::Primitive& prim,
+    const tinygltf::BufferView& positionBufferView, const tinygltf::BufferView& normalBufferView, const tinygltf::BufferView& texCoordBufferView) {
     if (prim.indices >= 0) {
         const tinygltf::Accessor& indexBufferAccessor = model.accessors[prim.indices];
         const tinygltf::BufferView& indexBufferView = model.bufferViews[indexBufferAccessor.bufferView];
@@ -76,15 +16,15 @@ void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftH
         const tinygltf::Buffer& normalBuffer = model.buffers[normalBufferView.buffer];
         const tinygltf::Buffer& texCoordBuffer = model.buffers[texCoordBufferView.buffer];
 
-        const Vector3* positions = (Vector3*) (positionBuffer.data.data() + positionBufferView.byteOffset);
-        const Vector3* normals = (Vector3*) (normalBuffer.data.data() + normalBufferView.byteOffset);
-        const Vector2* texCoords = (Vector2*) (texCoordBuffer.data.data() + texCoordBufferView.byteOffset);
+        const Vector3* positions = (Vector3*)(positionBuffer.data.data() + positionBufferView.byteOffset);
+        const Vector3* normals = (Vector3*)(normalBuffer.data.data() + normalBufferView.byteOffset);
+        const Vector2* texCoords = (Vector2*)(texCoordBuffer.data.data() + texCoordBufferView.byteOffset);
 
         uint32_t stride = indexBufferAccessor.ByteStride(indexBufferView);
 
         size_t vertexCount = positionBufferView.byteLength / sizeof(Vector3);
         size_t tangentBufferSize = sizeof(Vector4) * vertexCount;
-        Vector4* tangents = (Vector4*) alloca(tangentBufferSize);
+        Vector4* tangents = (Vector4*)alloca(tangentBufferSize);
 
         for (size_t i = 0; i < indexBufferView.byteLength / stride; i += 3) {
             uint32_t i0;
@@ -96,7 +36,8 @@ void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftH
                 i0 = *(data + i);
                 i1 = *(data + i + 1);
                 i2 = *(data + i + 2);
-            } else {
+            }
+            else {
                 const uint32_t* data = (uint32_t*)(indexBuffer.data.data() + indexBufferView.byteOffset);
                 i0 = *(data + i);
                 i1 = *(data + i + 1);
@@ -155,7 +96,154 @@ void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftH
     }
 }
 
-void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename, bool leftHandedNormal) {
+static void LoadNode(HWRendererAPI* rendererAPI, const tinygltf::Model& model, const tinygltf::Node& node, Transform& parentTransform, 
+                     Material* materials, HWBuffer** buffers, PGScene* outScene, bool leftHandedNormalMap) {
+    if (!node.scale.empty()) {
+        parentTransform.Scale(Vector3((float) node.scale[0], (float) node.scale[1], (float) node.scale[2]));
+    }
+    if (!node.translation.empty()) {
+        parentTransform.Translate(Vector3((float) node.translation[0], (float) node.translation[1], (float) node.translation[2]));
+    }
+    if (!node.rotation.empty()) {
+        Matrix4 rotation;
+        Vector4 q = Vector4((float) node.rotation[0], (float) node.rotation[1], (float) node.rotation[2], (float) node.rotation[3]);
+        float w, x, y, z,
+            xx, yy, zz,
+            xy, yz, xz,
+            wx, wy, wz, norm, s;
+
+        norm = sqrtf(DotProduct(q, q));
+        s = norm > 0.0f ? 2.0f / norm : 0.0f;
+
+        x = q[0];
+        y = q[1];
+        z = q[2];
+        w = q[3];
+
+        xx = s * x * x;   xy = s * x * y;   wx = s * w * x;
+        yy = s * y * y;   yz = s * y * z;   wy = s * w * y;
+        zz = s * z * z;   xz = s * x * z;   wz = s * w * z;
+
+        rotation[0][0] = 1.0f - yy - zz;
+        rotation[1][1] = 1.0f - xx - zz;
+        rotation[2][2] = 1.0f - xx - yy;
+
+        rotation[0][1] = xy + wz;
+        rotation[1][2] = yz + wx;
+        rotation[2][0] = xz + wy;
+
+        rotation[1][0] = xy - wz;
+        rotation[2][1] = yz - wx;
+        rotation[0][2] = xz - wy;
+
+        rotation[0][3] = 0.0f;
+        rotation[1][3] = 0.0f;
+        rotation[2][3] = 0.0f;
+        rotation[3][0] = 0.0f;
+        rotation[3][1] = 0.0f;
+        rotation[3][2] = 0.0f;
+        rotation[3][3] = 1.0f;
+
+        parentTransform.rotationMatrix = parentTransform.rotationMatrix * rotation;
+    }
+
+    if (node.mesh >= 0) {
+        const tinygltf::Mesh& gltfMesh = model.meshes[node.mesh];
+        MeshRef newMesh = new Mesh;
+        newMesh->name = gltfMesh.name;
+
+        for (const tinygltf::Primitive& prim : gltfMesh.primitives) {
+            const tinygltf::Accessor& accessor = model.accessors[prim.indices];
+            const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+            const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+
+            SubMesh* submesh = new SubMesh;
+            memset(submesh, 0, sizeof(SubMesh));
+            submesh->material = materials + prim.material;
+
+            if (prim.indices >= 0) {
+                const tinygltf::Accessor& indexBufferAccessor = model.accessors[prim.indices];
+                const tinygltf::BufferView& indexBufferView = model.bufferViews[indexBufferAccessor.bufferView];
+
+                submesh->indexBuffer = buffers[indexBufferAccessor.bufferView];
+                submesh->indexBufferStride = (uint32_t)indexBufferAccessor.ByteStride(indexBufferView);
+                submesh->indexStart = (uint32_t)indexBufferAccessor.byteOffset / indexBufferAccessor.ByteStride(indexBufferView);
+                submesh->indexCount = (uint32_t)indexBufferAccessor.count;
+            }
+
+            bool hasTangents = false;
+            tinygltf::BufferView positionBufferView;
+            tinygltf::BufferView normalBufferView;
+            tinygltf::BufferView texCoordBufferView;
+
+            for (auto& attr : prim.attributes) {
+                const std::string& attrName = attr.first;
+                int attrData = attr.second;
+
+                const tinygltf::Accessor& accessor = model.accessors[attrData];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+
+                uint32_t stride = accessor.ByteStride(bufferView);
+
+                if (!attrName.compare("POSITION")) {
+                    PG_ASSERT(stride == 12, "Unsupported vertex stride");
+                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = buffers[accessor.bufferView];
+                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS] = stride;
+                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_POSITIONS] = (uint32_t)accessor.byteOffset;
+                    positionBufferView = bufferView;
+
+                    if (accessor.minValues.size() == 3 && accessor.maxValues.size() == 3) {
+                        Vector3 minVector = Vector3((float)accessor.minValues[0], (float)accessor.minValues[1], (float)accessor.minValues[2]);
+                        Vector3 maxVector = Vector3((float)accessor.maxValues[0], (float)accessor.maxValues[1], (float)accessor.maxValues[2]);
+
+                        Vector4 transformedMin = parentTransform.GetTransformMatrix() * Vector4(minVector, 1.0f);
+                        Vector4 transformedMax = parentTransform.GetTransformMatrix() * Vector4(maxVector, 1.0f);
+
+                        submesh->boundingBox.min = transformedMin.xyz() / transformedMin.w;
+                        submesh->boundingBox.max = transformedMax.xyz() / transformedMax.w;
+                    }
+                }
+                else if (!attrName.compare("NORMAL")) {
+                    PG_ASSERT(stride == 12, "Unsupported vertex stride");
+                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NORMAL] = buffers[accessor.bufferView];
+                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_NORMAL] = stride;
+                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_NORMAL] = (uint32_t)accessor.byteOffset;
+                    normalBufferView = bufferView;
+                }
+                else if (!attrName.compare("TEXCOORD_0")) {
+                    PG_ASSERT(stride == 8, "Unsupported vertex stride");
+                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = buffers[accessor.bufferView];
+                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = stride;
+                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = (uint32_t)accessor.byteOffset;
+                    texCoordBufferView = bufferView;
+                }
+                else if (!attrName.compare("TANGENT")) {
+                    PG_ASSERT(stride == 16, "Unsupported vertex stride");
+                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TANGENT] = buffers[accessor.bufferView];
+                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TANGENT] = stride;
+                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TANGENT] = (uint32_t)accessor.byteOffset;
+                    hasTangents = true;
+                }
+            }
+
+            if (submesh->material->normalMappingEnabled && !hasTangents) {
+                CreateTangentsGLTF(rendererAPI, submesh, leftHandedNormalMap, model, prim, positionBufferView, normalBufferView, texCoordBufferView);
+            }
+
+            newMesh->submeshes.push_back(submesh);
+        }
+
+        PGSceneObject sceneObject = { newMesh, parentTransform };
+        outScene->sceneObjects.push_back(sceneObject);
+    }
+
+    for (int childrenNodeIndex : node.children) {
+        const tinygltf::Node& children = model.nodes[childrenNodeIndex];
+        LoadNode(rendererAPI, model, children, parentTransform, materials, buffers, outScene, leftHandedNormalMap);
+    }
+}
+
+void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename, bool leftHandedNormalMap) {
     tinygltf::TinyGLTF loader;
     std::string errors;
     std::string warnings;
@@ -177,15 +265,17 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         return;
     }
 
-    std::vector<Material*> materials;
-    for (tinygltf::Material mtl : model.materials) {
-        Material* material = new Material;
-        memset(material, 0, sizeof(Material));
+    size_t numGltfMaterials = model.materials.size();
+    Material* materials = new Material[numGltfMaterials];
+    memset(materials, 0, sizeof(Material) * numGltfMaterials);
+    for (size_t materialIndex = 0; materialIndex < numGltfMaterials; ++materialIndex) {
+        const tinygltf::Material& gltfMaterial = model.materials[materialIndex];
+        Material* material = materials + materialIndex;
 
-        tinygltf::PbrMetallicRoughness pbr = mtl.pbrMetallicRoughness;
+        tinygltf::PbrMetallicRoughness pbr = gltfMaterial.pbrMetallicRoughness;
 
         material->diffuseColor = Vector4((float) pbr.baseColorFactor[0], (float) pbr.baseColorFactor[1], (float) pbr.baseColorFactor[2], (float) pbr.baseColorFactor[3]);
-        material->emissiveColor = Vector4((float) mtl.emissiveFactor[0], (float) mtl.emissiveFactor[1], (float) mtl.emissiveFactor[2], 1.0f);
+        material->emissiveColor = Vector4((float) gltfMaterial.emissiveFactor[0], (float) gltfMaterial.emissiveFactor[1], (float) gltfMaterial.emissiveFactor[2], 1.0f);
         material->roughness = (float) pbr.roughnessFactor;
         material->metallic = (float) pbr.metallicFactor;
 
@@ -205,7 +295,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             material->metallicRoughnessTexture = (PGTexture*) PGResourceManager::CreateResource(directory + metallicRoughnessImage.uri, true);
         }
 
-        tinygltf::TextureInfo emissive = mtl.emissiveTexture;
+        tinygltf::TextureInfo emissive = gltfMaterial.emissiveTexture;
         if (emissive.index >= 0) {
             tinygltf::Texture emissiveTexture = model.textures[emissive.index];
             tinygltf::Image emissiveImage = model.images[emissiveTexture.source];
@@ -213,7 +303,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             material->emmisiveTexture = (PGTexture*)PGResourceManager::CreateResource(directory + emissiveImage.uri, true);
         }
 
-        tinygltf::OcclusionTextureInfo occlusion = mtl.occlusionTexture;
+        tinygltf::OcclusionTextureInfo occlusion = gltfMaterial.occlusionTexture;
         if (occlusion.index >= 0) {
             tinygltf::Texture occlusionTexture = model.textures[occlusion.index];
             tinygltf::Image occlusionImage = model.images[occlusionTexture.source];
@@ -221,7 +311,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             material->aoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + occlusionImage.uri, true);
         }
 
-        tinygltf::NormalTextureInfo normals = mtl.normalTexture;
+        tinygltf::NormalTextureInfo normals = gltfMaterial.normalTexture;
         if (normals.index >= 0) {
             tinygltf::Texture normalTexture = model.textures[normals.index];
             tinygltf::Image normalImage = model.images[normalTexture.source];
@@ -229,28 +319,29 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
             material->normalTexture = (PGTexture*) PGResourceManager::CreateResource(directory + normalImage.uri, true);
         }
 
-        if (!mtl.alphaMode.compare("MASK")) {
+        if (!gltfMaterial.alphaMode.compare("MASK")) {
             material->alphaMode = AlphaMode_ALPHA_TEST;
         } else {
             material->alphaMode = AlphaMode_ALWAYS_PASS;
         }
 
-        material->doubleSided = mtl.doubleSided;
+        material->doubleSided = gltfMaterial.doubleSided;
 
         material->radianceMap = defaultMaterial->radianceMap;
         material->irradianceMap = defaultMaterial->irradianceMap;
         material->envBrdf = defaultMaterial->envBrdf;
         material->shader = defaultMaterial->shader;
-        materials.push_back(material);
     }
 
     // Create all buffers (vertex + index)
-    std::vector<HWBuffer*> buffers;
-    for (const tinygltf::BufferView& bufferView : model.bufferViews) {
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+    size_t numBuffers = model.bufferViews.size();
+    HWBuffer** buffers = (HWBuffer**) alloca(sizeof(HWBuffer*) * numBuffers);
+    for (size_t bufferIndex = 0; bufferIndex < numBuffers; ++bufferIndex) {
+        const tinygltf::BufferView& gltfBufferView = model.bufferViews[bufferIndex];
+        const tinygltf::Buffer& gltfBuffer = model.buffers[gltfBufferView.buffer];
 
         uint32_t bufferFlags = HWResourceFlags::USAGE_IMMUTABLE;
-        switch (bufferView.target) {
+        switch (gltfBufferView.target) {
             case 0x8892: //GL_ARRAY_BUFFER
             {
                 bufferFlags |= HWResourceFlags::BIND_VERTEX_BUFFER;
@@ -266,85 +357,10 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         }
 
         SubresourceData bufferSubresource = {};
-        bufferSubresource.data = buffer.data.data() + bufferView.byteOffset;
-        HWBuffer* hwBuffer = rendererAPI->CreateBuffer(&bufferSubresource, bufferView.byteLength, bufferFlags);
+        bufferSubresource.data = gltfBuffer.data.data() + gltfBufferView.byteOffset;
+        HWBuffer* hwBuffer = rendererAPI->CreateBuffer(&bufferSubresource, gltfBufferView.byteLength, bufferFlags);
 
-        buffers.push_back(hwBuffer);
-    }
-
-    std::vector<MeshRef> meshes;
-    for (const tinygltf::Mesh& mesh : model.meshes) {
-        MeshRef newMesh = new Mesh;
-        newMesh->name = mesh.name;
-
-        for (const tinygltf::Primitive& prim : mesh.primitives) {
-            const tinygltf::Accessor& accessor = model.accessors[prim.indices];
-            const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-            const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-            SubMesh* submesh = new SubMesh;
-            memset(submesh, 0, sizeof(SubMesh));
-            submesh->material = materials[prim.material];
-
-            if (prim.indices >= 0) {
-                const tinygltf::Accessor& indexBufferAccessor = model.accessors[prim.indices];
-                const tinygltf::BufferView& indexBufferView = model.bufferViews[indexBufferAccessor.bufferView];
-
-                submesh->indexBuffer = buffers[indexBufferAccessor.bufferView];
-                submesh->indexBufferStride = (uint32_t) indexBufferAccessor.ByteStride(indexBufferView);
-                submesh->indexStart = (uint32_t) indexBufferAccessor.byteOffset / indexBufferAccessor.ByteStride(indexBufferView);
-                submesh->indexCount = (uint32_t) indexBufferAccessor.count;
-            }
-
-            bool hasTangents = false;
-            tinygltf::BufferView positionBufferView;
-            tinygltf::BufferView normalBufferView;
-            tinygltf::BufferView texCoordBufferView;
-
-            for (auto& attr : prim.attributes) {
-                const std::string& attrName = attr.first;
-                int attrData = attr.second;
-
-                const tinygltf::Accessor& accessor = model.accessors[attrData];
-                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-
-                uint32_t stride = accessor.ByteStride(bufferView);
-
-                if (!attrName.compare("POSITION")) {
-                    PG_ASSERT(stride == 12, "Unsupported vertex stride");
-                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = buffers[accessor.bufferView];
-                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS] = stride;
-                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_POSITIONS] = (uint32_t) accessor.byteOffset;
-                    positionBufferView = bufferView;
-                } else if (!attrName.compare("NORMAL")) {
-                    PG_ASSERT(stride == 12, "Unsupported vertex stride");
-                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NORMAL] = buffers[accessor.bufferView];
-                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_NORMAL] = stride;
-                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_NORMAL] = (uint32_t) accessor.byteOffset;
-                    normalBufferView = bufferView;
-                } else if (!attrName.compare("TEXCOORD_0")) {
-                    PG_ASSERT(stride == 8, "Unsupported vertex stride");
-                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = buffers[accessor.bufferView];
-                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = stride;
-                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = (uint32_t) accessor.byteOffset;
-                    texCoordBufferView = bufferView;
-                } else if (!attrName.compare("TANGENT")) {
-                    PG_ASSERT(stride == 16, "Unsupported vertex stride");
-                    submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TANGENT] = buffers[accessor.bufferView];
-                    submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TANGENT] = stride;
-                    submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TANGENT] = (uint32_t)accessor.byteOffset;
-                    hasTangents = true;
-                }
-            }
-
-            if (submesh->material->normalMappingEnabled && !hasTangents) {
-                CreateTangentsGLTF(rendererAPI, submesh, leftHandedNormal, model, prim, positionBufferView, normalBufferView, texCoordBufferView);
-            }
-
-            newMesh->submeshes.push_back(submesh);
-        }
-
-        meshes.push_back(newMesh);
+        *(buffers + bufferIndex) = hwBuffer;
     }
 
     const tinygltf::Scene& gltfScene = model.scenes[model.defaultScene];
@@ -352,7 +368,7 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         Transform rootTransform;
         rootTransform.RotateYAxis(PI);
         const tinygltf::Node& node = model.nodes[i];
-        LoadNode(model, node, rootTransform, meshes, scene);
+        LoadNode(rendererAPI, model, node, rootTransform, materials, buffers, scene, leftHandedNormalMap);
     }
 }
 

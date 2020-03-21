@@ -151,16 +151,19 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGR
     minScenePointLightSpace -= 2.0f;
     maxScenePointLightSpace += 2.0f;
 
-    float splits[CASCADE_COUNT + 1] = {
-        0.0f,
-        0.05f,
-        0.1f,
-        0.25f,
-        1.0f
-    };
+    const uint8_t cascadeCount = rendererConfig.shadowCascadeCount;
 
-    Matrix4 cascadeProjMatrices[CASCADE_COUNT];
-    for (uint32_t cascadeIndex = 0; cascadeIndex < CASCADE_COUNT; ++cascadeIndex) {
+    float* splits = (float*) alloca(sizeof(float) * (cascadeCount + 1));
+    memset(splits, 0, sizeof(float) * (cascadeCount + 1));
+    float split = 0.01f;
+    for (size_t i = 1; i < cascadeCount; ++i) {
+        *(splits + i) = split * std::powf(3.0f, i);
+    }
+    *(splits + cascadeCount) = 1.0f;
+
+    Matrix4* cascadeProjMatrices = (Matrix4*) alloca(sizeof(Matrix4) * cascadeCount);
+    memset(cascadeProjMatrices, 0, sizeof(Matrix4) * cascadeCount);
+    for (uint32_t cascadeIndex = 0; cascadeIndex < cascadeCount; ++cascadeIndex) {
         float nearSplit = splits[cascadeIndex];
         float farSplit = splits[cascadeIndex + 1];
 
@@ -196,11 +199,11 @@ void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGR
         minCorner = Floor(minCorner / worldUnitsForTexelSize) * worldUnitsForTexelSize;
         maxCorner = Floor(maxCorner / worldUnitsForTexelSize) * worldUnitsForTexelSize;
 
-        cascadeProjMatrices[cascadeIndex] = OrthoMatrixOffCenterLH(minCorner.x, maxCorner.x, maxCorner.y, minCorner.y, 
+        *(cascadeProjMatrices + cascadeIndex) = OrthoMatrixOffCenterLH(minCorner.x, maxCorner.x, maxCorner.y, minCorner.y, 
             minScenePointLightSpace, maxScenePointLightSpace);
     }
 
-    memcpy(outMatricesData, cascadeProjMatrices, ARRAYSIZE(cascadeProjMatrices) * sizeof(Matrix4));
+    memcpy(outMatricesData, cascadeProjMatrices, cascadeCount * sizeof(Matrix4));
 
 }
 
@@ -299,7 +302,7 @@ void PGRenderer::RenderFrame() {
     s_RendererAPI->Unmap(PGRendererResources::s_PerFrameGlobalConstantBuffer);
 
     s_RenderList.SortByDepth();
-    s_ShadowGenStage.Execute(s_RendererAPI, s_RenderList, s_ShaderLib);
+    s_ShadowGenStage.Execute(s_RendererAPI, s_RenderList, s_ShaderLib, s_RendererConfig);
 
     s_RenderList.SortByKey();
     s_SceneRenderPass.Execute(s_RendererAPI, s_RenderList, SceneRenderPassType::FORWARD);

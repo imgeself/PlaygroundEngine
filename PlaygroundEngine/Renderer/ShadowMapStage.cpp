@@ -14,7 +14,7 @@ void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI, GPUResource* shadowM
     rendererAPI->SetConstantBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);
 }
 
-void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shadowCasterList, PGShaderLib* shaderLib, bool clear) {
+void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shadowCasterList, PGShaderLib* shaderLib, const PGRendererConfig& rendererConfig, bool clear) {
     PG_PROFILE_FUNCTION();
     if (clear) {
         rendererAPI->SetRenderTargets(nullptr, 0, m_ShadowMapTarget);
@@ -22,7 +22,8 @@ void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, const RenderList& shado
         rendererAPI->SetViewport(&m_ShadowMapViewport);
     }
 
-    for (uint32_t cascadeIndex = 0; cascadeIndex < CASCADE_COUNT; ++cascadeIndex) {
+    const uint8_t cascadeCount = rendererConfig.shadowCascadeCount;
+    for (uint8_t cascadeIndex = 0; cascadeIndex < cascadeCount; ++cascadeIndex) {
         void* gpuBuffer = rendererAPI->Map(m_PerShadowGenConstantBuffer);
         PerShadowGenConstantBuffer data = {};
         data.g_ShadowGenCascadeIndex = cascadeIndex;

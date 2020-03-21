@@ -113,6 +113,7 @@ void PGRendererResources::CreateDefaultBuffers(HWRendererAPI* rendererAPI, const
     RendererVariablesConstantBuffer rendererVariablesConstantBuffer = {};
     rendererVariablesConstantBuffer.g_ShadowCascadeCount = rendererConfig.shadowCascadeCount;
     rendererVariablesConstantBuffer.g_ShadowMapSize = rendererConfig.shadowMapSize;
+    rendererVariablesConstantBuffer.g_VisualizeCascades = rendererConfig.debugDrawCascadeColor;
 
     constantSubresourceData.data = &rendererVariablesConstantBuffer;
     s_RendererVarsConstantBuffer = rendererAPI->CreateBuffer(&constantSubresourceData, sizeof(RendererVariablesConstantBuffer), constantBufferFlags);

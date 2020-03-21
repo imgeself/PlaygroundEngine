@@ -1,14 +1,7 @@
 #include "ShadowMapStage.h"
 #include "../PGProfiler.h"
 
-void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI, GPUResource* shadowMapTarget, size_t shadowMapSize) {
-    m_ShadowMapViewport.topLeftX = 0.0f;
-    m_ShadowMapViewport.topLeftY = 0.0f;
-    m_ShadowMapViewport.width = (float) shadowMapSize;
-    m_ShadowMapViewport.height = (float) shadowMapSize;
-
-    m_ShadowMapTarget = shadowMapTarget->dsv;
-
+void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI) {
     uint32_t flags = HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE | HWResourceFlags::BIND_CONSTANT_BUFFER;
     m_PerShadowGenConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerShadowGenConstantBuffer), flags, "ShadowGenCB");
     rendererAPI->SetConstantBuffersVS(PER_SHADOWGEN_CBUFFER_SLOT, &m_PerShadowGenConstantBuffer, 1);

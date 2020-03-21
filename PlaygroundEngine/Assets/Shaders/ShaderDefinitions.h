@@ -114,7 +114,10 @@ CBUFFER(PostProcessConstantBuffer, POST_PROCESS_CBUFFER_SLOT) {
 CBUFFER(RendererVariablesConstantBuffer, RENDERER_VARIABLES_CBUFFER_SLOT) {
     uint32_t g_ShadowCascadeCount;
     uint32_t g_ShadowMapSize;
-    Vector2 pad0000002;
+
+    // Debug
+    uint32_t g_VisualizeCascades;
+    uint32_t pad0000002;
 };
 
 /////////// Textures

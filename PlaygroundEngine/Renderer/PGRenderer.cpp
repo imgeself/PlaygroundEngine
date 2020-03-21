@@ -235,7 +235,8 @@ bool PGRenderer::Initialize(PGWindow* window) {
 
     // init shadow mapping
     PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);
-    s_ShadowGenStage.Initialize(s_RendererAPI, PGRendererResources::s_ShadowMapCascadesTexture, s_RendererConfig.shadowMapSize);
+    s_ShadowGenStage.Initialize(s_RendererAPI);
+    s_ShadowGenStage.SetShadowMapTarget(PGRendererResources::s_ShadowMapCascadesTexture, s_RendererConfig.shadowMapSize);
     s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
 
     PGShader* tonemappingShader = s_ShaderLib->GetDefaultShader("HDRPostProcess");
@@ -312,7 +313,7 @@ void PGRenderer::RenderFrame() {
         g_SkyboxRenderer->RenderSkybox(s_RendererAPI, s_ActiveSceneData->skyboxTexture);
     }
 
-    if (s_RendererConfig.debugRendering) {
+    if (s_RendererConfig.debugDrawBoundingBoxes) {
         g_DebugSceneRenderer->Execute(s_RendererAPI, s_RenderList);
     }
 

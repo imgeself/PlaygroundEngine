@@ -197,10 +197,32 @@ void Application::OnUIRender() {
 
     DrawPerformanceWindow();
 
-    if (ImGui::Begin("Material")) {
-        ImGui::SliderFloat("Roughness", &m_DefaultMaterial->roughness, 0.0f, 1.0f);
-        ImGui::SliderFloat("Metallic", &m_DefaultMaterial->metallic, 0.0f, 1.0f);
-        ImGui::ColorPicker3("Albedo", &m_DefaultMaterial->diffuseColor.x);
+    if (ImGui::Begin("Renderer Settings")) {
+        const char* msaaSampleItemTexts[] = { "MSAA OFF", "MSAA 2x", "MSAA 4x", "MSAA 8x" };
+        const uint32_t msaaSampleItemValues[] = { 1, 2, 4, 8 };
+
+        static int msaaSampleCountItem = 0;
+        if (ImGui::Combo("MSAA", &msaaSampleCountItem, msaaSampleItemTexts, IM_ARRAYSIZE(msaaSampleItemTexts))) {
+            PGRenderer::SetMSAASampleCount(msaaSampleItemValues[msaaSampleCountItem]);
+        }
+
+        const char* shadowResolutionItemTexts[] = { "256", "512", "1024", "2048", "4096" };
+        const uint32_t shadowResolutionItemValues[] = { 256, 512, 1024, 2048, 4096 };
+
+        static int shadowResolutionItem = 2;
+        if (ImGui::Combo("Shadow Resolution", &shadowResolutionItem, shadowResolutionItemTexts, IM_ARRAYSIZE(shadowResolutionItemTexts))) {
+            PGRenderer::SetShadowMapResolution(shadowResolutionItemValues[shadowResolutionItem]);
+        }
+
+        static bool renderBoundingBoxes = false;
+        if (ImGui::Checkbox("Render Bounding Boxes", &renderBoundingBoxes)) {
+            PGRenderer::DrawBoundingBoxes(renderBoundingBoxes);
+        }
+
+        static bool renderCascadeColors = false;
+        if (ImGui::Checkbox("Visualize Cascades", &renderCascadeColors)) {
+            PGRenderer::DrawCascadeColors(renderCascadeColors);
+        }
     }
     ImGui::End();
 

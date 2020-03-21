@@ -19,7 +19,8 @@ struct PGRendererConfig {
 
     uint8_t msaaSampleCount = 1;
 
-    bool debugRendering = false;
+    bool debugDrawBoundingBoxes = false;
+    bool debugDrawCascadeColor = false;
 };
 
 struct GPUResource {

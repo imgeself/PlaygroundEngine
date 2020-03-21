@@ -124,7 +124,6 @@ float4 PSMain(VSOut input) : SV_Target {
     };
 
     float3 lightColor = float3(1.0f, 0.8f, 0.6f);
-    float3 l = lightPos - input.worldPos;
     float intensity = 5.0f;
     float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
@@ -148,5 +147,9 @@ float4 PSMain(VSOut input) : SV_Target {
 
     float3 color = Lo * lightColor * intensity * shadowFactor + ambient + emissiveColor;
 
-    return float4(color, alpha);
+    if (g_VisualizeCascades) {
+        return float4(color * cascadeColor, alpha);
+    } else {
+        return float4(color, alpha);
+    }
 }

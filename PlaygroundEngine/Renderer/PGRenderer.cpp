@@ -212,13 +212,19 @@ bool PGRenderer::Initialize(PGWindow* window) {
     PGRendererResources::CreateDefaultInputLayout(s_RendererAPI);
 
     PGRendererResources::CreateDefaultBuffers(s_RendererAPI, s_RendererConfig);
-    HWBuffer* constantBuffers[8] = {0};
-    constantBuffers[PER_DRAW_CBUFFER_SLOT] = PGRendererResources::s_PerDrawGlobalConstantBuffer;
-    constantBuffers[PER_FRAME_CBUFFER_SLOT] = PGRendererResources::s_PerFrameGlobalConstantBuffer;
-    constantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = PGRendererResources::s_RendererVarsConstantBuffer;
-    constantBuffers[POST_PROCESS_CBUFFER_SLOT] = PGRendererResources::s_PostProcessConstantBuffer;
-    s_RendererAPI->SetConstantBuffersVS(0, constantBuffers, ARRAYSIZE(constantBuffers));
-    s_RendererAPI->SetConstantBuffersPS(0, constantBuffers, ARRAYSIZE(constantBuffers));
+    HWBuffer* vsConstantBuffers[8] = {0};
+    HWBuffer* psConstantBuffers[8] = {0};
+
+    vsConstantBuffers[PER_DRAW_CBUFFER_SLOT] = PGRendererResources::s_PerDrawGlobalConstantBuffer;
+    vsConstantBuffers[PER_FRAME_CBUFFER_SLOT] = PGRendererResources::s_PerFrameGlobalConstantBuffer;
+    vsConstantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = PGRendererResources::s_RendererVarsConstantBuffer;
+
+    psConstantBuffers[PER_MATERIAL_CBUFFER_SLOT] = PGRendererResources::s_PerMaterialGlobalConstantBuffer;
+    psConstantBuffers[PER_FRAME_CBUFFER_SLOT] = PGRendererResources::s_PerFrameGlobalConstantBuffer;
+    psConstantBuffers[POST_PROCESS_CBUFFER_SLOT] = PGRendererResources::s_PostProcessConstantBuffer;
+    psConstantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = PGRendererResources::s_RendererVarsConstantBuffer;
+    s_RendererAPI->SetConstantBuffersVS(0, vsConstantBuffers, ARRAYSIZE(vsConstantBuffers));
+    s_RendererAPI->SetConstantBuffersPS(0, psConstantBuffers, ARRAYSIZE(psConstantBuffers));
 
     // Bind default sampler states
     PGRendererResources::CreateDefaultSamplerStates(s_RendererAPI);

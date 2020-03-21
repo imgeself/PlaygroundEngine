@@ -17,7 +17,6 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
 
         PerDrawGlobalConstantBuffer perDrawGlobalConstantBuffer = {};
         perDrawGlobalConstantBuffer.g_ModelMatrix = element.transform.GetTransformMatrix();
-        memcpy(&perDrawGlobalConstantBuffer.g_Material, element.mesh->material, sizeof(DrawMaterial));
 
         void* data = rendererAPI->Map(PGRendererResources::s_PerDrawGlobalConstantBuffer);
         memcpy(data, &perDrawGlobalConstantBuffer, sizeof(PerDrawGlobalConstantBuffer));
@@ -68,6 +67,13 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, Scene
             };
 
             rendererAPI->SetShaderResourcesPS(ALBEDO_TEXTURE2D_SLOT, textureResources, ARRAYSIZE(textureResources));
+
+            PerMaterialGlobalConstantBuffer perMaterialGlobalConstantBuffer = {};
+            memcpy(&perMaterialGlobalConstantBuffer.g_Material, element.mesh->material, sizeof(DrawMaterial));
+
+            void* materialData = rendererAPI->Map(PGRendererResources::s_PerMaterialGlobalConstantBuffer);
+            memcpy(materialData, &perMaterialGlobalConstantBuffer, sizeof(PerMaterialGlobalConstantBuffer));
+            rendererAPI->Unmap(PGRendererResources::s_PerMaterialGlobalConstantBuffer);
         }
 
         if (bindGeometry) {

@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 HWBuffer* PGRendererResources::s_PerFrameGlobalConstantBuffer;
+HWBuffer* PGRendererResources::s_PerMaterialGlobalConstantBuffer;
 HWBuffer* PGRendererResources::s_PerDrawGlobalConstantBuffer;
 HWBuffer* PGRendererResources::s_PostProcessConstantBuffer;
 HWBuffer* PGRendererResources::s_RendererVarsConstantBuffer;
@@ -98,6 +99,7 @@ void PGRendererResources::CreateDefaultBuffers(HWRendererAPI* rendererAPI, const
     // Default resources init
     uint32_t constantBufferFlags = HWResourceFlags::USAGE_DYNAMIC | HWResourceFlags::CPU_ACCESS_WRITE | HWResourceFlags::BIND_CONSTANT_BUFFER;
     s_PerFrameGlobalConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerFrameGlobalConstantBuffer), constantBufferFlags);
+    s_PerMaterialGlobalConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerMaterialGlobalConstantBuffer), constantBufferFlags);
     s_PerDrawGlobalConstantBuffer = rendererAPI->CreateBuffer(nullptr, sizeof(PerDrawGlobalConstantBuffer), constantBufferFlags);
 
     PostProcessConstantBuffer postProcessConstantBuffer = {};
@@ -244,6 +246,7 @@ void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, c
 
 void PGRendererResources::ClearResources() {
     delete s_PerFrameGlobalConstantBuffer;
+    delete s_PerMaterialGlobalConstantBuffer;
     delete s_PerDrawGlobalConstantBuffer;
     delete s_RendererVarsConstantBuffer;
     delete s_PostProcessConstantBuffer;

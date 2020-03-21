@@ -2,9 +2,10 @@
 #define _SHADER_DEFINITIONS_H_
 
 #define PER_DRAW_CBUFFER_SLOT 0
-#define PER_FRAME_CBUFFER_SLOT 1
-#define PER_SHADOWGEN_CBUFFER_SLOT 2
-#define POST_PROCESS_CBUFFER_SLOT 3
+#define PER_MATERIAL_CBUFFER_SLOT 1
+#define PER_FRAME_CBUFFER_SLOT 2
+#define PER_SHADOWGEN_CBUFFER_SLOT 3
+#define POST_PROCESS_CBUFFER_SLOT 4
 
 #define RENDERER_VARIABLES_CBUFFER_SLOT 7
 
@@ -81,6 +82,9 @@ struct DrawMaterial {
 ///////////// Constant buffers
 CBUFFER(PerDrawGlobalConstantBuffer, PER_DRAW_CBUFFER_SLOT) {
     Matrix4 g_ModelMatrix;
+};
+
+CBUFFER(PerMaterialGlobalConstantBuffer, PER_MATERIAL_CBUFFER_SLOT) {
     DrawMaterial g_Material;
 };
 

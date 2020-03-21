@@ -91,6 +91,7 @@ enum SceneRenderPassType {
 
 struct PGRendererResources {
     static HWBuffer* s_PerFrameGlobalConstantBuffer;
+    static HWBuffer* s_PerMaterialGlobalConstantBuffer;
     static HWBuffer* s_PerDrawGlobalConstantBuffer;
     static HWBuffer* s_PostProcessConstantBuffer;
     static HWBuffer* s_RendererVarsConstantBuffer;

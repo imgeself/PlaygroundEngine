@@ -36,7 +36,7 @@ VSOut VSMain(VSInput input) {
 void PSMain(VSOut input) {
     float alpha = g_Material.diffuseColor.a;
     if (g_Material.hasAlbedoTexture) {
-        alpha = g_AlbedoTexture.Sample(g_LinearWrapSampler, input.texCoord).a;
+        alpha = g_AlbedoTexture.SampleLevel(g_LinearWrapSampler, input.texCoord, 0.0f).a;
     }
 
     clip(alpha - 0.1f);

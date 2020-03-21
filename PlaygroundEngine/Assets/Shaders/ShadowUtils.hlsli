@@ -32,7 +32,7 @@ inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex
         [branch]
         float bias = 0.0015f;
         if (all(saturate(shadowCoord) == shadowCoord)) {
-            bias += (0.001f * cascadeIndex);
+            bias += (0.0015f * cascadeIndex * cascadeIndex);
             float shadowValue = PCFShadowMap(shadowCoord, cascadeIndex, bias);
             shadowFactor = shadowValue;
             hitCascadeIndex = cascadeIndex;

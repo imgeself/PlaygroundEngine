@@ -53,11 +53,11 @@ struct RenderList {
 
                 // Calculate depth 
                 Box boundingBox = submesh->boundingBox;
-                Vector3 boxCenter = (boundingBox.max - boundingBox.min) / 2;
+                Vector3 boxCenter = boundingBox.min + ((boundingBox.max - boundingBox.min) * 0.5f);
                 Vector3 distanceVector = boxCenter - sceneCamera->GetPosition();
                 float distanceSq = DotProduct(distanceVector, distanceVector);
 
-                element.depthKey.depth = (uint32_t)(distanceSq);
+                element.depthKey.depth = (uint32_t)(distanceSq * 100);
 
                 // Mesh hash
                 element.depthKey.mesh = submesh->GetGeometryHash();
@@ -78,7 +78,7 @@ struct RenderList {
                 PGPipelineDesc psoDesc = {};
                 BuildPSODesc(passType, element, shaderLib, psoDesc);
 
-                element.pipelineStates[passType] = PGRendererResources::CreatePipelineState(rendererAPI, passType, psoDesc);
+                element.pipelineStates[passType] = PGRendererResources::CreateCachedPipelineState(rendererAPI, passType, psoDesc);
             }
         }
 
@@ -107,6 +107,8 @@ private:
 
         outDesc.doubleSided = material->doubleSided;
         outDesc.shader = material->shader;
+        outDesc.writeDepth = true;
+        outDesc.depthFunction = COMPARISON_LESS;
 
         if (material->alphaMode == AlphaMode_ALPHA_TEST) {
             shaderFlags |= PGShaderFlags::ALPHA_TEST;
@@ -121,19 +123,45 @@ private:
             } else {
                 PG_ASSERT(false, "Unsupported alpha mode");
             }
-        } else {
+        } else if (passType == SceneRenderPassType::FORWARD) {
             if (material->normalMappingEnabled) {
                 outDesc.layoutType = InputLayoutType::POS_NOR_TC_TANGENT;
                 shaderFlags |= PGShaderFlags::NORMAL_MAPPING;
             } else {
                 outDesc.layoutType = InputLayoutType::POS_NOR_TC;
             }
+
+            outDesc.writeDepth = false;
+            outDesc.depthFunction = COMPARISON_EQUAL;
         }
 
         outDesc.shaderFlags = shaderFlags;
     }
-
 };
 
-void RenderScene(HWRendererAPI* rendererAPI, const RenderList& renderList, SceneRenderPassType scenePassType);
-void RenderSceneDebug(HWRendererAPI* rendererAPI, const RenderList& renderList, HWBuffer* positionBuffer);
+struct PGRenderView {
+    RenderList* renderList;
+
+    Matrix4 viewMatrix;
+    Matrix4 projMatrix;
+    Matrix4 projViewMatrix;
+    Matrix4 inverseProjViewMatrix;
+
+    Vector3 cameraPos;
+
+    void UpdatePerViewConstantBuffer(HWRendererAPI* rendererAPI) {
+        PerViewGlobalConstantBuffer perViewData = {};
+        perViewData.g_ViewMatrix = viewMatrix;
+        perViewData.g_ProjMatrix = projMatrix;
+        perViewData.g_ProjViewMatrix = projViewMatrix;
+        perViewData.g_InverseViewProjMatrix = inverseProjViewMatrix;
+        perViewData.g_CameraPos = Vector4(cameraPos, 1.0f);
+
+        void* data = rendererAPI->Map(PGRendererResources::s_PerViewGlobalConstantBuffer);
+        memcpy(data, &perViewData, sizeof(PerViewGlobalConstantBuffer));
+        rendererAPI->Unmap(PGRendererResources::s_PerViewGlobalConstantBuffer);
+    }
+};
+
+void RenderScene(HWRendererAPI* rendererAPI, const RenderList* renderList, SceneRenderPassType scenePassType);
+void RenderSceneDebug(HWRendererAPI* rendererAPI, const RenderList* renderList, HWBuffer* positionBuffer);

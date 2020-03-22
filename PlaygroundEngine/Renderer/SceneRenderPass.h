@@ -10,9 +10,9 @@ class SceneRenderPass : public RenderPass {
 public:
     virtual ~SceneRenderPass() = default;
 
-    virtual void Execute(HWRendererAPI* rendererAPI, const RenderList& renderList, SceneRenderPassType scenePassType, bool clear = true) {
+    virtual void Execute(HWRendererAPI* rendererAPI, PGRenderView& renderView, SceneRenderPassType scenePassType, bool clear = true) {
+        rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, m_DepthStencilView);
         if (clear) {
-            rendererAPI->SetRenderTargets(m_RenderTargets, MAX_RENDER_TARGET_COUNT, m_DepthStencilView);
             for (size_t i = 0; i < MAX_RENDER_TARGET_COUNT; ++i) {
                 HWRenderTargetView* renderTarget = m_RenderTargets[i];
                 if (renderTarget) {
@@ -28,6 +28,7 @@ public:
         rendererAPI->SetShaderResourcesVS(0, m_ShaderResourcesVS, MAX_SHADER_RESOURCE_COUNT);
         rendererAPI->SetShaderResourcesPS(0, m_ShaderResourcesPS, MAX_SHADER_RESOURCE_COUNT);
 
-        RenderScene(rendererAPI, renderList, scenePassType);
+        renderView.UpdatePerViewConstantBuffer(rendererAPI);
+        RenderScene(rendererAPI, renderView.renderList, scenePassType);
     }
 };

@@ -3,9 +3,9 @@
 
 #define PER_DRAW_CBUFFER_SLOT 0
 #define PER_MATERIAL_CBUFFER_SLOT 1
-#define PER_FRAME_CBUFFER_SLOT 2
-#define PER_SHADOWGEN_CBUFFER_SLOT 3
-#define POST_PROCESS_CBUFFER_SLOT 4
+#define PER_VIEW_CBUFFER_SLOT 2
+#define PER_FRAME_CBUFFER_SLOT 3
+#define POST_PROCESS_CBUFFER_SLOT 5
 
 #define RENDERER_VARIABLES_CBUFFER_SLOT 7
 
@@ -88,22 +88,23 @@ CBUFFER(PerMaterialGlobalConstantBuffer, PER_MATERIAL_CBUFFER_SLOT) {
     DrawMaterial g_Material;
 };
 
-CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
+CBUFFER(PerViewGlobalConstantBuffer, PER_VIEW_CBUFFER_SLOT) {
     Matrix4 g_ViewMatrix;
     Matrix4 g_ProjMatrix;
+    Matrix4 g_ProjViewMatrix;
     Vector4 g_CameraPos;
+
+    Matrix4 g_InverseViewProjMatrix;
+};
+
+CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
     Vector4 g_LightPos;
     Matrix4 g_LightViewMatrix;
     Matrix4 g_LightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
 
-    Matrix4 g_InverseViewProjMatrix;
     Vector4 g_ScreenDimensions;
 };
 
-CBUFFER(PerShadowGenConstantBuffer, PER_SHADOWGEN_CBUFFER_SLOT) {
-    uint32_t g_ShadowGenCascadeIndex;
-    Vector3 pad00000001;
-};
 
 CBUFFER(PostProcessConstantBuffer, POST_PROCESS_CBUFFER_SLOT) {
     float g_PPExposure;

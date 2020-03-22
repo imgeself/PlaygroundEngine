@@ -126,7 +126,7 @@ struct PGRendererResources {
 
     static PGCachedPipelineState s_CachedPipelineStates[SCENE_PASS_TYPE_COUNT][MAX_CACHED_PIPELINE_STATE_PER_STAGE];
 
-    static uint8_t CreatePipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc);
+    static uint8_t CreateCachedPipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc);
     static void UpdateShaders(HWRendererAPI* rendererAPI);
 
     static GPUResource* s_HDRRenderTarget;

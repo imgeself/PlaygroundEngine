@@ -26,7 +26,7 @@ struct VSOut {
 };
 
 VSOut VSMain(VSInput input) {
-    float4 transformedPosition = mul(g_ProjMatrix, mul(g_ViewMatrix, mul(g_ModelMatrix, float4(input.pos, 1.0f))));
+    float4 transformedPosition = mul(g_ProjViewMatrix, mul(g_ModelMatrix, float4(input.pos, 1.0f)));
 
     float3 normalVector = mul((float3x3) g_ModelMatrix, input.normal);
     normalVector = normalize(normalVector);

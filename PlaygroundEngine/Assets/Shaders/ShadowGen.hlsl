@@ -16,7 +16,6 @@ struct VSOut {
     float2 texCoord : TEXCOORD;
 #endif
     float4 pos : SV_Position;
-    uint depthSlice : SV_RenderTargetArrayIndex;
 };
 
 VSOut VSMain(VSInput input) {
@@ -24,8 +23,7 @@ VSOut VSMain(VSInput input) {
 #ifdef ALPHA_TEST
     output.texCoord = input.texCoord;
 #endif
-    output.pos = mul(g_LightProjMatrices[g_ShadowGenCascadeIndex], mul(g_LightViewMatrix, mul(g_ModelMatrix, float4(input.pos, 1.0f))));
-    output.depthSlice = g_ShadowGenCascadeIndex;
+    output.pos = mul(g_ProjViewMatrix, mul(g_ModelMatrix, float4(input.pos, 1.0f)));
     return output;
 }
 

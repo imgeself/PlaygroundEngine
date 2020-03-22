@@ -13,7 +13,7 @@ struct VSOut {
 
 VSOut VSMain(VSInput input) {
     VSOut output;
-    output.pos = mul(g_ProjMatrix, mul(g_ViewMatrix, float4(input.pos, 1.0f)));
+    output.pos = mul(g_ProjViewMatrix, float4(input.pos, 1.0f));
 
     return output;
 }

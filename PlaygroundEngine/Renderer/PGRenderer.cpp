@@ -14,6 +14,7 @@ PGRendererConfig PGRenderer::s_RendererConfig;
 RenderList PGRenderer::s_RenderList;
 
 ShadowGenStage PGRenderer::s_ShadowGenStage = ShadowGenStage();
+SceneRenderPass PGRenderer::s_SceneZPrePass = SceneRenderPass();
 SceneRenderPass PGRenderer::s_SceneRenderPass = SceneRenderPass();
 FullscreenPass PGRenderer::s_ToneMappingPass = FullscreenPass();
 
@@ -47,7 +48,7 @@ public:
         SAFE_DELETE(m_PipelineState);
     }
 
-    void Execute(HWRendererAPI* rendererAPI, const RenderList& renderList) {
+    void Execute(HWRendererAPI* rendererAPI, const RenderList* renderList) {
         rendererAPI->SetPipelineState(m_PipelineState);
         uint32_t stride = sizeof(Vector3);
         uint32_t offset = 0;
@@ -74,21 +75,20 @@ void PGRenderer::Destroy() {
     delete s_RendererAPI;
 }
 
-void CalculateCascadeProjMatrices(PGCamera* camera, Matrix4 lightView, const PGRendererConfig& rendererConfig, const Box& sceneBoundingBox,
+void CalculateCascadeProjMatrices(Matrix4& cameraInverseProjectionViewMatrix, Matrix4 lightView, const PGRendererConfig& rendererConfig, const Box& sceneBoundingBox,
                                   Matrix4* outMatricesData) {
     PG_PROFILE_FUNCTION();
-    Matrix4 inverseProjectionViewMatrix = camera->GetInverseProjectionViewMatrix();
 
     // Get frustum points in world space
     Vector4 frustumCorners[] = {
-        (inverseProjectionViewMatrix * Vector4(-1, -1, 0, 1)), // left-bottom-near
-        (inverseProjectionViewMatrix * Vector4(-1, 1, 0, 1)),  // left-top-near
-        (inverseProjectionViewMatrix * Vector4(1, -1, 0, 1)),  // right-bottom-near
-        (inverseProjectionViewMatrix * Vector4(1, 1, 0, 1)),   // right-top-near
-        (inverseProjectionViewMatrix * Vector4(-1, -1, 1, 1)), // left-bottom-far
-        (inverseProjectionViewMatrix * Vector4(-1, 1, 1, 1)),  // left-top-far
-        (inverseProjectionViewMatrix * Vector4(1, -1, 1, 1)),  // right-bottom-far
-        (inverseProjectionViewMatrix * Vector4(1, 1, 1, 1)),   // right-top-far
+        (cameraInverseProjectionViewMatrix * Vector4(-1, -1, 0, 1)), // left-bottom-near
+        (cameraInverseProjectionViewMatrix * Vector4(-1, 1, 0, 1)),  // left-top-near
+        (cameraInverseProjectionViewMatrix * Vector4(1, -1, 0, 1)),  // right-bottom-near
+        (cameraInverseProjectionViewMatrix * Vector4(1, 1, 0, 1)),   // right-top-near
+        (cameraInverseProjectionViewMatrix * Vector4(-1, -1, 1, 1)), // left-bottom-far
+        (cameraInverseProjectionViewMatrix * Vector4(-1, 1, 1, 1)),  // left-top-far
+        (cameraInverseProjectionViewMatrix * Vector4(1, -1, 1, 1)),  // right-bottom-far
+        (cameraInverseProjectionViewMatrix * Vector4(1, 1, 1, 1)),   // right-top-far
     };
 
     Vector4 unprojectedPoints[] = {
@@ -219,10 +219,12 @@ bool PGRenderer::Initialize(PGWindow* window) {
     HWBuffer* psConstantBuffers[8] = {0};
 
     vsConstantBuffers[PER_DRAW_CBUFFER_SLOT] = PGRendererResources::s_PerDrawGlobalConstantBuffer;
+    vsConstantBuffers[PER_VIEW_CBUFFER_SLOT] = PGRendererResources::s_PerViewGlobalConstantBuffer;
     vsConstantBuffers[PER_FRAME_CBUFFER_SLOT] = PGRendererResources::s_PerFrameGlobalConstantBuffer;
     vsConstantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = PGRendererResources::s_RendererVarsConstantBuffer;
 
     psConstantBuffers[PER_MATERIAL_CBUFFER_SLOT] = PGRendererResources::s_PerMaterialGlobalConstantBuffer;
+    psConstantBuffers[PER_VIEW_CBUFFER_SLOT] = PGRendererResources::s_PerViewGlobalConstantBuffer;
     psConstantBuffers[PER_FRAME_CBUFFER_SLOT] = PGRendererResources::s_PerFrameGlobalConstantBuffer;
     psConstantBuffers[POST_PROCESS_CBUFFER_SLOT] = PGRendererResources::s_PostProcessConstantBuffer;
     psConstantBuffers[RENDERER_VARIABLES_CBUFFER_SLOT] = PGRendererResources::s_RendererVarsConstantBuffer;
@@ -236,7 +238,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     // init shadow mapping
     PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);
     s_ShadowGenStage.Initialize(s_RendererAPI);
-    s_ShadowGenStage.SetShadowMapTarget(PGRendererResources::s_ShadowMapCascadesTexture, s_RendererConfig.shadowMapSize);
+    s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, (HWTexture2D*) PGRendererResources::s_ShadowMapCascadesTexture->resource, s_RendererConfig);
     s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
 
     PGShader* tonemappingShader = s_ShaderLib->GetDefaultShader("HDRPostProcess");
@@ -257,9 +259,12 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
     PGRendererResources::CreateSizeDependentResources(s_RendererAPI, s_RendererConfig);
 
     // Render passes
+    HWViewport defaultViewport = s_RendererAPI->GetDefaultViewport();
+    s_SceneZPrePass.SetDepthStencilTarget(PGRendererResources::s_DepthStencilTarget->dsv);
+    s_SceneZPrePass.SetViewport(defaultViewport);
+
     s_SceneRenderPass.SetRenderTarget(0, PGRendererResources::s_HDRRenderTarget->rtv);
     s_SceneRenderPass.SetDepthStencilTarget(PGRendererResources::s_DepthStencilTarget->dsv);
-    HWViewport defaultViewport = s_RendererAPI->GetDefaultViewport();
     s_SceneRenderPass.SetViewport(defaultViewport);
 
     // Post process
@@ -285,28 +290,48 @@ void PGRenderer::RenderFrame() {
     s_RenderList.AddSceneObjects(s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), s_ActiveSceneData->camera);
     s_RenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
 
-    //TODO: This function should be create gpu commands and pass them to the render thread.
-    PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
-    perFrameGlobalConstantBuffer.g_ViewMatrix = s_ActiveSceneData->camera->GetViewMatrix();
-    perFrameGlobalConstantBuffer.g_ProjMatrix = s_ActiveSceneData->camera->GetProjectionMatrix();
-    perFrameGlobalConstantBuffer.g_CameraPos = Vector4(s_ActiveSceneData->camera->GetPosition(), 1.0f);
-    perFrameGlobalConstantBuffer.g_InverseViewProjMatrix = s_ActiveSceneData->camera->GetInverseProjectionViewMatrix();
+    PGCamera* mainCamera = s_ActiveSceneData->camera;
+    Matrix4 cameraInverseProjViewMatrix = mainCamera->GetInverseProjectionViewMatrix();
+    PGRenderView mainRenderView;
+    mainRenderView.renderList = &s_RenderList;
+    mainRenderView.cameraPos = mainCamera->GetPosition();
+    mainRenderView.viewMatrix = mainCamera->GetViewMatrix();
+    mainRenderView.projMatrix = mainCamera->GetProjectionMatrix();
+    mainRenderView.projViewMatrix = mainCamera->GetProjectionViewMatrix();
+    mainRenderView.inverseProjViewMatrix = cameraInverseProjViewMatrix;
 
+    PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
     perFrameGlobalConstantBuffer.g_LightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
     Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), Normalize(-s_ActiveSceneData->light->position), Vector3(0.0f, 0.0f, 1.0f));
     perFrameGlobalConstantBuffer.g_LightViewMatrix = lightView;
-    CalculateCascadeProjMatrices(s_ActiveSceneData->camera, lightView, s_RendererConfig, s_ActiveSceneData->boundingBox,
-                                 perFrameGlobalConstantBuffer.g_LightProjMatrices);
+    Matrix4 shadowProjMatrices[MAX_SHADOW_CASCADE_COUNT];
+    CalculateCascadeProjMatrices(cameraInverseProjViewMatrix, lightView, s_RendererConfig, s_ActiveSceneData->boundingBox,
+                                 shadowProjMatrices);
+    memcpy(perFrameGlobalConstantBuffer.g_LightProjMatrices, shadowProjMatrices, sizeof(Matrix4) * MAX_SHADOW_CASCADE_COUNT);
+
+    PGRenderView shadowCascadeRenderViews[MAX_SHADOW_CASCADE_COUNT];
+    for (size_t cascadeIndex = 0; cascadeIndex < MAX_SHADOW_CASCADE_COUNT; ++cascadeIndex) {
+        PGRenderView& renderView = shadowCascadeRenderViews[cascadeIndex];
+        Matrix4& cascadeProjMatrix = shadowProjMatrices[cascadeIndex];
+
+        renderView.renderList = &s_RenderList;
+        renderView.cameraPos = s_ActiveSceneData->light->position;
+        renderView.viewMatrix = lightView;
+        renderView.projMatrix = cascadeProjMatrix;
+        renderView.projViewMatrix = cascadeProjMatrix * lightView;
+    }
 
     void* data = s_RendererAPI->Map(PGRendererResources::s_PerFrameGlobalConstantBuffer);
     memcpy(data, &perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer));
     s_RendererAPI->Unmap(PGRendererResources::s_PerFrameGlobalConstantBuffer);
 
     s_RenderList.SortByDepth();
-    s_ShadowGenStage.Execute(s_RendererAPI, s_RenderList, s_ShaderLib, s_RendererConfig);
+    s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS);
+
+    s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
 
     s_RenderList.SortByKey();
-    s_SceneRenderPass.Execute(s_RendererAPI, s_RenderList, SceneRenderPassType::FORWARD);
+    s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false);
 
     // Render skybox
     if (s_ActiveSceneData->skyboxTexture) {
@@ -314,7 +339,7 @@ void PGRenderer::RenderFrame() {
     }
 
     if (s_RendererConfig.debugDrawBoundingBoxes) {
-        g_DebugSceneRenderer->Execute(s_RendererAPI, s_RenderList);
+        g_DebugSceneRenderer->Execute(s_RendererAPI, &s_RenderList);
     }
 
     if (s_RendererConfig.msaaSampleCount > 1) {

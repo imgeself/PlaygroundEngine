@@ -57,7 +57,7 @@ public:
     static void SetShadowMapResolution(uint32_t shadowMapResolution) {
         s_RendererConfig.shadowMapSize = shadowMapResolution;
         PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);
-        s_ShadowGenStage.SetShadowMapTarget(PGRendererResources::s_ShadowMapCascadesTexture, shadowMapResolution);
+        s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, (HWTexture2D*) PGRendererResources::s_ShadowMapCascadesTexture->resource, s_RendererConfig);
         s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
 
         RendererVariablesConstantBuffer rendererVariablesConstantBuffer = {};
@@ -75,18 +75,15 @@ public:
         PGRendererResources::CreateSizeDependentResources(s_RendererAPI, s_RendererConfig);
 
         // Render passes
+        s_SceneZPrePass.SetDepthStencilTarget(PGRendererResources::s_DepthStencilTarget->dsv);
         s_SceneRenderPass.SetRenderTarget(0, PGRendererResources::s_HDRRenderTarget->rtv);
         s_SceneRenderPass.SetDepthStencilTarget(PGRendererResources::s_DepthStencilTarget->dsv);
-        HWViewport defaultViewport = s_RendererAPI->GetDefaultViewport();
-        s_SceneRenderPass.SetViewport(defaultViewport);
 
         // Post process
         s_ToneMappingPass.SetRenderTarget(0, s_RendererAPI->GetBackbufferRenderTargetView());
-        s_ToneMappingPass.SetViewport(defaultViewport);
         if (s_RendererConfig.msaaSampleCount > 1) {
             s_ToneMappingPass.SetShaderResource(POST_PROCESS_TEXTURE0_SLOT, PGRendererResources::s_ResolvedHDRRenderTarget->srv, ShaderStage::PIXEL);
-        }
-        else {
+        } else {
             s_ToneMappingPass.SetShaderResource(POST_PROCESS_TEXTURE0_SLOT, PGRendererResources::s_HDRRenderTarget->srv, ShaderStage::PIXEL);
         }
     }
@@ -102,6 +99,7 @@ private:
     static RenderList s_RenderList;
 
     static ShadowGenStage s_ShadowGenStage;
+    static SceneRenderPass s_SceneZPrePass;
     static SceneRenderPass s_SceneRenderPass;
     static FullscreenPass s_ToneMappingPass;
 };

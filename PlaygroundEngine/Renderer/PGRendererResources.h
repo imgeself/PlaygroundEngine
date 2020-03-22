@@ -29,19 +29,39 @@ struct GPUResource {
     HWDepthStencilView* dsv = nullptr;
     HWRenderTargetView* rtv = nullptr;
 
-    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) {
+    enum CreationFlags : uint8_t {
+        CREATE_USING_BIND_FLAGS = 0, // Default
+
+        CREATE_SHADER_REESOURCE_VIEW = BIT(1),
+        CREATE_RENDER_TARGET_VIEW    = BIT(2),
+        CREATE_DEPTH_STENCIL_VIEW    = BIT(3)
+    };
+
+    GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams, SubresourceData* subresources, uint8_t creationFlags, const char* debugName) {
         HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams, subresources, debugName);
         resource = (HWResource*)texture;
 
-        uint32_t flags = initParams->flags;
-        if (flags & HWResourceFlags::BIND_SHADER_RESOURCE) {
-            srv = rendererAPI->CreateShaderResourceView(texture);
-        }
-        if (flags & HWResourceFlags::BIND_RENDER_TARGET) {
-            rtv = rendererAPI->CreateRenderTargetView(texture, 0, (uint32_t) initParams->arraySize, 0, (uint32_t) initParams->mipCount);
-        }
-        if (flags & HWResourceFlags::BIND_DEPTH_STENCIL) {
-            dsv = rendererAPI->CreateDepthStencilView(texture, 0, (uint32_t) initParams->arraySize, 0, (uint32_t) initParams->mipCount);
+        if (creationFlags == CREATE_USING_BIND_FLAGS) {
+            uint32_t flags = initParams->flags;
+            if (flags & HWResourceFlags::BIND_SHADER_RESOURCE) {
+                srv = rendererAPI->CreateShaderResourceView(texture);
+            }
+            if (flags & HWResourceFlags::BIND_RENDER_TARGET) {
+                rtv = rendererAPI->CreateRenderTargetView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+            }
+            if (flags & HWResourceFlags::BIND_DEPTH_STENCIL) {
+                dsv = rendererAPI->CreateDepthStencilView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+            }
+        } else {
+            if (creationFlags & CreationFlags::CREATE_SHADER_REESOURCE_VIEW) {
+                srv = rendererAPI->CreateShaderResourceView(texture);
+            }
+            if (creationFlags & CreationFlags::CREATE_RENDER_TARGET_VIEW) {
+                rtv = rendererAPI->CreateRenderTargetView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+            }
+            if (creationFlags & CreationFlags::CREATE_DEPTH_STENCIL_VIEW) {
+                dsv = rendererAPI->CreateDepthStencilView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+            }
         }
     }
 
@@ -68,6 +88,9 @@ struct PGPipelineDesc {
     uint32_t shaderFlags;
     uint8_t doubleSided;
     InputLayoutType layoutType;
+
+    uint8_t writeDepth;
+    HWComparionsFunc depthFunction;
 };
 
 // TODO: Pipeline state objects is going to be part of HWRendererAPI when we redesign the RHI. 
@@ -93,6 +116,7 @@ enum SceneRenderPassType {
 struct PGRendererResources {
     static HWBuffer* s_PerFrameGlobalConstantBuffer;
     static HWBuffer* s_PerMaterialGlobalConstantBuffer;
+    static HWBuffer* s_PerViewGlobalConstantBuffer;
     static HWBuffer* s_PerDrawGlobalConstantBuffer;
     static HWBuffer* s_PostProcessConstantBuffer;
     static HWBuffer* s_RendererVarsConstantBuffer;

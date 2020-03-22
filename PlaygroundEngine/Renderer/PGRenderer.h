@@ -88,6 +88,20 @@ public:
         }
     }
 
+    static void SetAnisotropyLevel(uint8_t anistropyLevel) {
+        SAFE_DELETE(PGRendererResources::s_DefaultSamplers[OBJECT_SAMPLER_STATE_SLOT]);
+
+        SamplerStateInitParams objectSamplerStateInitParams = {};
+        objectSamplerStateInitParams.filterMode = TextureFilterMode_ANISOTROPIC;
+        objectSamplerStateInitParams.addressModeU = TextureAddressMode_WRAP;
+        objectSamplerStateInitParams.addressModeV = TextureAddressMode_WRAP;
+        objectSamplerStateInitParams.addressModeW = TextureAddressMode_WRAP;
+        objectSamplerStateInitParams.maxAnisotropy = anistropyLevel;
+        PGRendererResources::s_DefaultSamplers[OBJECT_SAMPLER_STATE_SLOT] = s_RendererAPI->CreateSamplerState(&objectSamplerStateInitParams);
+
+        s_RendererAPI->SetSamplerStatesPS(0, PGRendererResources::s_DefaultSamplers.data(), PGRendererResources::s_DefaultSamplers.max_size());
+    }
+
 private:
     PGRenderer();
 

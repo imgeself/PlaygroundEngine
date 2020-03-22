@@ -214,6 +214,14 @@ void Application::OnUIRender() {
             PGRenderer::SetShadowMapResolution(shadowResolutionItemValues[shadowResolutionItem]);
         }
 
+        const char* anisotropyItemTexts[] = { "1x", "2x", "4x", "8x", "16x" };
+        const uint32_t anisotropyItemValues[] = { 1, 2, 4, 8, 16 };
+
+        static int anisotropyCountItem = 4;
+        if (ImGui::Combo("Anisotropy Level", &anisotropyCountItem, anisotropyItemTexts, IM_ARRAYSIZE(anisotropyItemTexts))) {
+            PGRenderer::SetAnisotropyLevel(anisotropyItemValues[anisotropyCountItem]);
+        }
+
         static bool renderBoundingBoxes = false;
         if (ImGui::Checkbox("Render Bounding Boxes", &renderBoundingBoxes)) {
             PGRenderer::DrawBoundingBoxes(renderBoundingBoxes);

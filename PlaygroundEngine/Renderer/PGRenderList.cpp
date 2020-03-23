@@ -2,7 +2,6 @@
 #include "../PGProfiler.h"
 
 void RenderScene(HWRendererAPI* rendererAPI, const RenderList* renderList, SceneRenderPassType scenePassType) {
-    PG_PROFILE_FUNCTION();
     // TODO: We need some sort of batching to take advantage of instanced drawing!
     SubMesh* lastMesh = nullptr;
     Material* lastMaterial = nullptr;
@@ -90,8 +89,6 @@ void RenderScene(HWRendererAPI* rendererAPI, const RenderList* renderList, Scene
 }
 
 void RenderSceneDebug(HWRendererAPI* rendererAPI, const RenderList* renderList, HWBuffer* positionBuffer) {
-    PG_PROFILE_FUNCTION();
-
     Vector3 positionData[24];
     for (size_t elementIndex = 0; elementIndex < renderList->elementCount; ++elementIndex) {
         RenderList::Element element = renderList->elements[elementIndex];

@@ -326,12 +326,18 @@ void PGRenderer::RenderFrame() {
     s_RendererAPI->Unmap(PGRendererResources::s_PerFrameGlobalConstantBuffer);
 
     s_RenderList.SortByDepth();
-    s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS);
+    {
+        PG_PROFILE_SCOPE("Z Prepass");
+        s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS);
+    }
 
     s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
 
     s_RenderList.SortByKey();
-    s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false);
+    {
+        PG_PROFILE_SCOPE("Forward Pass");
+        s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false);
+    }
 
     // Render skybox
     if (s_ActiveSceneData->skyboxTexture) {
@@ -339,6 +345,7 @@ void PGRenderer::RenderFrame() {
     }
 
     if (s_RendererConfig.debugDrawBoundingBoxes) {
+        PG_PROFILE_SCOPE("Debug Rendering");
         g_DebugSceneRenderer->Execute(s_RendererAPI, &s_RenderList);
     }
 
@@ -347,7 +354,10 @@ void PGRenderer::RenderFrame() {
     }
 
     // PostProcess
-    s_ToneMappingPass.Execute(s_RendererAPI);
+    {
+        PG_PROFILE_SCOPE("Tone Mapping");
+        s_ToneMappingPass.Execute(s_RendererAPI);
+    }
 
 
     // Clear all texture slots

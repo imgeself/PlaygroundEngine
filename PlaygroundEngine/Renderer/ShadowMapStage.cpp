@@ -11,6 +11,7 @@ void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, PGRenderView renderView
     const uint8_t cascadeCount = rendererConfig.shadowCascadeCount;
     rendererAPI->SetViewport(&m_ShadowMapViewport);
     for (uint8_t cascadeIndex = 0; cascadeIndex < cascadeCount; ++cascadeIndex) {
+        PG_PROFILE_SCOPE("ShadowGen Pass");
         rendererAPI->SetRenderTargets(nullptr, 0, m_ShadowMapTargets[cascadeIndex]);
         if (clear) {
             rendererAPI->ClearDepthStencilView(m_ShadowMapTargets[cascadeIndex], false, 1.0f, 0);

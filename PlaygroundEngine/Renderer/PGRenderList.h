@@ -3,6 +3,7 @@
 #include "../Core.h"
 #include "../MeshUtils.h"
 #include "../Scene.h"
+#include "../PGProfiler.h"
 
 #include "HWRendererAPI.h"
 
@@ -31,7 +32,8 @@ struct RenderList {
             struct {
                 //from least significant to most significant in sort
                 uint64_t mesh     : 32;
-                uint64_t material : 32;
+                uint64_t material : 16;
+                uint64_t pipeline : 16;
             };
 
             uint64_t key;
@@ -43,6 +45,7 @@ struct RenderList {
     uint32_t elementCount = 0;
 
     void AddSceneObjects(const PGSceneObject* sceneObjects, size_t sceneObjectCount, PGCamera* sceneCamera) {
+        PG_PROFILE_FUNCTION();
         for (size_t sceneObjectIndex = 0; sceneObjectIndex < sceneObjectCount; ++sceneObjectIndex) {
             const PGSceneObject* sceneObject = sceneObjects + sceneObjectIndex;
 
@@ -64,7 +67,9 @@ struct RenderList {
                 element.sortKey.mesh = submesh->GetGeometryHash();
 
                 // Material
-                element.sortKey.material = submesh->material->GetMaterialPipelineCombinedHash();
+                element.sortKey.material = submesh->material->GetMaterialHash();
+                
+                element.sortKey.pipeline = submesh->material->GetPipelineHash();
                 element.depthKey.pipeline = submesh->material->GetPipelineHash();
             }
         }
@@ -85,12 +90,14 @@ struct RenderList {
     }
 
     void SortByKey() {
+        PG_PROFILE_FUNCTION();
         std::sort(elements.begin(), elements.begin() + elementCount, [](RenderList::Element& left, RenderList::Element& right) {
             return left.sortKey.key < right.sortKey.key;
         });
     }
 
     void SortByDepth() {
+        PG_PROFILE_FUNCTION();
         std::sort(elements.begin(), elements.begin() + elementCount, [](RenderList::Element& left, RenderList::Element& right) {
             return left.depthKey.key < right.depthKey.key;
         });

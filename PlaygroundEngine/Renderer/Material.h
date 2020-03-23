@@ -56,13 +56,5 @@ struct Material : DrawMaterial {
 
         return pipelineKey.hash;
     }
-
-    uint32_t GetMaterialPipelineCombinedHash() {
-        uint16_t materialHash = GetMaterialHash();
-        uint16_t pipelineHash = GetPipelineHash();
-
-        return materialHash | (pipelineHash << 16);
-    }
-
 };
 

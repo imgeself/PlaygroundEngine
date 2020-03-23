@@ -5,9 +5,8 @@
 
 struct PGLight {
     Vector3 position;
-    //Vector3 color;
-    //float intensity;
-    //float radius;
+    Vector3 color;
+    float intensity;
 };
 
 struct PGSceneObject {
@@ -17,7 +16,7 @@ struct PGSceneObject {
 
 struct PGScene {
     PGCamera* camera;
-    PGLight* light;
+    PGLight* directionalLight;
     PGTexture* skyboxTexture;
     Box boundingBox;
     std::vector<PGSceneObject> sceneObjects;

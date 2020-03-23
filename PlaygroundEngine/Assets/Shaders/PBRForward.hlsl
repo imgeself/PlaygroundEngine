@@ -43,8 +43,11 @@ VSOut VSMain(VSInput input) {
 
     float3 bitangentVector = normalize(cross(normalVector, tangentVector) * input.tangent.w);
 
-    float3x3 tangentMatrix = float3x3(tangentVector, bitangentVector, normalVector);
-    vertexOut.tbn = transpose(tangentMatrix);
+    float3x3 tbnMatrix = float3x3(tangentVector.x, bitangentVector.x, normalVector.x,
+                                  tangentVector.y, bitangentVector.y, normalVector.y,
+                                  tangentVector.z, bitangentVector.z, normalVector.z);
+
+    vertexOut.tbn = tbnMatrix;
 #endif
 
     return vertexOut;
@@ -56,10 +59,10 @@ VSOut VSMain(VSInput input) {
 ///////////////////////////////////////////////////////////////////////////
 float4 PSMain(VSOut input) : SV_Target {
     float3 cameraPos = g_CameraPos.xyz;
-    float3 lightPos = g_LightPos.xyz;
+    //float3 lightPos = g_LightPos.xyz;
 
     float3 viewVector = normalize(cameraPos - input.worldPos);
-    float3 lightVector = normalize(lightPos - input.worldPos);
+    float3 lightVector = normalize(-g_DirectionLightDirection.xyz);
 
     float3 albedoColor = g_Material.diffuseColor.rgb;
     float alpha = g_Material.diffuseColor.a;
@@ -69,14 +72,14 @@ float4 PSMain(VSOut input) : SV_Target {
         alpha = color.a;
     }
 
+#ifdef ALPHA_TEST
+    clip(alpha - 0.1f);
+#endif
+
     float3 emissiveColor = g_Material.emissiveColor.rgb;
     if (g_Material.hasEmissiveTexture) {
         emissiveColor = g_EmissiveTexture.Sample(g_ObjectSampler, input.texCoord).rgb;
     }
-
-#ifdef ALPHA_TEST
-    clip(alpha - 0.1f);
-#endif
 
     float roughness = g_Material.roughness;
     if (g_Material.hasRoughnessTexture) {
@@ -123,8 +126,8 @@ float4 PSMain(VSOut input) : SV_Target {
                 0.0f, 0.0f, 1.0f,
     };
 
-    float3 lightColor = float3(1.0f, 0.8f, 0.6f);
-    float intensity = 5.0f;
+    float3 lightColor = g_DirectionLightColor.rgb;
+    float intensity = g_DirectionLightColor.a;
     float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
 
     float3 f0 = lerp((float3) 0.04f, albedoColor, metallic);

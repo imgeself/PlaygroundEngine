@@ -300,14 +300,18 @@ void PGRenderer::RenderFrame() {
     mainRenderView.projViewMatrix = mainCamera->GetProjectionViewMatrix();
     mainRenderView.inverseProjViewMatrix = cameraInverseProjViewMatrix;
 
+    PGLight* directionalLight = s_ActiveSceneData->directionalLight;
+    Vector3 directionalLightDirection = Normalize(-directionalLight->position);
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
-    perFrameGlobalConstantBuffer.g_LightPos = Vector4(s_ActiveSceneData->light->position, 1.0f);
-    Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), Normalize(-s_ActiveSceneData->light->position), Vector3(0.0f, 0.0f, 1.0f));
-    perFrameGlobalConstantBuffer.g_LightViewMatrix = lightView;
+    perFrameGlobalConstantBuffer.g_DirectionLightDirection = Vector4(directionalLightDirection, 1.0f);
+    perFrameGlobalConstantBuffer.g_DirectionLightColor = Vector4(directionalLight->color, directionalLight->intensity);
+
+    Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), directionalLightDirection, Vector3(0.0f, 0.0f, 1.0f));
+    perFrameGlobalConstantBuffer.g_DirectionLightViewMatrix = lightView;
     Matrix4 shadowProjMatrices[MAX_SHADOW_CASCADE_COUNT];
     CalculateCascadeProjMatrices(cameraInverseProjViewMatrix, lightView, s_RendererConfig, s_ActiveSceneData->boundingBox,
                                  shadowProjMatrices);
-    memcpy(perFrameGlobalConstantBuffer.g_LightProjMatrices, shadowProjMatrices, sizeof(Matrix4) * MAX_SHADOW_CASCADE_COUNT);
+    memcpy(perFrameGlobalConstantBuffer.g_DirectionLightProjMatrices, shadowProjMatrices, sizeof(Matrix4) * MAX_SHADOW_CASCADE_COUNT);
 
     PGRenderView shadowCascadeRenderViews[MAX_SHADOW_CASCADE_COUNT];
     for (size_t cascadeIndex = 0; cascadeIndex < MAX_SHADOW_CASCADE_COUNT; ++cascadeIndex) {
@@ -315,7 +319,7 @@ void PGRenderer::RenderFrame() {
         Matrix4& cascadeProjMatrix = shadowProjMatrices[cascadeIndex];
 
         renderView.renderList = &s_RenderList;
-        renderView.cameraPos = s_ActiveSceneData->light->position;
+        renderView.cameraPos = directionalLight->position;
         renderView.viewMatrix = lightView;
         renderView.projMatrix = cascadeProjMatrix;
         renderView.projViewMatrix = cascadeProjMatrix * lightView;

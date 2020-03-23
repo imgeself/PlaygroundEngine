@@ -30,9 +30,11 @@ void Application::OnInit() {
     Vector3 lightPosition(20.0f, 54.0f, -20.0f);
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
+    mainLight->color = Vector3(1.0f, 0.8f, 0.6f);
+    mainLight->intensity = 5.0f;
 
     m_Scene.camera = &m_MainCamera;
-    m_Scene.light = mainLight;
+    m_Scene.directionalLight = mainLight;
 
     PGTexture* skybox = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/environment.dds");
     PGTexture* irradiance = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/irradiance.dds");
@@ -131,7 +133,7 @@ void Application::OnUpdate(float deltaTime) {
     cameraTransform.Translate(cameraPos + cameraMove);
     m_Scene.camera->TransformCamera(&cameraTransform);
 
-    Vector3 lightPos = m_Scene.light->position;
+    Vector3 lightPos = m_Scene.directionalLight->position;
     if (PGInput::IsKeyPressed(PGKEY_I)) {
         lightPos.z += 15.0f * deltaTime;
     }
@@ -152,7 +154,7 @@ void Application::OnUpdate(float deltaTime) {
     else if (PGInput::IsKeyPressed(PGKEY_O)) {
         lightPos.y += 15.0f * deltaTime;
     }
-    m_Scene.light->position = lightPos;
+    m_Scene.directionalLight->position = lightPos;
 
 }
 

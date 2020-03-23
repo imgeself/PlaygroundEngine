@@ -98,9 +98,10 @@ CBUFFER(PerViewGlobalConstantBuffer, PER_VIEW_CBUFFER_SLOT) {
 };
 
 CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
-    Vector4 g_LightPos;
-    Matrix4 g_LightViewMatrix;
-    Matrix4 g_LightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
+    Vector4 g_DirectionLightDirection;
+    Vector4 g_DirectionLightColor; // xyz color, w intensity
+    Matrix4 g_DirectionLightViewMatrix;
+    Matrix4 g_DirectionLightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
 
     Vector4 g_ScreenDimensions;
 };

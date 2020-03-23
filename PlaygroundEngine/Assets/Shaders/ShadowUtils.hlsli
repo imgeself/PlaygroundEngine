@@ -24,7 +24,7 @@ inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex
     
     for (uint cascadeIndex = 0; cascadeIndex < g_ShadowCascadeCount; ++cascadeIndex) {
         // ShadowCoordinates
-        float4 worldPosLightSpace = mul(g_LightProjMatrices[cascadeIndex], mul(g_LightViewMatrix, float4(worldSpacePos, 1.0f)));
+        float4 worldPosLightSpace = mul(g_DirectionLightProjMatrices[cascadeIndex], mul(g_DirectionLightViewMatrix, float4(worldSpacePos, 1.0f)));
         float3 shadowCoord = worldPosLightSpace.xyz / worldPosLightSpace.w;
         shadowCoord.x = shadowCoord.x * 0.5f + 0.5f;
         shadowCoord.y = shadowCoord.y * -0.5f + 0.5f;

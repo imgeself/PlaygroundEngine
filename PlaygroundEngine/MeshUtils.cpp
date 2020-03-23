@@ -5,6 +5,8 @@
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #include "Utility/tiny_gltf.h"
 
+#include "Platform/PGTime.h"
+
 void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftHandedNormalMap, const tinygltf::Model& model, const tinygltf::Primitive& prim,
     const tinygltf::BufferView& positionBufferView, const tinygltf::BufferView& normalBufferView, const tinygltf::BufferView& texCoordBufferView) {
     if (prim.indices >= 0) {
@@ -186,7 +188,7 @@ static void LoadNode(HWRendererAPI* rendererAPI, const tinygltf::Model& model, c
                 uint32_t stride = accessor.ByteStride(bufferView);
 
                 if (!attrName.compare("POSITION")) {
-                    PG_ASSERT(stride == 12, "Unsupported vertex stride");
+                    PG_ASSERT(stride == 12, "Unsupported position stride");
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_POSITIONS] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_POSITIONS] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_POSITIONS] = (uint32_t)accessor.byteOffset;
@@ -226,21 +228,21 @@ static void LoadNode(HWRendererAPI* rendererAPI, const tinygltf::Model& model, c
                     }
                 }
                 else if (!attrName.compare("NORMAL")) {
-                    PG_ASSERT(stride == 12, "Unsupported vertex stride");
+                    PG_ASSERT(stride == 12, "Unsupported normal stride");
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_NORMAL] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_NORMAL] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_NORMAL] = (uint32_t)accessor.byteOffset;
                     normalBufferView = bufferView;
                 }
                 else if (!attrName.compare("TEXCOORD_0")) {
-                    PG_ASSERT(stride == 8, "Unsupported vertex stride");
+                    PG_ASSERT(stride == 8, "Unsupported texcoord stride");
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TEXCOORD] = (uint32_t)accessor.byteOffset;
                     texCoordBufferView = bufferView;
                 }
                 else if (!attrName.compare("TANGENT")) {
-                    PG_ASSERT(stride == 16, "Unsupported vertex stride");
+                    PG_ASSERT(stride == 16, "Unsupported tangent stride");
                     submesh->vertexBuffers[VertexBuffers::VERTEX_BUFFER_TANGENT] = buffers[accessor.bufferView];
                     submesh->vertexStrides[VertexBuffers::VERTEX_BUFFER_TANGENT] = stride;
                     submesh->vertexOffsets[VertexBuffers::VERTEX_BUFFER_TANGENT] = (uint32_t)accessor.byteOffset;
@@ -265,23 +267,59 @@ static void LoadNode(HWRendererAPI* rendererAPI, const tinygltf::Model& model, c
     }
 }
 
-void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename, bool leftHandedNormalMap) {
+PGTexture* LoadGLTFImage(const tinygltf::Image& gltfImage, bool generateMips = true) {
+    // Subresources
+    SubresourceData subresource;
+    subresource.data = gltfImage.image.data();
+    subresource.memPitch = gltfImage.width * (gltfImage.component * (gltfImage.bits / 8));
+    subresource.memSlicePitch = 0;
+
+    // TODO: Determine the format using image's pixel informations!
+    Texture2DDesc initParams = {};
+    initParams.arraySize = 1;
+    initParams.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    initParams.width = gltfImage.width;
+    initParams.height = gltfImage.height;
+    initParams.sampleCount = 1;
+    initParams.mipCount = generateMips ? 0 : 1;
+    initParams.flags = HWResourceFlags::BIND_SHADER_RESOURCE;
+    if (generateMips) {
+        initParams.flags |= (HWResourceFlags::MISC_GENERATE_MIPS | HWResourceFlags::BIND_RENDER_TARGET);
+    } else {
+        initParams.flags |= HWResourceFlags::USAGE_IMMUTABLE;
+    }
+
+    PGTexture* texture = new PGTexture(&initParams, &subresource, generateMips);
+    return texture;
+}
+
+void LoadSceneFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename, bool leftHandedNormalMap) {
     tinygltf::TinyGLTF loader;
     std::string errors;
     std::string warnings;
+
+    uint64_t startTimeMillis = PGTime::GetTimeMilliseconds();
 
     loader.SetImageLoader(tinygltf::LoadImageData, nullptr);
 
     std::filesystem::path filenamePath(filename);
     std::string directory = filenamePath.parent_path().string() + "/";
 
+    PG_LOG_DEBUG("Loading scene: %s", filenamePath.filename().string().c_str());
+
     tinygltf::Model model;
-    bool success = loader.LoadASCIIFromFile(&model, &errors, &warnings, filename);
+    bool success = false;
+    if (filenamePath.extension().string().compare(".gltf") == 0) {
+        success = loader.LoadASCIIFromFile(&model, &errors, &warnings, filename);
+    } else {
+        success = loader.LoadBinaryFromFile(&model, &errors, &warnings, filename);
+    }
+
     if (!warnings.empty()) {
-        PG_LOG_WARNING("%s Obj file load warnings: %s", filename.c_str(), warnings.c_str());
+        PG_LOG_WARNING("%s scene load warnings: %s", filename.c_str(), warnings.c_str());
     }
     if (!errors.empty()) {
-        PG_LOG_ERROR("%s Obj file load errors: %s", filename.c_str(), errors.c_str());
+        PG_LOG_ERROR("%s scene load errors: %s", filename.c_str(), errors.c_str());
     }
     if (!success) {
         return;
@@ -303,42 +341,42 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
 
         tinygltf::TextureInfo baseColor = pbr.baseColorTexture;
         if (baseColor.index >= 0) {
-            tinygltf::Texture baseColorTexture = model.textures[baseColor.index];
-            tinygltf::Image baseColorImage = model.images[baseColorTexture.source];
+            const tinygltf::Texture& baseColorTexture = model.textures[baseColor.index];
+            const tinygltf::Image& baseColorImage = model.images[baseColorTexture.source];
             material->hasAlbedoTexture = true;
-            material->albedoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + baseColorImage.uri, true);
+            material->albedoTexture = LoadGLTFImage(baseColorImage);
         }
 
         tinygltf::TextureInfo metallicRoughness = pbr.metallicRoughnessTexture;
         if (metallicRoughness.index >= 0) {
-            tinygltf::Texture metallicRoughnessTexture = model.textures[metallicRoughness.index];
-            tinygltf::Image metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
+            const tinygltf::Texture& metallicRoughnessTexture = model.textures[metallicRoughness.index];
+            const tinygltf::Image& metallicRoughnessImage = model.images[metallicRoughnessTexture.source];
             material->hasMetallicRoughnessTexture = true;
-            material->metallicRoughnessTexture = (PGTexture*) PGResourceManager::CreateResource(directory + metallicRoughnessImage.uri, true);
+            material->metallicRoughnessTexture = LoadGLTFImage(metallicRoughnessImage);
         }
 
         tinygltf::TextureInfo emissive = gltfMaterial.emissiveTexture;
         if (emissive.index >= 0) {
-            tinygltf::Texture emissiveTexture = model.textures[emissive.index];
-            tinygltf::Image emissiveImage = model.images[emissiveTexture.source];
+            const tinygltf::Texture& emissiveTexture = model.textures[emissive.index];
+            const tinygltf::Image& emissiveImage = model.images[emissiveTexture.source];
             material->hasEmissiveTexture = true;
-            material->emmisiveTexture = (PGTexture*)PGResourceManager::CreateResource(directory + emissiveImage.uri, true);
+            material->emmisiveTexture = LoadGLTFImage(emissiveImage);
         }
 
         tinygltf::OcclusionTextureInfo occlusion = gltfMaterial.occlusionTexture;
         if (occlusion.index >= 0) {
-            tinygltf::Texture occlusionTexture = model.textures[occlusion.index];
-            tinygltf::Image occlusionImage = model.images[occlusionTexture.source];
+            const tinygltf::Texture& occlusionTexture = model.textures[occlusion.index];
+            const tinygltf::Image& occlusionImage = model.images[occlusionTexture.source];
             material->hasAOTexture = true;
-            material->aoTexture = (PGTexture*) PGResourceManager::CreateResource(directory + occlusionImage.uri, true);
+            material->aoTexture = LoadGLTFImage(occlusionImage);
         }
 
         tinygltf::NormalTextureInfo normals = gltfMaterial.normalTexture;
         if (normals.index >= 0) {
-            tinygltf::Texture normalTexture = model.textures[normals.index];
-            tinygltf::Image normalImage = model.images[normalTexture.source];
+            const tinygltf::Texture& normalTexture = model.textures[normals.index];
+            const tinygltf::Image& normalImage = model.images[normalTexture.source];
             material->normalMappingEnabled = true;
-            material->normalTexture = (PGTexture*) PGResourceManager::CreateResource(directory + normalImage.uri, true);
+            material->normalTexture = LoadGLTFImage(normalImage);
         }
 
         if (!gltfMaterial.alphaMode.compare("MASK")) {
@@ -363,12 +401,15 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         const tinygltf::Buffer& gltfBuffer = model.buffers[gltfBufferView.buffer];
 
         uint32_t bufferFlags = HWResourceFlags::USAGE_IMMUTABLE;
+        if (gltfBufferView.target == 0) {
+            continue;
+        }
         switch (gltfBufferView.target) {
-            case 0x8892: //GL_ARRAY_BUFFER
+            case TINYGLTF_TARGET_ARRAY_BUFFER:
             {
                 bufferFlags |= HWResourceFlags::BIND_VERTEX_BUFFER;
             } break;
-            case 0x8893: //GL_ELEMENT_ARRAY_BUFFER
+            case TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER:
             {
                 bufferFlags |= HWResourceFlags::BIND_INDEX_BUFFER;
             } break;
@@ -392,6 +433,12 @@ void LoadMeshFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* 
         const tinygltf::Node& node = model.nodes[i];
         LoadNode(rendererAPI, model, node, rootTransform, materials, buffers, scene, leftHandedNormalMap);
     }
+
+    uint64_t endTimeMillis = PGTime::GetTimeMilliseconds();
+    uint64_t elapsedTime = endTimeMillis - startTimeMillis;
+
+    PG_LOG_DEBUG("Scene loaded in %d milliseconds", elapsedTime);
+
 }
 
 void CreateQuad(HWRendererAPI* rendererAPI, PGSceneObject* outSceneObject, Material* defaultMaterial, Vector2 leftBottom, Vector2 rightTop, float zVal) {
@@ -457,6 +504,9 @@ void CreateQuad(HWRendererAPI* rendererAPI, PGSceneObject* outSceneObject, Mater
 
     submesh->indexCount = ARRAYSIZE(indices);
     submesh->indexStart = 0;
+
+    submesh->boundingBox.min = Vector3(leftBottom.x, leftBottom.y, zVal);
+    submesh->boundingBox.max = Vector3(rightTop.x, rightTop.y, zVal);
 
     mesh->submeshes.push_back(submesh);
 

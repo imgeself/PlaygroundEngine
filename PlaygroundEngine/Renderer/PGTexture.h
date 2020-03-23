@@ -8,6 +8,7 @@
 
 class PGTexture : public IResource {
 public:
+    PGTexture(Texture2DDesc* initParams, SubresourceData* subresources, bool generateMips);
     ~PGTexture();
 
     static PGTexture* CreateTexture2D(const std::string& filepath, bool generateMips);
@@ -17,7 +18,6 @@ public:
     inline HWShaderResourceView* GetHWResourceView() { return m_HWShaderResourceView; }
 
 private:
-    PGTexture(Texture2DDesc* initParams, SubresourceData* subresources, bool generateMips);
 
     HWTexture2D* m_HWTexture2D = nullptr;
     HWShaderResourceView* m_HWShaderResourceView = nullptr;

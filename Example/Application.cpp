@@ -55,8 +55,10 @@ void Application::OnInit() {
     m_DefaultMaterial->envBrdf = brdf;
 
 
-    //LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf", false);
-    LoadMeshFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf", true);
+    //LoadSceneFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf", false);
+    LoadSceneFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf", true);
+    //LoadSceneFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/AntiqueCamera.glb", true);
+
     Transform cameraTransform;
     cameraTransform.Translate(Vector3(0.0f,-0.5f, -4.0f));
     m_MainCamera.TransformCamera(&cameraTransform);

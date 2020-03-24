@@ -192,3 +192,13 @@ class HWGraphicsPipelineState {
 public:
     virtual ~HWGraphicsPipelineState() = default;
 };
+
+struct HWComputePipelineStateDesc {
+    HWShaderBytecode computeShader;
+};
+
+class HWComputePipelineState {
+public:
+    virtual ~HWComputePipelineState() = default;
+};
+

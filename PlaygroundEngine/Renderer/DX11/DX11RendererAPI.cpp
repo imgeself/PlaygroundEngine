@@ -184,6 +184,10 @@ HWGraphicsPipelineState* DX11RendererAPI::CreateGraphicsPipelineState(const HWGr
     return new DX11GraphicsPipelineState(m_Device, pipelineDesc, debugName);
 }
 
+HWComputePipelineState* DX11RendererAPI::CreateComputePipelineState(const HWComputePipelineStateDesc& pipelineDesc, const char* debugName) {
+    return new DX11ComputePipelineState(m_Device, pipelineDesc, debugName);
+}
+
 
 // Bindings
 void DX11RendererAPI::SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) {
@@ -256,6 +260,18 @@ void DX11RendererAPI::SetConstantBuffersPS(size_t startSlot, HWBuffer** constant
     m_DeviceContext->PSSetConstantBuffers((UINT) startSlot, (UINT) count, buffers);
 }
 
+void DX11RendererAPI::SetConstantBuffersCS(size_t startSlot, HWBuffer** constantBuffers, size_t count) {
+    DX11Buffer** dx11ConstantBuffers = (DX11Buffer**) constantBuffers;
+    ID3D11Buffer** buffers = (ID3D11Buffer**) alloca(sizeof(ID3D11Buffer*) * count);
+    for (size_t i = 0; i < count; ++i) {
+        DX11Buffer* dxConstantBuffer = *dx11ConstantBuffers;
+        *(buffers + i) = dxConstantBuffer ? dxConstantBuffer->GetDXBuffer() : nullptr;
+        dx11ConstantBuffers++;
+    }
+
+    m_DeviceContext->CSSetConstantBuffers((UINT)startSlot, (UINT)count, buffers);
+}
+
 void DX11RendererAPI::SetShaderResourcesVS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) {
     DX11ShaderResourceView** dxShaderResourceViews = (DX11ShaderResourceView**) shaderResources;
     ID3D11ShaderResourceView** destShaderResouces = (ID3D11ShaderResourceView**) alloca(sizeof(ID3D11ShaderResourceView*) * shaderResourceCount);
@@ -278,6 +294,18 @@ void DX11RendererAPI::SetShaderResourcesPS(size_t startSlot, HWShaderResourceVie
     }
 
     m_DeviceContext->PSSetShaderResources((UINT) startSlot, (UINT) shaderResourceCount, destShaderResouces);
+}
+
+void DX11RendererAPI::SetShaderResourcesCS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) {
+    DX11ShaderResourceView** dxShaderResourceViews = (DX11ShaderResourceView**) shaderResources;
+    ID3D11ShaderResourceView** destShaderResouces = (ID3D11ShaderResourceView**) alloca(sizeof(ID3D11ShaderResourceView*) * shaderResourceCount);
+    for (size_t i = 0; i < shaderResourceCount; ++i) {
+        DX11ShaderResourceView* dxShaderResouceView = *dxShaderResourceViews;
+        *(destShaderResouces + i) = dxShaderResouceView ? dxShaderResouceView->GetDXShaderResouceView() : nullptr;
+        dxShaderResourceViews++;
+    }
+
+    m_DeviceContext->CSSetShaderResources((UINT)startSlot, (UINT)shaderResourceCount, destShaderResouces);
 }
 
 void DX11RendererAPI::SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) {
@@ -304,6 +332,18 @@ void DX11RendererAPI::SetSamplerStatesPS(size_t startSlot, HWSamplerState** samp
     m_DeviceContext->PSSetSamplers((UINT) startSlot, (UINT) samplerStateCount, destSamplerStates);
 }
 
+void DX11RendererAPI::SetSamplerStatesCS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) {
+    DX11SamplerState** dxSamplerStates = (DX11SamplerState**) samplerStates;
+    ID3D11SamplerState** destSamplerStates = (ID3D11SamplerState**) alloca(sizeof(ID3D11SamplerState*) * samplerStateCount);
+    for (size_t i = 0; i < samplerStateCount; ++i) {
+        DX11SamplerState* dxSamplerState = *dxSamplerStates;
+        *(destSamplerStates + i) = dxSamplerState ? dxSamplerState->GetDXSamplerState() : nullptr;
+        dxSamplerStates++;
+    }
+
+    m_DeviceContext->CSSetSamplers((UINT)startSlot, (UINT)samplerStateCount, destSamplerStates);
+}
+
 void DX11RendererAPI::SetGraphicsPipelineState(HWGraphicsPipelineState* pipelineState) {
     DX11GraphicsPipelineState* dxPipelineState = (DX11GraphicsPipelineState*) pipelineState;
 
@@ -315,6 +355,12 @@ void DX11RendererAPI::SetGraphicsPipelineState(HWGraphicsPipelineState* pipeline
 
     m_DeviceContext->VSSetShader(dxPipelineState->GetDXVertexShader(), nullptr, 0);
     m_DeviceContext->PSSetShader(dxPipelineState->GetDXPixelShader(), nullptr, 0);
+}
+
+void DX11RendererAPI::SetComputePipelineState(HWComputePipelineState* pipelineState) {
+    DX11ComputePipelineState* dxComputePipelineState = (DX11ComputePipelineState*) pipelineState;
+
+    m_DeviceContext->CSSetShader(dxComputePipelineState->GetDXComputeShader(), nullptr, 0);
 }
 
 void DX11RendererAPI::SetViewport(HWViewport* viewport) {

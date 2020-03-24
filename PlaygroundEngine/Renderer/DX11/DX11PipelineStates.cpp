@@ -320,3 +320,21 @@ DX11GraphicsPipelineState::~DX11GraphicsPipelineState() {
     SAFE_RELEASE(m_InputLayout);
     SAFE_RELEASE(m_DepthStencilState);
 }
+
+DX11ComputePipelineState::DX11ComputePipelineState(ID3D11Device* device, const HWComputePipelineStateDesc& pipelineDesc, const char* debugName) {
+    HWShaderBytecode computeShaderBytecode = pipelineDesc.computeShader;
+    HRESULT result = device->CreateComputeShader(computeShaderBytecode.shaderBytecode, computeShaderBytecode.bytecodeLength, 0, &m_ComputeShader);
+    PG_ASSERT(SUCCEEDED(result), "Error at creating compute shader");
+
+#ifdef PG_DEBUG_GPU_DEVICE
+    if (debugName) {
+        size_t debugNameLen = strlen(debugName);
+        m_ComputeShader->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)debugNameLen, debugName);
+    }
+#endif
+}
+
+DX11ComputePipelineState::~DX11ComputePipelineState() {
+    SAFE_DELETE(m_ComputeShader);
+}
+

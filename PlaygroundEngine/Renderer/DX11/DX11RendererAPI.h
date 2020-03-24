@@ -35,21 +35,28 @@ public:
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
     HWGraphicsPipelineState* CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
+    HWComputePipelineState* CreateComputePipelineState(const HWComputePipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
 
     void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) override;
     void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) override;
     void SetRenderTargets(HWRenderTargetView** renderTargets, size_t renderTargetCount, HWDepthStencilView* depthStencilView) override;
+
     void SetShaderResourcesVS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
+    void SetShaderResourcesCS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
+
     void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
     void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
+    void SetSamplerStatesCS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
 
     void SetGraphicsPipelineState(HWGraphicsPipelineState* pipelineState) override;
+    void SetComputePipelineState(HWComputePipelineState* pipelineState) override;
 
     void SetViewport(HWViewport* viewport) override;
 
     void SetConstantBuffersVS(size_t startSlot, HWBuffer** constantBuffers, size_t count) override;
     void SetConstantBuffersPS(size_t startSlot, HWBuffer** constantBuffers, size_t count) override;
+    void SetConstantBuffersCS(size_t startSlot, HWBuffer** constantBuffers, size_t count) override;
 
     void ClearRenderTarget(HWRenderTargetView* renderTargetView, float color[4]) override;
     void ClearDepthStencilView(HWDepthStencilView* depthStencilView, bool clearStencil, float depthClearData, uint8_t stencilClearData) override;

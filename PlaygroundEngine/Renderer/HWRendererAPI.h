@@ -48,6 +48,7 @@ public:
     virtual HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName = 0) = 0;
 
     virtual HWGraphicsPipelineState* CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName = 0) = 0;
+    virtual HWComputePipelineState* CreateComputePipelineState(const HWComputePipelineStateDesc& pipelineDesc, const char* debugName = 0) = 0;
 
     virtual void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) = 0;
     virtual void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) = 0;
@@ -55,15 +56,20 @@ public:
 
     virtual void SetShaderResourcesVS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) = 0;
     virtual void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) = 0;
+    virtual void SetShaderResourcesCS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) = 0;
+
     virtual void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) = 0;
     virtual void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) = 0;
+    virtual void SetSamplerStatesCS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) = 0;
 
     virtual void SetGraphicsPipelineState(HWGraphicsPipelineState* pipelineState) = 0;
+    virtual void SetComputePipelineState(HWComputePipelineState* pipelineState) = 0;
 
     virtual void SetViewport(HWViewport* viewport) = 0;
     
     virtual void SetConstantBuffersVS(size_t startSlot, HWBuffer** constantBuffers, size_t count) = 0;
     virtual void SetConstantBuffersPS(size_t startSlot, HWBuffer** constantBuffers, size_t count) = 0;
+    virtual void SetConstantBuffersCS(size_t startSlot, HWBuffer** constantBuffers, size_t count) = 0;
 
     virtual void ClearRenderTarget(HWRenderTargetView* renderTargetView, float color[4]) = 0;
     virtual void ClearDepthStencilView(HWDepthStencilView* depthStencilView, bool clearStencil, float depthClearData, uint8_t stencilClearData) = 0;

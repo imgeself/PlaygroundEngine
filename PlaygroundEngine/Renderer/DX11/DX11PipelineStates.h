@@ -32,3 +32,15 @@ private:
     D3D11_PRIMITIVE_TOPOLOGY m_PrimitiveTopology;
     uint32_t m_SampleMask;
 };
+
+class DX11ComputePipelineState : public HWComputePipelineState {
+public:
+    DX11ComputePipelineState(ID3D11Device* device, const HWComputePipelineStateDesc& pipelineDesc, const char* debugName);
+    ~DX11ComputePipelineState() override;
+
+    inline ID3D11ComputeShader* GetDXComputeShader() { return m_ComputeShader; }
+
+private:
+    ID3D11ComputeShader* m_ComputeShader = nullptr;
+};
+

@@ -175,7 +175,7 @@ struct HWShaderBytecode {
     size_t bytecodeLength;
 };
 
-struct HWPipelineStateDesc {
+struct HWGraphicsPipelineStateDesc {
     HWShaderBytecode vertexShader;
     HWShaderBytecode pixelShader;
 
@@ -188,7 +188,7 @@ struct HWPipelineStateDesc {
     HWPrimitiveTopology primitiveTopology;
 };
 
-class HWPipelineState {
+class HWGraphicsPipelineState {
 public:
-    virtual ~HWPipelineState() = default;
+    virtual ~HWGraphicsPipelineState() = default;
 };

@@ -34,7 +34,7 @@ public:
     HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
-    HWPipelineState* CreatePipelineState(const HWPipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
+    HWGraphicsPipelineState* CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
 
     void SetVertexBuffers(HWBuffer** vertexBuffers, size_t vertexBufferCount, uint32_t* strideByteCounts, uint32_t* offsets) override;
     void SetIndexBuffer(HWBuffer* indexBuffer, uint32_t strideByteCount, uint32_t offset) override;
@@ -44,7 +44,7 @@ public:
     void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
     void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
 
-    void SetPipelineState(HWPipelineState* pipelineState) override;
+    void SetGraphicsPipelineState(HWGraphicsPipelineState* pipelineState) override;
 
     void SetViewport(HWViewport* viewport) override;
 

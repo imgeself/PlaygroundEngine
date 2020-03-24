@@ -17,7 +17,7 @@ public:
         }
         rendererAPI->SetViewport(&m_Viewport);
 
-        rendererAPI->SetPipelineState(m_PipelineState);
+        rendererAPI->SetGraphicsPipelineState(m_PipelineState);
 
         // Vertex shader only used for generating fullscreen quad, we don't need to bind any resources for vertex shader
         rendererAPI->SetShaderResourcesPS(0, m_ShaderResourcesPS, MAX_SHADER_RESOURCE_COUNT);
@@ -27,15 +27,15 @@ public:
     void SetShader(HWRendererAPI* rendererAPI, PGShader* shader) {
         SAFE_DELETE(m_PipelineState);
 
-        HWPipelineStateDesc pipelineDesc;
+        HWGraphicsPipelineStateDesc pipelineDesc;
         pipelineDesc.vertexShader = shader->GetVertexBytecode();
         pipelineDesc.pixelShader = shader->GetPixelBytecode();
         pipelineDesc.primitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-        m_PipelineState = rendererAPI->CreatePipelineState(pipelineDesc);
+        m_PipelineState = rendererAPI->CreateGraphicsPipelineState(pipelineDesc);
     }
 
 private:
-    HWPipelineState* m_PipelineState;
+    HWGraphicsPipelineState* m_PipelineState;
 };
 

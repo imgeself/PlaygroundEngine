@@ -32,7 +32,7 @@ public:
 
         PGShader* debugShader = shaderLib->GetDefaultShader("DebugShader");
 
-        HWPipelineStateDesc pipelineStateDesc;
+        HWGraphicsPipelineStateDesc pipelineStateDesc;
         pipelineStateDesc.rasterizerDesc = rasterizerDesc;
         pipelineStateDesc.inputLayoutDesc = PGRendererResources::s_DefaultInputLayoutDescs[InputLayoutType::POS];
         pipelineStateDesc.primitiveTopology = PRIMITIVE_TOPOLOGY_LINELIST;
@@ -40,7 +40,7 @@ public:
         pipelineStateDesc.vertexShader = debugShader->GetVertexBytecode();
         pipelineStateDesc.pixelShader = debugShader->GetPixelBytecode();
 
-        m_PipelineState = rendererAPI->CreatePipelineState(pipelineStateDesc);
+        m_PipelineState = rendererAPI->CreateGraphicsPipelineState(pipelineStateDesc);
     }
 
     ~DebugSceneRenderer() {
@@ -49,7 +49,7 @@ public:
     }
 
     void Execute(HWRendererAPI* rendererAPI, const RenderList* renderList) {
-        rendererAPI->SetPipelineState(m_PipelineState);
+        rendererAPI->SetGraphicsPipelineState(m_PipelineState);
         uint32_t stride = sizeof(Vector3);
         uint32_t offset = 0;
         rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
@@ -59,7 +59,7 @@ public:
 
 private:
     HWBuffer* m_VertexBuffer;
-    HWPipelineState* m_PipelineState;
+    HWGraphicsPipelineState* m_PipelineState;
 };
 
 DebugSceneRenderer* g_DebugSceneRenderer = nullptr;

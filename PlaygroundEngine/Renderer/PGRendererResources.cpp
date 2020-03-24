@@ -27,7 +27,7 @@ uint8_t PGRendererResources::CreateCachedPipelineState(HWRendererAPI* rendererAP
     size_t hashPSO = Hash((const uint8_t*)&pipelineDesc, sizeof(PGPipelineDesc));
     for (uint8_t i = 0; i < MAX_CACHED_PIPELINE_STATE_PER_STAGE; i++) {
         PGCachedPipelineState& cachedPipelineState = s_CachedPipelineStates[scenePassType][i];
-        if (cachedPipelineState.pipelineState) {
+        if (cachedPipelineState.graphicsPipelineState) {
             if (cachedPipelineState.hash == hashPSO) {
                 return i;
             }
@@ -55,7 +55,7 @@ uint8_t PGRendererResources::CreateCachedPipelineState(HWRendererAPI* rendererAP
             HWShaderBytecode vsBytecode = pipelineDesc.shader->GetVertexBytecode(shaderFlags);
             HWShaderBytecode psBytecode = pipelineDesc.shader->GetPixelBytecode(shaderFlags);
 
-            HWPipelineStateDesc desc;
+            HWGraphicsPipelineStateDesc desc;
             desc.blendDesc = blendDesc;
             desc.depthStencilDesc = depthStencilDesc;
             desc.inputLayoutDesc = inputLayoutDesc;
@@ -64,9 +64,9 @@ uint8_t PGRendererResources::CreateCachedPipelineState(HWRendererAPI* rendererAP
             desc.vertexShader = vsBytecode;
             desc.pixelShader = psBytecode;
 
-            HWPipelineState* hwPipelineState = rendererAPI->CreatePipelineState(desc);
-            newCachedPipelineState.pipelineState = hwPipelineState;
-            newCachedPipelineState.pipelineDesc = desc;
+            HWGraphicsPipelineState* hwPipelineState = rendererAPI->CreateGraphicsPipelineState(desc);
+            newCachedPipelineState.graphicsPipelineState = hwPipelineState;
+            newCachedPipelineState.graphicsPipelineDesc = desc;
             newCachedPipelineState.shaderFlags = shaderFlags;
 
             s_CachedPipelineStates[scenePassType][i] = newCachedPipelineState;
@@ -87,13 +87,13 @@ void PGRendererResources::UpdateShaders(HWRendererAPI* rendererAPI) {
 
             std::vector<PGCachedPipelineState*>& cachedPipelineStates = shaderLinkPair.second;
             for (PGCachedPipelineState* cachedPipelineState : cachedPipelineStates) {
-                HWPipelineStateDesc& pipelineDesc = cachedPipelineState->pipelineDesc;
+                HWGraphicsPipelineStateDesc& pipelineDesc = cachedPipelineState->graphicsPipelineDesc;
                 pipelineDesc.vertexShader = shader->GetVertexBytecode(cachedPipelineState->shaderFlags);
                 pipelineDesc.pixelShader = shader->GetPixelBytecode(cachedPipelineState->shaderFlags);
 
-                delete cachedPipelineState->pipelineState;
+                delete cachedPipelineState->graphicsPipelineState;
 
-                cachedPipelineState->pipelineState = rendererAPI->CreatePipelineState(pipelineDesc);
+                cachedPipelineState->graphicsPipelineState = rendererAPI->CreateGraphicsPipelineState(pipelineDesc);
             }
         }
     }
@@ -279,8 +279,8 @@ void PGRendererResources::ClearResources() {
     for (SceneRenderPassType passType = SceneRenderPassType::DEPTH_PASS; passType < SCENE_PASS_TYPE_COUNT; passType = SceneRenderPassType(passType + 1)) {
         for (uint8_t i = 0; i < MAX_CACHED_PIPELINE_STATE_PER_STAGE; i++) {
             PGCachedPipelineState cachedPipelineState = s_CachedPipelineStates[passType][i];
-            if (cachedPipelineState.pipelineState) {
-                delete cachedPipelineState.pipelineState;
+            if (cachedPipelineState.graphicsPipelineState) {
+                delete cachedPipelineState.graphicsPipelineState;
             }
         }
     }

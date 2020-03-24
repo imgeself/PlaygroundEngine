@@ -4,10 +4,10 @@
 
 #include <d3d11.h>
 
-class DX11PipelineState : public HWPipelineState {
+class DX11GraphicsPipelineState : public HWGraphicsPipelineState {
 public:
-    DX11PipelineState(ID3D11Device* device, const HWPipelineStateDesc& pipelineDesc, const char* debugName);
-    ~DX11PipelineState() override;
+    DX11GraphicsPipelineState(ID3D11Device* device, const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName);
+    ~DX11GraphicsPipelineState() override;
 
     inline ID3D11VertexShader* GetDXVertexShader() { return m_VertexShader; }
     inline ID3D11PixelShader* GetDXPixelShader() { return m_PixelShader; }

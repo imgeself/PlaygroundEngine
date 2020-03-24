@@ -95,8 +95,8 @@ struct PGPipelineDesc {
 
 // TODO: Pipeline state objects is going to be part of HWRendererAPI when we redesign the RHI. 
 struct PGCachedPipelineState {
-    HWPipelineState* pipelineState = nullptr;
-    HWPipelineStateDesc pipelineDesc;
+    HWGraphicsPipelineState* graphicsPipelineState = nullptr;
+    HWGraphicsPipelineStateDesc graphicsPipelineDesc;
     uint32_t shaderFlags = 0;
     size_t hash = 0;
 };

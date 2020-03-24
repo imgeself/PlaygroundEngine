@@ -180,8 +180,8 @@ HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* init
     return new DX11SamplerState(m_Device, initParams, debugName);
 }
 
-HWPipelineState* DX11RendererAPI::CreatePipelineState(const HWPipelineStateDesc& pipelineDesc, const char* debugName) {
-    return new DX11PipelineState(m_Device, pipelineDesc, debugName);
+HWGraphicsPipelineState* DX11RendererAPI::CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName) {
+    return new DX11GraphicsPipelineState(m_Device, pipelineDesc, debugName);
 }
 
 
@@ -304,8 +304,8 @@ void DX11RendererAPI::SetSamplerStatesPS(size_t startSlot, HWSamplerState** samp
     m_DeviceContext->PSSetSamplers((UINT) startSlot, (UINT) samplerStateCount, destSamplerStates);
 }
 
-void DX11RendererAPI::SetPipelineState(HWPipelineState* pipelineState) {
-    DX11PipelineState* dxPipelineState = (DX11PipelineState*) pipelineState;
+void DX11RendererAPI::SetGraphicsPipelineState(HWGraphicsPipelineState* pipelineState) {
+    DX11GraphicsPipelineState* dxPipelineState = (DX11GraphicsPipelineState*) pipelineState;
 
     m_DeviceContext->IASetPrimitiveTopology(dxPipelineState->GetDXPrimitiveTopology());
     m_DeviceContext->IASetInputLayout(dxPipelineState->GetDXInputLayout());

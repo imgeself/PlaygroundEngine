@@ -195,7 +195,7 @@ static D3D11_PRIMITIVE_TOPOLOGY GetD3D11PrimitiveTopology(HWPrimitiveTopology pr
     }
 }
 
-DX11PipelineState::DX11PipelineState(ID3D11Device* device, const HWPipelineStateDesc& pipelineDesc, const char* debugName) {
+DX11GraphicsPipelineState::DX11GraphicsPipelineState(ID3D11Device* device, const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName) {
     // Shaders
     HWShaderBytecode vertexBytecode = pipelineDesc.vertexShader;
     HRESULT result = device->CreateVertexShader(vertexBytecode.shaderBytecode, vertexBytecode.bytecodeLength, 0, &m_VertexShader);
@@ -311,7 +311,7 @@ DX11PipelineState::DX11PipelineState(ID3D11Device* device, const HWPipelineState
 #endif
 }
 
-DX11PipelineState::~DX11PipelineState() {
+DX11GraphicsPipelineState::~DX11GraphicsPipelineState() {
     SAFE_RELEASE(m_VertexShader);
     SAFE_RELEASE(m_PixelShader);
 

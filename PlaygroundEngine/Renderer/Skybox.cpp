@@ -67,7 +67,7 @@ Skybox::Skybox(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
     HWDepthStencilDesc depthStencilDesc = {};
     depthStencilDesc.depthFunc = COMPARISON_LESS_EQUAL; // Skybox z value is always 1.
 
-    HWPipelineStateDesc pipelineDesc;
+    HWGraphicsPipelineStateDesc pipelineDesc;
     pipelineDesc.rasterizerDesc = rasterizerDesc;
     pipelineDesc.depthStencilDesc = depthStencilDesc;
     pipelineDesc.inputLayoutDesc = inputLayoutDesc;
@@ -76,7 +76,7 @@ Skybox::Skybox(HWRendererAPI* rendererAPI, PGShaderLib* shaderLib) {
     pipelineDesc.vertexShader = shader->GetVertexBytecode();
     pipelineDesc.pixelShader = shader->GetPixelBytecode();
 
-    m_PipelineState = rendererAPI->CreatePipelineState(pipelineDesc);
+    m_PipelineState = rendererAPI->CreateGraphicsPipelineState(pipelineDesc);
 
 }
 
@@ -92,7 +92,7 @@ void Skybox::RenderSkybox(HWRendererAPI* rendererAPI, PGTexture* skyboxCubemap) 
     uint32_t stride = sizeof(Vector3);
     rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
     rendererAPI->SetIndexBuffer(m_IndexBuffer, sizeof(indices[0]), 0);
-    rendererAPI->SetPipelineState(m_PipelineState);
+    rendererAPI->SetGraphicsPipelineState(m_PipelineState);
 
     HWShaderResourceView* skyboxView = skyboxCubemap->GetHWResourceView();
     rendererAPI->SetShaderResourcesPS(SKYBOX_TEXTURECUBE_SLOT, &skyboxView, 1);

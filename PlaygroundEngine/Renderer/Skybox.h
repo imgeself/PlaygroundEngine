@@ -15,5 +15,5 @@ public:
 private:
     HWBuffer* m_VertexBuffer;
     HWBuffer* m_IndexBuffer;
-    HWPipelineState* m_PipelineState;
+    HWGraphicsPipelineState* m_PipelineState;
 };

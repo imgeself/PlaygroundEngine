@@ -7,10 +7,11 @@ enum HWResourceFlags {
     BIND_SHADER_RESOURCE = BIT(1),
     BIND_RENDER_TARGET = BIT(2),
     BIND_DEPTH_STENCIL = BIT(3),
+    BIND_UNORDERED_ACCESS = BIT(4),
 
-    BIND_VERTEX_BUFFER = BIT(4),
-    BIND_INDEX_BUFFER = BIT(5),
-    BIND_CONSTANT_BUFFER = BIT(6),
+    BIND_VERTEX_BUFFER = BIT(5),
+    BIND_INDEX_BUFFER = BIT(6),
+    BIND_CONSTANT_BUFFER = BIT(7),
 
     // Usage flags
     CPU_ACCESS_READ = BIT(10),
@@ -22,6 +23,13 @@ enum HWResourceFlags {
 
     MISC_TEXTURE_CUBE = BIT(15),
     MISC_GENERATE_MIPS = BIT(16)
+};
+
+struct HWResourceViewDesc {
+    uint32_t firstArraySlice = 0;
+    uint32_t sliceArrayCount = 1;
+    uint32_t firstMip = 0;
+    uint32_t mipCount = 1;
 };
 
 struct SubresourceData {

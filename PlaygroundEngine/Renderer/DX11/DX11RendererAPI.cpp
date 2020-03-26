@@ -72,7 +72,12 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
     result = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &backbuffer);
     PG_ASSERT(SUCCEEDED(result), "Couldn't get the backbuffer");
 
-    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, 0, 1, 0, swapChainDescriptor.SampleDesc.Count);
+    HWResourceViewDesc resourceViewDesc;
+    resourceViewDesc.firstArraySlice = 0;
+    resourceViewDesc.sliceArrayCount = 1;
+    resourceViewDesc.firstMip = 0;
+    resourceViewDesc.mipCount = swapChainDescriptor.SampleDesc.Count;
+    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, resourceViewDesc);
     backbuffer->Release();
 
     m_DefaultViewport.TopLeftX = 0;
@@ -113,7 +118,12 @@ void DX11RendererAPI::ResizeBackBuffer(size_t clientWidth, size_t clientHeight) 
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     m_SwapChain->GetDesc(&swapChainDesc);
 
-    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, 0, 1, 0, swapChainDesc.SampleDesc.Count);
+    HWResourceViewDesc resourceViewDesc;
+    resourceViewDesc.firstArraySlice = 0;
+    resourceViewDesc.sliceArrayCount = 1;
+    resourceViewDesc.firstMip = 0;
+    resourceViewDesc.mipCount = swapChainDesc.SampleDesc.Count;
+    m_BackbufferRenderTargetView = new DX11RenderTargetView(m_Device, backbuffer, resourceViewDesc);
     backbuffer->Release();
 
     m_DefaultViewport.Width = (FLOAT) clientWidth;
@@ -131,6 +141,10 @@ void DX11RendererAPI::Draw(size_t vertexCount, size_t vertexBaseLocation) {
 
 void DX11RendererAPI::DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t baseVertexIndex) {
     m_DeviceContext->DrawIndexed((UINT) indexCount, (UINT) startIndex, (UINT) baseVertexIndex);
+}
+
+void DX11RendererAPI::Dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ) {
+    m_DeviceContext->Dispatch((UINT) threadGroupX, (UINT) threadGroupY, (UINT) threadGroupZ);
 }
 
 
@@ -161,20 +175,26 @@ HWTexture2D* DX11RendererAPI::CreateTexture2D(Texture2DDesc* initParams, Subreso
     return new DX11Texture2D(m_Device, initParams, subresources, debugName);
 }
 
-HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
+HWRenderTargetView* DX11RendererAPI::CreateRenderTargetView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11RenderTargetView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount, debugName);
+    return new DX11RenderTargetView(m_Device, dxTexture2D->GetDXTexture2D(), resourceViewDesc, debugName);
 }
 
-HWDepthStencilView* DX11RendererAPI::CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
+HWDepthStencilView* DX11RendererAPI::CreateDepthStencilView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11DepthStencilView(m_Device, dxTexture2D->GetDXTexture2D(), firstSlice, sliceCount, firstMip, mipCount, debugName);
+    return new DX11DepthStencilView(m_Device, dxTexture2D->GetDXTexture2D(), resourceViewDesc, debugName);
 }
 
-HWShaderResourceView* DX11RendererAPI::CreateShaderResourceView(HWTexture2D* texture, const char* debugName) {
+HWShaderResourceView* DX11RendererAPI::CreateShaderResourceView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) {
     DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
-    return new DX11ShaderResourceView(m_Device, dxTexture2D->GetDXTexture2D(), debugName);
+    return new DX11ShaderResourceView(m_Device, dxTexture2D->GetDXTexture2D(), resourceViewDesc, debugName);
 }
+
+HWUnorderedAccessView* DX11RendererAPI::CreateUnorderedAccessView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) {
+    DX11Texture2D* dxTexture2D = (DX11Texture2D*) texture;
+    return new DX11UnorderedAccessView(m_Device, dxTexture2D->GetDXTexture2D(), resourceViewDesc, debugName);
+}
+
 
 HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) {
     return new DX11SamplerState(m_Device, initParams, debugName);
@@ -307,6 +327,19 @@ void DX11RendererAPI::SetShaderResourcesCS(size_t startSlot, HWShaderResourceVie
 
     m_DeviceContext->CSSetShaderResources((UINT)startSlot, (UINT)shaderResourceCount, destShaderResouces);
 }
+
+void DX11RendererAPI::SetUnorderedAcessViewsCS(size_t startSlot, HWUnorderedAccessView** unorderedAccessViews, size_t uavCount, uint32_t* uavInitialCounts) {
+    DX11UnorderedAccessView** dxUnorderedAccessViews = (DX11UnorderedAccessView**) unorderedAccessViews;
+    ID3D11UnorderedAccessView** destUnorderedAccessViews = (ID3D11UnorderedAccessView**) alloca(sizeof(ID3D11UnorderedAccessView*) * uavCount);
+    for (size_t i = 0; i < uavCount; ++i) {
+        DX11UnorderedAccessView* dxUnorderedAccessView = *dxUnorderedAccessViews;
+        *(destUnorderedAccessViews + i) = dxUnorderedAccessView ? dxUnorderedAccessView->GetDXUnorderedAccessView() : nullptr;
+        dxUnorderedAccessViews++;
+    }
+
+    m_DeviceContext->CSSetUnorderedAccessViews((UINT)startSlot, (UINT)uavCount, destUnorderedAccessViews, (UINT*) uavInitialCounts);
+}
+
 
 void DX11RendererAPI::SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) {
     DX11SamplerState** dxSamplerStates = (DX11SamplerState**) samplerStates;

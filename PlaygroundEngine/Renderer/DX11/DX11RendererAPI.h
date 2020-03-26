@@ -22,6 +22,7 @@ public:
     void ClearScreen(const float* color) override;
     void Draw(size_t vertexCount, size_t vertexBaseLocation) override;
     void DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t baseVertexIndex) override;
+    void Dispatch(uint32_t threadGroupX, uint32_t threadGroupY, uint32_t threadGroupZ) override;
     void Present() override;
 
     HWRenderTargetView* GetBackbufferRenderTargetView() override;
@@ -29,9 +30,10 @@ public:
 
     HWBuffer* CreateBuffer(SubresourceData* subresource, size_t size, uint32_t flags, const char* debugName) override;
     HWTexture2D* CreateTexture2D(Texture2DDesc* initParams, SubresourceData* subresources, const char* debugName) override;
-    HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
-    HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) override;
-    HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const char* debugName) override;
+    HWRenderTargetView* CreateRenderTargetView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) override;
+    HWDepthStencilView* CreateDepthStencilView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) override;
+    HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) override;
+    HWUnorderedAccessView* CreateUnorderedAccessView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
 
     HWGraphicsPipelineState* CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
@@ -44,6 +46,8 @@ public:
     void SetShaderResourcesVS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetShaderResourcesPS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
     void SetShaderResourcesCS(size_t startSlot, HWShaderResourceView** shaderResources, size_t shaderResourceCount) override;
+
+    void SetUnorderedAcessViewsCS(size_t startSlot, HWUnorderedAccessView** unorderedAccessViews, size_t uavCount, uint32_t* uavInitialCounts) override;
 
     void SetSamplerStatesVS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;
     void SetSamplerStatesPS(size_t startSlot, HWSamplerState** samplerStates, size_t samplerStateCount) override;

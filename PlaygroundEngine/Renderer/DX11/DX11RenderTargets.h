@@ -7,7 +7,7 @@
 
 class DX11RenderTargetView : public HWRenderTargetView {
 public:
-    DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName = 0);
+    DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName = 0);
     ~DX11RenderTargetView();
 
     inline ID3D11RenderTargetView* GetDXRenderTargetView() { return m_RenderTargetView; }
@@ -18,7 +18,7 @@ private:
 
 class DX11DepthStencilView : public HWDepthStencilView {
 public:
-    DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName = 0);
+    DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName = 0);
     ~DX11DepthStencilView();
 
     inline ID3D11DepthStencilView* GetDXDepthStencilView() { return m_DepthStencilView; }

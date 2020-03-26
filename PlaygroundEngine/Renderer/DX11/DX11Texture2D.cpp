@@ -13,6 +13,7 @@ static inline D3D11_BIND_FLAG GetBindFlagsFromResourceFlags(uint32_t resourceFla
     return D3D11_BIND_FLAG(
         ((resourceFlags & HWResourceFlags::BIND_DEPTH_STENCIL) ? D3D11_BIND_DEPTH_STENCIL : 0) |
         ((resourceFlags & HWResourceFlags::BIND_RENDER_TARGET) ? D3D11_BIND_RENDER_TARGET : 0) |
+        ((resourceFlags & HWResourceFlags::BIND_UNORDERED_ACCESS) ? D3D11_BIND_UNORDERED_ACCESS : 0) |
         ((resourceFlags & HWResourceFlags::BIND_SHADER_RESOURCE) ? D3D11_BIND_SHADER_RESOURCE : 0)
     );
 }

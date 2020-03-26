@@ -1,6 +1,6 @@
 #include "DX11RenderTargets.h"
 
-DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
+DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -22,9 +22,24 @@ DX11RenderTargetView::DX11RenderTargetView(ID3D11Device* device, ID3D11Texture2D
     D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc = {};
     renderTargetViewDesc.Format = renderTargetViewFormat;
     if (textureDesc.SampleDesc.Count > 1) {
-        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+        if (textureDesc.ArraySize > 1) {
+            renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
+            renderTargetViewDesc.Texture2DMSArray.ArraySize = resourceViewDesc.sliceArrayCount;
+            renderTargetViewDesc.Texture2DMSArray.FirstArraySlice = resourceViewDesc.firstArraySlice;
+        } else {
+            renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+        }
     } else {
-        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        if (textureDesc.ArraySize > 1) {
+            renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+            renderTargetViewDesc.Texture2DArray.ArraySize = resourceViewDesc.sliceArrayCount;
+            renderTargetViewDesc.Texture2DArray.FirstArraySlice = resourceViewDesc.firstArraySlice;
+            renderTargetViewDesc.Texture2DArray.MipSlice = resourceViewDesc.firstMip;
+        }
+        else {
+            renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+            renderTargetViewDesc.Texture2D.MipSlice = resourceViewDesc.firstMip;
+        }
     }
 
     HRESULT result = device->CreateRenderTargetView(texture, &renderTargetViewDesc, &m_RenderTargetView);
@@ -42,7 +57,7 @@ DX11RenderTargetView::~DX11RenderTargetView() {
     SAFE_RELEASE(m_RenderTargetView);
 }
 
-DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount, const char* debugName) {
+DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) {
     D3D11_TEXTURE2D_DESC textureDesc;
     texture->GetDesc(&textureDesc);
 
@@ -67,16 +82,22 @@ DX11DepthStencilView::DX11DepthStencilView(ID3D11Device* device, ID3D11Texture2D
     D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
     depthStencilViewDesc.Format = depthStencilViewFormat;
     if (textureDesc.SampleDesc.Count > 1) {
-        depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+        if (textureDesc.ArraySize > 1) {
+            depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY;
+            depthStencilViewDesc.Texture2DMSArray.ArraySize = resourceViewDesc.sliceArrayCount;
+            depthStencilViewDesc.Texture2DMSArray.FirstArraySlice = resourceViewDesc.firstArraySlice;
+        } else {
+            depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+        }
     } else {
         if (textureDesc.ArraySize > 1) {
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-            depthStencilViewDesc.Texture2DArray.ArraySize = sliceCount;
-            depthStencilViewDesc.Texture2DArray.FirstArraySlice = firstSlice;
-            depthStencilViewDesc.Texture2DArray.MipSlice = firstMip;
+            depthStencilViewDesc.Texture2DArray.ArraySize = resourceViewDesc.sliceArrayCount;
+            depthStencilViewDesc.Texture2DArray.FirstArraySlice = resourceViewDesc.firstArraySlice;
+            depthStencilViewDesc.Texture2DArray.MipSlice = resourceViewDesc.firstMip;
         } else {
             depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-            depthStencilViewDesc.Texture2D.MipSlice = firstMip;
+            depthStencilViewDesc.Texture2D.MipSlice = resourceViewDesc.firstMip;
         }
     }
 

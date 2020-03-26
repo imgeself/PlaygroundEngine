@@ -9,6 +9,8 @@
 
 #define RENDERER_VARIABLES_CBUFFER_SLOT 7
 
+#define UTILITY_CBUFFER_SLOT 10
+
 // Texture slots
 #define SHADOW_MAP_TEXTURE2D_SLOT 0
 
@@ -41,22 +43,26 @@
 #define MAX_SHADOW_CASCADE_COUNT 5
 
 #ifdef _HLSL
-#define CBUFFER(name, slotNumber) cbuffer name : register(b ## slotNumber)
-#define TEXTURE2D(name, slotNumber) Texture2D name : register(t ## slotNumber)
-#define TEXTURE2DARRAY(name, slotNumber) Texture2DArray name : register(t ## slotNumber)
-#define TEXTURECUBE(name, slotNumber) TextureCube name : register(t ## slotNumber)
-#define SAMPLER_STATE(name, slotNumber) SamplerState name : register(s ## slotNumber)
-#define SAMPLER_COMPARISON_STATE(name, slotNumber) SamplerComparisonState name : register(s ## slotNumber)
 #define Matrix4 row_major matrix
 #define Vector4 float4
 #define Vector3 float3
 #define Vector2 float2
 #define uint32_t uint
+#define CBUFFER(name, slotNumber) cbuffer name : register(b ## slotNumber)
+#define TEXTURE2D(name, format, slotNumber) Texture2D<format> name : register(t ## slotNumber)
+#define RWTEXTURE2D(name, format, slotNumber) RWTexture2D<format> name : register(t ## slotNumber)
+#define TEXTURE2DARRAY(name, format, slotNumber) Texture2DArray<format> name : register(t ## slotNumber)
+#define RWTEXTURE2DARRAY(name, format, slotNumber) RWTexture2DArray<format> name : register(u ## slotNumber)
+#define TEXTURECUBE(name, format, slotNumber) TextureCube<format> name : register(t ## slotNumber)
+#define SAMPLER_STATE(name, slotNumber) SamplerState name : register(s ## slotNumber)
+#define SAMPLER_COMPARISON_STATE(name, slotNumber) SamplerComparisonState name : register(s ## slotNumber)
 #else 
 #define CBUFFER(name, registerNumber) struct name
-#define TEXTURE2D(name, slotNumber)
-#define TEXTURE2DARRAY(name, slotNumber)
-#define TEXTURECUBE(name, slotNumber)
+#define TEXTURE2D(name, format, slotNumber)
+#define RWTEXTURE2D(name, format, slotNumber)
+#define TEXTURE2DARRAY(name, format, slotNumber)
+#define RWTEXTURE2DARRAY(name, format, slotNumber)
+#define TEXTURECUBE(name, format, slotNumber)
 #define SAMPLER_STATE(name, slotNumber)
 #define SAMPLER_COMPARISON_STATE(name, slotNumber)
 #include "../../Math/math_util.h"
@@ -123,27 +129,26 @@ CBUFFER(RendererVariablesConstantBuffer, RENDERER_VARIABLES_CBUFFER_SLOT) {
 };
 
 /////////// Textures
-TEXTURE2DARRAY(g_ShadowMapTexture, SHADOW_MAP_TEXTURE2D_SLOT);
+TEXTURE2DARRAY(g_ShadowMapTexture, float, SHADOW_MAP_TEXTURE2D_SLOT);
 
 // PBR textures
-TEXTURE2D(g_AlbedoTexture, ALBEDO_TEXTURE2D_SLOT);
-TEXTURE2D(g_RoughnessTexture, ROUGHNESS_TEXTURE2D_SLOT);
-TEXTURE2D(g_MetallicTexture, METALLIC_TEXTURE2D_SLOT);
-TEXTURE2D(g_AOTexture, AO_TEXTURE2D_SLOT);
-TEXTURE2D(g_MetallicRoughnessTexture, METALLIC_ROUGHNESS_TEXTURE2D_SLOT);
-TEXTURE2D(g_NormalTexture, NORMAL_TEXTURE2D_SLOT);
-TEXTURE2D(g_EmissiveTexture, EMISSIVE_TEXTURE2D_SLOT);
+TEXTURE2D(g_AlbedoTexture, float4, ALBEDO_TEXTURE2D_SLOT);
+TEXTURE2D(g_RoughnessTexture, float4, ROUGHNESS_TEXTURE2D_SLOT);
+TEXTURE2D(g_MetallicTexture, float4, METALLIC_TEXTURE2D_SLOT);
+TEXTURE2D(g_AOTexture, float4, AO_TEXTURE2D_SLOT);
+TEXTURE2D(g_MetallicRoughnessTexture, float4, METALLIC_ROUGHNESS_TEXTURE2D_SLOT);
+TEXTURE2D(g_NormalTexture, float4, NORMAL_TEXTURE2D_SLOT);
+TEXTURE2D(g_EmissiveTexture, float4, EMISSIVE_TEXTURE2D_SLOT);
 
-
-TEXTURECUBE(g_RadianceTexture, RADIANCE_TEXTURECUBE_SLOT);
-TEXTURECUBE(g_IrradianceTexture, IRRADIANCE_TEXTURECUBE_SLOT);
-TEXTURE2D(g_EnvBrdfTexture, BRDF_LUT_TEXTURE_SLOT);
+TEXTURECUBE(g_RadianceTexture, float4, RADIANCE_TEXTURECUBE_SLOT);
+TEXTURECUBE(g_IrradianceTexture, float4, IRRADIANCE_TEXTURECUBE_SLOT);
+TEXTURE2D(g_EnvBrdfTexture, float2, BRDF_LUT_TEXTURE_SLOT);
 
 // Skybox
-TEXTURECUBE(g_SkyboxTexture, SKYBOX_TEXTURECUBE_SLOT);
+TEXTURECUBE(g_SkyboxTexture, float4, SKYBOX_TEXTURECUBE_SLOT);
 
 // Post process textures
-TEXTURE2D(g_PostProcessTexture0, POST_PROCESS_TEXTURE0_SLOT);
+TEXTURE2D(g_PostProcessTexture0, float4, POST_PROCESS_TEXTURE0_SLOT);
 
 /////////// Samplers
 SAMPLER_COMPARISON_STATE(g_ShadowMapSampler, SHADOW_SAMPLER_COMPARISON_STATE_SLOT);

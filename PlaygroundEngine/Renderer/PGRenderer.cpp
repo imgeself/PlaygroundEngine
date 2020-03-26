@@ -234,6 +234,7 @@ bool PGRenderer::Initialize(PGWindow* window) {
     // Bind default sampler states
     PGRendererResources::CreateDefaultSamplerStates(s_RendererAPI);
     s_RendererAPI->SetSamplerStatesPS(0, PGRendererResources::s_DefaultSamplers.data(), PGRendererResources::s_DefaultSamplers.max_size());
+    s_RendererAPI->SetSamplerStatesCS(0, PGRendererResources::s_DefaultSamplers.data(), PGRendererResources::s_DefaultSamplers.max_size());
 
     // init shadow mapping
     PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);

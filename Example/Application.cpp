@@ -31,15 +31,15 @@ void Application::OnInit() {
     PGLight* mainLight = new PGLight;
     mainLight->position = lightPosition;
     mainLight->color = Vector3(1.0f, 0.8f, 0.6f);
-    mainLight->intensity = 5.0f;
+    mainLight->intensity = 4.0f;
 
     m_Scene.camera = &m_MainCamera;
     m_Scene.directionalLight = mainLight;
 
-    PGTexture* skybox = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/environment.dds");
-    PGTexture* irradiance = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/irradiance.dds");
-    PGTexture* radiance = (PGTexture*) PGResourceManager::CreateResource("./assets/envmap/radiance.dds");
-    PGTexture* brdf = (PGTexture*)PGResourceManager::CreateResource("./assets/envmap/brdfLUT.dds");
+    PGTexture* skybox = (PGTexture*) PGResourceManager::CreateResource("./assets/beach/beach.dds");
+    PGTexture* irradiance = (PGTexture*) PGResourceManager::CreateResource("./assets/beach/beachirradiance.dds");
+    PGTexture* radiance = (PGTexture*) PGResourceManager::CreateResource("./assets/beach/beachradiance.dds");
+    PGTexture* brdf = (PGTexture*)PGResourceManager::CreateResource("./assets/beach/brdfLUT.dds");
 
     m_Scene.skyboxTexture = skybox;
 

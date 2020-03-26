@@ -77,15 +77,21 @@ PGTexture* PGTexture::CreateTextureFromDDSFile(const std::string& filepath) {
 
 PGTexture::PGTexture(Texture2DDesc* initParams, SubresourceData* subresources, bool generateMips) {
     HWRendererAPI* rendererAPI = PGRenderer::GetRendererAPI();
+    HWResourceViewDesc resourceViewDesc;
+    resourceViewDesc.firstArraySlice = 0;
+    resourceViewDesc.sliceArrayCount = (uint32_t) initParams->arraySize;
+    resourceViewDesc.firstMip = 0;
     if (generateMips) {
+        resourceViewDesc.mipCount = -1;
         m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, nullptr);
-        m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);
+        m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D, resourceViewDesc);
 
         rendererAPI->UpdateSubresource(m_HWTexture2D, 0, nullptr, subresources[0]);
         rendererAPI->GenerateMips(m_HWShaderResourceView);
     } else {
+        resourceViewDesc.mipCount = (uint32_t) initParams->mipCount;
         m_HWTexture2D = rendererAPI->CreateTexture2D(initParams, subresources);
-        m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D);
+        m_HWShaderResourceView = rendererAPI->CreateShaderResourceView(m_HWTexture2D, resourceViewDesc);
     }
 }
 

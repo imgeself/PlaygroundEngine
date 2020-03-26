@@ -33,7 +33,12 @@ void ShadowGenStage::SetShadowMapTarget(HWRendererAPI* rendererAPI, HWTexture2D*
         SAFE_DELETE(m_ShadowMapTargets[cascadeIndex]);
     }
     for (uint8_t cascadeIndex = 0; cascadeIndex < rendererConfig.shadowCascadeCount; ++cascadeIndex) {
-        m_ShadowMapTargets[cascadeIndex] = rendererAPI->CreateDepthStencilView(shadowMapTexture, cascadeIndex, 1);
+        HWResourceViewDesc resourceViewDesc;
+        resourceViewDesc.firstArraySlice = cascadeIndex;
+        resourceViewDesc.sliceArrayCount = 1;
+        resourceViewDesc.firstMip = 0;
+        resourceViewDesc.mipCount = 1;
+        m_ShadowMapTargets[cascadeIndex] = rendererAPI->CreateDepthStencilView(shadowMapTexture, resourceViewDesc);
     }
 }
 

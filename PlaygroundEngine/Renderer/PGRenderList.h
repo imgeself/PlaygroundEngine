@@ -122,7 +122,7 @@ private:
         }
 
         if (passType == SceneRenderPassType::DEPTH_PASS) {
-            outDesc.shader = shaderLib->GetDefaultShader("ShadowGen");
+            outDesc.shader = shaderLib->GetDefaultShader("DepthGen");
             if (material->alphaMode == AlphaMode_ALWAYS_PASS) {
                 outDesc.layoutType = InputLayoutType::POS;
             } else if (material->alphaMode == AlphaMode_ALPHA_TEST) {

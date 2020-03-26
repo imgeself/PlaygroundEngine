@@ -39,9 +39,5 @@ void PSMain(VSOut input) {
 
     clip(alpha - 0.1f);
 }
-#else
-void PSMain() {
-
-}
 #endif
 

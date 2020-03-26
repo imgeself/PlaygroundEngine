@@ -26,47 +26,61 @@ struct PGRendererConfig {
 struct GPUResource {
     HWResource* resource = nullptr;
     HWShaderResourceView* srv = nullptr;
+    HWUnorderedAccessView* uav = nullptr;
     HWDepthStencilView* dsv = nullptr;
     HWRenderTargetView* rtv = nullptr;
 
     enum CreationFlags : uint8_t {
         CREATE_USING_BIND_FLAGS = 0, // Default
 
-        CREATE_SHADER_REESOURCE_VIEW = BIT(1),
-        CREATE_RENDER_TARGET_VIEW    = BIT(2),
-        CREATE_DEPTH_STENCIL_VIEW    = BIT(3)
+        CREATE_SHADER_RESOURCE_VIEW  = BIT(1),
+        CREATE_UNORDERED_ACCESS_VIEW = BIT(2),
+        CREATE_RENDER_TARGET_VIEW    = BIT(3),
+        CREATE_DEPTH_STENCIL_VIEW    = BIT(4)
     };
 
     GPUResource(HWRendererAPI* rendererAPI, Texture2DDesc* initParams, SubresourceData* subresources, uint8_t creationFlags, const char* debugName) {
         HWTexture2D* texture = rendererAPI->CreateTexture2D(initParams, subresources, debugName);
         resource = (HWResource*)texture;
 
+        HWResourceViewDesc resourceViewDesc;
+        resourceViewDesc.firstArraySlice = 0;
+        resourceViewDesc.sliceArrayCount = (uint32_t) initParams->arraySize;
+        resourceViewDesc.firstMip = 0;
+        resourceViewDesc.mipCount = (uint32_t) initParams->mipCount;
         if (creationFlags == CREATE_USING_BIND_FLAGS) {
             uint32_t flags = initParams->flags;
             if (flags & HWResourceFlags::BIND_SHADER_RESOURCE) {
-                srv = rendererAPI->CreateShaderResourceView(texture);
+                srv = rendererAPI->CreateShaderResourceView(texture, resourceViewDesc);
+            }
+            if (flags & HWResourceFlags::BIND_UNORDERED_ACCESS) {
+                uav = rendererAPI->CreateUnorderedAccessView(texture, resourceViewDesc);
             }
             if (flags & HWResourceFlags::BIND_RENDER_TARGET) {
-                rtv = rendererAPI->CreateRenderTargetView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+                rtv = rendererAPI->CreateRenderTargetView(texture, resourceViewDesc);
             }
             if (flags & HWResourceFlags::BIND_DEPTH_STENCIL) {
-                dsv = rendererAPI->CreateDepthStencilView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+                dsv = rendererAPI->CreateDepthStencilView(texture, resourceViewDesc);
             }
         } else {
-            if (creationFlags & CreationFlags::CREATE_SHADER_REESOURCE_VIEW) {
-                srv = rendererAPI->CreateShaderResourceView(texture);
+            if (creationFlags & CreationFlags::CREATE_SHADER_RESOURCE_VIEW) {
+                srv = rendererAPI->CreateShaderResourceView(texture, resourceViewDesc);
+            }
+            if (creationFlags & CreationFlags::CREATE_UNORDERED_ACCESS_VIEW) {
+                uav = rendererAPI->CreateUnorderedAccessView(texture, resourceViewDesc);
             }
             if (creationFlags & CreationFlags::CREATE_RENDER_TARGET_VIEW) {
-                rtv = rendererAPI->CreateRenderTargetView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+                rtv = rendererAPI->CreateRenderTargetView(texture, resourceViewDesc);
             }
             if (creationFlags & CreationFlags::CREATE_DEPTH_STENCIL_VIEW) {
-                dsv = rendererAPI->CreateDepthStencilView(texture, 0, (uint32_t)initParams->arraySize, 0, (uint32_t)initParams->mipCount);
+                dsv = rendererAPI->CreateDepthStencilView(texture, resourceViewDesc);
             }
         }
     }
 
     ~GPUResource() {
         SAFE_DELETE(srv);
+        SAFE_DELETE(uav);
         SAFE_DELETE(rtv);
         SAFE_DELETE(dsv);
         SAFE_DELETE(resource);

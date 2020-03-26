@@ -248,7 +248,7 @@ void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, c
     initParams.arraySize = rendererConfig.shadowCascadeCount;
     initParams.flags = HWResourceFlags::BIND_DEPTH_STENCIL | HWResourceFlags::BIND_SHADER_RESOURCE;
     // Only create shader resource view. Depth-stencil views will be created in shadow gen stage.
-    s_ShadowMapCascadesTexture = new GPUResource(rendererAPI, &initParams, nullptr, GPUResource::CreationFlags::CREATE_SHADER_REESOURCE_VIEW, "ShadowMap");
+    s_ShadowMapCascadesTexture = new GPUResource(rendererAPI, &initParams, nullptr, GPUResource::CreationFlags::CREATE_SHADER_RESOURCE_VIEW, "ShadowMap");
 }
 
 void PGRendererResources::ClearResources() {

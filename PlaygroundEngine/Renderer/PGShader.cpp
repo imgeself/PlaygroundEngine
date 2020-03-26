@@ -43,8 +43,17 @@ static bool CompileShader(uint32_t shaderFlags, const char* filename, const char
     HRESULT status = D3DCompileFromFile(wcFilename, compileDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
         mainFunctionName, version, D3DCOMPILE_DEBUG, 0, shaderBlob, &errorBlob);
     if (errorBlob) {
-        PG_LOG_ERROR("Shader compilation errors: %s", (char*)errorBlob->GetBufferPointer());
-        errorBlob->Release();
+        // error X3501 means shader compiler can't find the entrypoint function. We will return null shader in that case.
+        // Shaders doesn't need to implement every shader stage.
+        const char errorString[] = "error X3501";
+        const char* errorData = (const char*) errorBlob->GetBufferPointer();
+        if (!memcmp(errorData, errorString, sizeof(errorString) - 1)) {
+            errorBlob->Release();
+            return true;
+        } else {
+            PG_LOG_ERROR("Shader compilation errors: %s", (char*)errorBlob->GetBufferPointer());
+            errorBlob->Release();
+        }
     }
 
     return SUCCEEDED(status);
@@ -79,9 +88,11 @@ HWShaderBytecode PGShader::GetVertexBytecode(uint32_t shaderFlags) {
         m_Permutations.push_back(shaderPermutation);
     }
 
-    
-
-    HWShaderBytecode bytecode = { shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() };
+    HWShaderBytecode bytecode = {};
+    if (shaderBlob) {
+        bytecode.shaderBytecode = shaderBlob->GetBufferPointer();
+        bytecode.bytecodeLength = shaderBlob->GetBufferSize();
+    }
     return bytecode;
 }
 
@@ -115,9 +126,48 @@ HWShaderBytecode PGShader::GetPixelBytecode(uint32_t shaderFlags) {
         m_Permutations.push_back(shaderPermutation);
     }
 
+    HWShaderBytecode bytecode = {};
+    if (shaderBlob) {
+        bytecode.shaderBytecode = shaderBlob->GetBufferPointer();
+        bytecode.bytecodeLength = shaderBlob->GetBufferSize();
+    }
+    return bytecode;
+}
 
+HWShaderBytecode PGShader::GetComputeBytecode(uint32_t shaderFlags) {
+    auto searchIterator = std::find_if(m_Permutations.begin(), m_Permutations.end(), [shaderFlags](PGShaderPermutation& permutation) {
+        return permutation.shaderFlags == shaderFlags;
+    });
 
-    HWShaderBytecode bytecode = { shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize() };
+    ID3DBlob* shaderBlob = nullptr;
+    if (searchIterator != m_Permutations.end()) {
+        if (searchIterator->computeShaderBlob.isDirty) {
+            PG_LOG_DEBUG("Compiling compute shader: %s with flags: %d", m_Filepath.c_str(), shaderFlags);
+            bool computeCompilationSuccess = CompileShader(shaderFlags, m_Filepath.c_str(), "CSMain", "cs_5_0", &shaderBlob);
+            PG_ASSERT(computeCompilationSuccess, "Shader compilation failed!");
+            searchIterator->computeShaderBlob.shaderBlob = shaderBlob;
+            searchIterator->computeShaderBlob.isDirty = false;
+        } else {
+            shaderBlob = searchIterator->computeShaderBlob.shaderBlob;
+        }
+    } else {
+        PG_LOG_DEBUG("Compiling compute shader: %s with flags: %d", m_Filepath.c_str(), shaderFlags);
+        bool computeCompilationSuccess = CompileShader(shaderFlags, m_Filepath.c_str(), "CSMain", "cs_5_0", &shaderBlob);
+        PG_ASSERT(computeCompilationSuccess, "Shader compilation failed!");
+
+        PGShaderPermutation shaderPermutation = {};
+        shaderPermutation.computeShaderBlob.shaderBlob = shaderBlob;
+        shaderPermutation.computeShaderBlob.isDirty = false;
+        shaderPermutation.shaderFlags = shaderFlags;
+
+        m_Permutations.push_back(shaderPermutation);
+    }
+
+    HWShaderBytecode bytecode = {};
+    if (shaderBlob) {
+        bytecode.shaderBytecode = shaderBlob->GetBufferPointer();
+        bytecode.bytecodeLength = shaderBlob->GetBufferSize();
+    }
     return bytecode;
 }
 
@@ -134,18 +184,22 @@ void PGShader::Reload() {
         bool vertexCompilationSuccess = CompileShader(PGShaderFlags::ALL_FLAGS, m_Filepath.c_str(), "VSMain", "vs_5_0", &vertexShaderBlob);
         ID3DBlob* pixelShaderBlob = nullptr;
         bool pixelCompilationSuccess = CompileShader(PGShaderFlags::ALL_FLAGS, m_Filepath.c_str(), "PSMain", "ps_5_0", &pixelShaderBlob);
+        ID3DBlob* computeShaderBlob = nullptr;
+        bool computeCompilationSuccess = CompileShader(PGShaderFlags::ALL_FLAGS, m_Filepath.c_str(), "CSMain", "cs_5_0", &computeShaderBlob);
 
-        if (!vertexCompilationSuccess || !pixelCompilationSuccess) {
+        if (!vertexCompilationSuccess || !pixelCompilationSuccess || !computeCompilationSuccess) {
             PG_LOG_ERROR("Shader reload failed!");
             return;
         }
 
         SAFE_RELEASE(vertexShaderBlob);
         SAFE_RELEASE(pixelShaderBlob);
+        SAFE_RELEASE(computeShaderBlob);
 
         for (PGShaderPermutation& permutation : m_Permutations) {
             permutation.vertexShaderBlob.isDirty = true;
             permutation.pixelShaderBlob.isDirty = true;
+            permutation.computeShaderBlob.isDirty = true;
         }
 
         PG_LOG_DEBUG("Shader reloaded sucessfully");

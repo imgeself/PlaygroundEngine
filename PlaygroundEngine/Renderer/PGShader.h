@@ -23,6 +23,7 @@ struct PGShaderBlob {
 struct PGShaderPermutation {
     PGShaderBlob vertexShaderBlob;
     PGShaderBlob pixelShaderBlob;
+    PGShaderBlob computeShaderBlob;
     uint32_t shaderFlags = 0;
 };
 
@@ -33,6 +34,7 @@ public:
 
     HWShaderBytecode GetVertexBytecode(uint32_t shaderFlags = 0);
     HWShaderBytecode GetPixelBytecode(uint32_t shaderFlags = 0);
+    HWShaderBytecode GetComputeBytecode(uint32_t shaderFlags = 0);
 
     void LoadFromFilename(const std::string& filename);
     void Reload();

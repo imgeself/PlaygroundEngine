@@ -88,6 +88,7 @@ Skybox::~Skybox() {
 
 void Skybox::RenderSkybox(HWRendererAPI* rendererAPI, PGTexture* skyboxCubemap) {
     PG_PROFILE_FUNCTION();
+    rendererAPI->BeginEvent("SKYBOX");
     uint32_t offset = 0;
     uint32_t stride = sizeof(Vector3);
     rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
@@ -98,4 +99,5 @@ void Skybox::RenderSkybox(HWRendererAPI* rendererAPI, PGTexture* skyboxCubemap) 
     rendererAPI->SetShaderResourcesPS(SKYBOX_TEXTURECUBE_SLOT, &skyboxView, 1);
 
     rendererAPI->DrawIndexed(ARRAYSIZE(indices), 0, 0);
+    rendererAPI->EndEvent();
 }

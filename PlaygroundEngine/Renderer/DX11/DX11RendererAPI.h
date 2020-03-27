@@ -72,6 +72,9 @@ public:
     void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) override;
     void GenerateMips(HWShaderResourceView* shaderResourceView) override;
 
+    void BeginEvent(const char* eventName) override;
+    void EndEvent() override;
+
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }
 
@@ -83,6 +86,7 @@ private:
     ID3D11Device* m_Device = nullptr;
     ID3D11DeviceContext* m_DeviceContext = nullptr;
     ID3D11Debug* m_Debug = nullptr;
+    ID3DUserDefinedAnnotation* m_UserDefinedAnnotation = nullptr;
 
     DX11RenderTargetView* m_BackbufferRenderTargetView = nullptr;
     D3D11_VIEWPORT m_DefaultViewport;

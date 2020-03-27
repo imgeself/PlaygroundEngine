@@ -7,11 +7,12 @@ void ShadowGenStage::Initialize(HWRendererAPI* rendererAPI) {
 
 void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, PGRenderView renderViews[MAX_SHADOW_CASCADE_COUNT], const PGRendererConfig& rendererConfig, bool clear) {
     PG_PROFILE_FUNCTION();
-
+    rendererAPI->BeginEvent("SHADOW GEN");
     const uint8_t cascadeCount = rendererConfig.shadowCascadeCount;
     rendererAPI->SetViewport(&m_ShadowMapViewport);
     for (uint8_t cascadeIndex = 0; cascadeIndex < cascadeCount; ++cascadeIndex) {
         PG_PROFILE_SCOPE("ShadowGen Pass");
+        rendererAPI->BeginEvent("SHADOW CASCADE GEN");
         rendererAPI->SetRenderTargets(nullptr, 0, m_ShadowMapTargets[cascadeIndex]);
         if (clear) {
             rendererAPI->ClearDepthStencilView(m_ShadowMapTargets[cascadeIndex], false, 1.0f, 0);
@@ -20,7 +21,9 @@ void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, PGRenderView renderView
         PGRenderView& renderView = renderViews[cascadeIndex];
         renderView.UpdatePerViewConstantBuffer(rendererAPI);
         RenderScene(rendererAPI, renderView.renderList, SceneRenderPassType::DEPTH_PASS);
+        rendererAPI->EndEvent();
     }
+    rendererAPI->EndEvent();
 }
 
 void ShadowGenStage::SetShadowMapTarget(HWRendererAPI* rendererAPI, HWTexture2D* shadowMapTexture, const PGRendererConfig& rendererConfig) {

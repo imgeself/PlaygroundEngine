@@ -85,6 +85,9 @@ public:
     virtual void MSAAResolve(HWTexture2D* dest, HWTexture2D* source) = 0;
     virtual void GenerateMips(HWShaderResourceView* shaderResourceView) = 0;
 
+    virtual void BeginEvent(const char* eventName) = 0;
+    virtual void EndEvent() = 0;
+
     virtual size_t GetWidth() = 0;
     virtual size_t GetHeight() = 0;
 };

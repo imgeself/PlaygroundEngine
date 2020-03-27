@@ -60,13 +60,14 @@ DX11RendererAPI::DX11RendererAPI(PGWindow* window) {
         &deviceFeatureLevel,
         &m_DeviceContext
     );
+    PG_ASSERT(SUCCEEDED(result), "Device context creation failed");
+    PG_ASSERT(featureLevels[0] == deviceFeatureLevel, "Hardware doesn't support DX11");
 
 #ifdef PG_DEBUG_GPU_DEVICE
     m_Device->QueryInterface(__uuidof(ID3D11Debug), (void**) (&m_Debug));
 #endif
 
-    PG_ASSERT(SUCCEEDED(result), "Device context creation failed");
-    PG_ASSERT(featureLevels[0] == deviceFeatureLevel, "Hardware doesn't support DX11");
+    m_DeviceContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)(&m_UserDefinedAnnotation));
 
     ID3D11Texture2D* backbuffer = nullptr;
     result = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &backbuffer);
@@ -460,5 +461,17 @@ void DX11RendererAPI::GenerateMips(HWShaderResourceView* shaderResourceView) {
     m_DeviceContext->GenerateMips(dxSRV->GetDXShaderResouceView());
 }
 
+void DX11RendererAPI::BeginEvent(const char* eventName) {
+    const size_t eventNameSize = strlen(eventName) + 1;
+    wchar_t* wcEventName = (wchar_t*)alloca(sizeof(wchar_t) * eventNameSize);
 
+    size_t numberOfConverted;
+    mbstowcs_s(&numberOfConverted, wcEventName, eventNameSize, eventName, eventNameSize - 1);
+
+    m_UserDefinedAnnotation->BeginEvent(wcEventName);
+}
+
+void DX11RendererAPI::EndEvent() {
+    m_UserDefinedAnnotation->EndEvent();
+}
 

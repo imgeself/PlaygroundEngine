@@ -49,12 +49,14 @@ public:
     }
 
     void Execute(HWRendererAPI* rendererAPI, const RenderList* renderList) {
+        rendererAPI->BeginEvent("DEBUG RENDERING");
         rendererAPI->SetGraphicsPipelineState(m_PipelineState);
         uint32_t stride = sizeof(Vector3);
         uint32_t offset = 0;
         rendererAPI->SetVertexBuffers(&m_VertexBuffer, 1, &stride, &offset);
 
         RenderSceneDebug(rendererAPI, renderList, m_VertexBuffer);
+        rendererAPI->EndEvent();
     }
 
 private:
@@ -333,7 +335,7 @@ void PGRenderer::RenderFrame() {
     s_RenderList.SortByDepth();
     {
         PG_PROFILE_SCOPE("Z Prepass");
-        s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS);
+        s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS, true, "Z PREPASS");
     }
 
     s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
@@ -341,7 +343,7 @@ void PGRenderer::RenderFrame() {
     s_RenderList.SortByKey();
     {
         PG_PROFILE_SCOPE("Forward Pass");
-        s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false);
+        s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false, "FORWARD OPAQUE");
     }
 
     // Render skybox
@@ -361,7 +363,7 @@ void PGRenderer::RenderFrame() {
     // PostProcess
     {
         PG_PROFILE_SCOPE("Tone Mapping");
-        s_ToneMappingPass.Execute(s_RendererAPI);
+        s_ToneMappingPass.Execute(s_RendererAPI, false, "TONEMAPPING");
     }
 
 

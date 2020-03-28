@@ -28,6 +28,7 @@ PGWindow::PGWindow(const char* name, uint32_t width, uint32_t height, PGSystemEv
     , m_Height(height) {
     
     HINSTANCE hInstance = GetModuleHandle(0);
+    SetProcessDPIAware();
 
     const char* windowClassName = "WindowClass";
     WNDCLASS windowClass = {};

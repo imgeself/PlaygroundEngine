@@ -6,6 +6,9 @@ It is more like a renderer than a game engine now but I want to implement animat
 - GLTF 2.0 scene loading
 - Physically based rendering with Cook-Torrance BRDF
 - Image Based Lighting
+- Normal mapping
+- Multisample Anti-aliasing (MSAA)
+- HDR rendering
 - Cascaded Shadow Mapping
 - Forward shading with Z prepass
 - Logging, Profiling, etc
@@ -18,7 +21,9 @@ I am planning to add mode features into this project. You can see the roadmap [h
  - Visual Studio 2019
  
 ### Building and Running:
-You can just clone the repo and open the solution file in VS2019 and press F5. It should build and run without any problem.
+You can just clone this repo and open the solution file in VS2019 and press F5. It should build and run without any problem.
+
+Use WASD keys to move the camera, hold left-click and drag the mouse to rotate the camera.
 
 ### Screenshots
 ![scrrenshot1](https://github.com/imgeself/PlaygroundEngine/blob/master/screenshots/screenshot1.png)

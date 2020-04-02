@@ -2,6 +2,8 @@
 #include "Skybox.h"
 #include "../PGProfiler.h"
 
+#include "../Math/simd.h"
+
 #include "DX11/DX11RendererAPI.h"
 
 #include <memory>
@@ -81,7 +83,7 @@ void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObj
                     RenderList* outRenderList) {
     PG_PROFILE_FUNCTION();
 
-    Vector4 planes[6];
+    Vector4 planes[8];
     Matrix4 mat = viewProjectionMatrix;
 
     // http://www8.cs.umu.se/kurser/5DV051/HT12/lab/plane_extraction.pdf
@@ -103,6 +105,50 @@ void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObj
     // Bottom plane:
     planes[5] = Normalize(mat.data[3] + mat.data[1]);
 
+    // Padding planes for SIMD
+    planes[6] = planes[5];
+    planes[7] = planes[5];
+
+
+    struct PlaneLane {
+        LaneVector3 planeNormal;
+        LaneVector3 absPlane;
+        LaneF32 negativePlaneW;
+    };
+
+    const uint32_t planeAoSoACount = ARRAYSIZE(planes) / LANE_WIDTH;
+    PlaneLane* planeAoSoA = (PlaneLane*) alloca(sizeof(PlaneLane) * planeAoSoACount);
+
+    // Put plane data into SIMD registers
+    for (size_t i = 0; i < planeAoSoACount; ++i) {
+        ALIGN_LANE float planesX[LANE_WIDTH];
+        ALIGN_LANE float planesY[LANE_WIDTH];
+        ALIGN_LANE float planesZ[LANE_WIDTH];
+        ALIGN_LANE float negativePlanesW[LANE_WIDTH];
+
+        ALIGN_LANE float absPlanesX[LANE_WIDTH];
+        ALIGN_LANE float absPlanesY[LANE_WIDTH];
+        ALIGN_LANE float absPlanesZ[LANE_WIDTH];
+
+        for (size_t i = 0; i < LANE_WIDTH; ++i) {
+            Vector4& plane = planes[i];
+
+            planesX[i] = plane.x;
+            planesY[i] = plane.y;
+            planesZ[i] = plane.z;
+            negativePlanesW[i] = -plane.w;
+
+            absPlanesX[i] = std::fabsf(plane.x);
+            absPlanesY[i] = std::fabsf(plane.y);
+            absPlanesZ[i] = std::fabsf(plane.z);
+        }
+
+        PlaneLane* planeLane = planeAoSoA + i;
+        planeLane->planeNormal = LaneVector3(planesX, planesY, planesZ);
+        planeLane->absPlane = LaneVector3(absPlanesX, absPlanesY, absPlanesZ);
+        planeLane->negativePlaneW = LaneF32(negativePlanesW);
+    }
+
     for (size_t sceneObjectIndex = 0; sceneObjectIndex < sceneObjectCount; ++sceneObjectIndex) {
         PGSceneObject* sceneObject = sceneObjects + sceneObjectIndex;
         const Mesh* mesh = sceneObject->mesh;
@@ -111,25 +157,26 @@ void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObj
             SubMesh* submesh = mesh->submeshes[submeshIndex];
             const Box boundingBox = submesh->boundingBox;
 
+            // https://fgiesen.wordpress.com/2010/10/17/view-frustum-culling/
             Vector3 extent = (boundingBox.max - boundingBox.min) * 0.5f;
             Vector3 center = boundingBox.min + extent;
 
-            int inside = true;
-            for (size_t planeIndex = 0; planeIndex < 6; ++planeIndex) {
-                Vector4 plane = planes[planeIndex];
-                
-                // https://fgiesen.wordpress.com/2010/10/17/view-frustum-culling/
-                Vector3 absPlane(std::fabsf(plane.x), std::fabsf(plane.y), std::fabsf(plane.z));
-                float d = DotProduct(center, plane.xyz());
-                float r = DotProduct(extent, absPlane);
+            // Broadcast bounding box data into SIMD registers and make intersection test with multiple planes at once.
+            LaneVector3 extentLane = LaneVector3(extent);
+            LaneVector3 centerLane = LaneVector3(center);
 
-                if (d + r <= -plane.w) {
-                    inside = false;
-                    break;
-                }
+            LaneF32 finalMask = LaneF32(0.0f);
+            for (size_t i = 0; i < planeAoSoACount; i++) {
+                PlaneLane* planeLane = planeAoSoA + i;
+
+                LaneF32 d = DotProduct(center, planeLane->planeNormal);
+                LaneF32 r = DotProduct(extent, planeLane->absPlane);
+
+                LaneF32 mask = ((d + r) <= planeLane->negativePlaneW);
+                finalMask = finalMask | mask;
             }
 
-            if (inside) {
+            if (MaskIsZeroed(finalMask)) {
                 outRenderList->AddSubmesh(submesh, sceneObject->transform, cameraPos);
             }
         }

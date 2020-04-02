@@ -75,6 +75,30 @@ struct RenderList {
         }
     }
 
+    void AddSubmesh(SubMesh* submesh, Transform& transform, Vector3 cameraPos) {
+        RenderList::Element& element = elements[elementCount++];
+        element.mesh = submesh;
+        element.transform = transform;
+
+        // Calculate depth 
+        Box boundingBox = submesh->boundingBox;
+        Vector3 boxCenter = boundingBox.min + ((boundingBox.max - boundingBox.min) * 0.5f);
+        Vector3 distanceVector = boxCenter - cameraPos;
+        float distanceSq = DotProduct(distanceVector, distanceVector);
+
+        element.depthKey.depth = (uint32_t)(distanceSq * 100);
+
+        // Mesh hash
+        element.depthKey.mesh = submesh->GetGeometryHash();
+        element.sortKey.mesh = submesh->GetGeometryHash();
+
+        // Material
+        element.sortKey.material = submesh->material->GetMaterialHash();
+
+        element.sortKey.pipeline = submesh->material->GetPipelineHash();
+        element.depthKey.pipeline = submesh->material->GetPipelineHash();
+    }
+
     void ValidatePipelineStates(PGShaderLib* shaderLib, HWRendererAPI* rendererAPI) {
         for (size_t i = 0; i < elementCount; ++i) {
             RenderList::Element& element = elements[i];

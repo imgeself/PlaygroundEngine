@@ -77,6 +77,65 @@ void PGRenderer::Destroy() {
     delete s_RendererAPI;
 }
 
+void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObject* sceneObjects, size_t sceneObjectCount,
+                    RenderList* outRenderList) {
+    PG_PROFILE_FUNCTION();
+
+    Vector4 planes[6];
+    Matrix4 mat = viewProjectionMatrix;
+
+    // http://www8.cs.umu.se/kurser/5DV051/HT12/lab/plane_extraction.pdf
+    // Near plane:
+    planes[0] = Normalize(mat.data[2]);
+
+    // Far plane:
+    planes[1] = Normalize(mat.data[3] - mat.data[2]);
+
+    // Left plane:
+    planes[2] = Normalize(mat.data[3] + mat.data[0]);
+
+    // Right plane:
+    planes[3] = Normalize(mat.data[3] - mat.data[0]);
+
+    // Top plane:
+    planes[4] = Normalize(mat.data[3] - mat.data[1]);
+
+    // Bottom plane:
+    planes[5] = Normalize(mat.data[3] + mat.data[1]);
+
+    for (size_t sceneObjectIndex = 0; sceneObjectIndex < sceneObjectCount; ++sceneObjectIndex) {
+        PGSceneObject* sceneObject = sceneObjects + sceneObjectIndex;
+        const Mesh* mesh = sceneObject->mesh;
+
+        for (size_t submeshIndex = 0; submeshIndex < mesh->submeshes.size(); ++submeshIndex) {
+            SubMesh* submesh = mesh->submeshes[submeshIndex];
+            const Box boundingBox = submesh->boundingBox;
+
+            Vector3 extent = (boundingBox.max - boundingBox.min) * 0.5f;
+            Vector3 center = boundingBox.min + extent;
+
+            int inside = true;
+            for (size_t planeIndex = 0; planeIndex < 6; ++planeIndex) {
+                Vector4 plane = planes[planeIndex];
+                
+                // https://fgiesen.wordpress.com/2010/10/17/view-frustum-culling/
+                Vector3 absPlane(std::fabsf(plane.x), std::fabsf(plane.y), std::fabsf(plane.z));
+                float d = DotProduct(center, plane.xyz());
+                float r = DotProduct(extent, absPlane);
+
+                if (d + r <= -plane.w) {
+                    inside = false;
+                    break;
+                }
+            }
+
+            if (inside) {
+                outRenderList->AddSubmesh(submesh, sceneObject->transform, cameraPos);
+            }
+        }
+    }
+}
+
 void CalculateCascadeProjMatrices(Matrix4& cameraInverseProjectionViewMatrix, Matrix4 lightView, const PGRendererConfig& rendererConfig, const Box& sceneBoundingBox,
                                   Matrix4* outMatricesData) {
     PG_PROFILE_FUNCTION();
@@ -284,16 +343,19 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
 void PGRenderer::BeginFrame() {
 }
 
+static RenderList shadowRenderLists[MAX_SHADOW_CASCADE_COUNT];
+
 void PGRenderer::RenderFrame() {
     s_ShaderLib->ReloadShadersIfNeeded();
     PGRendererResources::UpdateShaders(s_RendererAPI);
 
-    //TODO: We are adding all the scene objects into the render list. Needs culling to eleminate some of the scene objects
+    PGCamera* mainCamera = s_ActiveSceneData->camera;
+    Matrix4 pvMatrix = mainCamera->GetProjectionViewMatrix();
+
     s_RenderList.Clear();
-    s_RenderList.AddSceneObjects(s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), s_ActiveSceneData->camera);
+    FrustumCulling(pvMatrix, mainCamera->GetPosition(), s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), &s_RenderList);
     s_RenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
 
-    PGCamera* mainCamera = s_ActiveSceneData->camera;
     Matrix4 cameraInverseProjViewMatrix = mainCamera->GetInverseProjectionViewMatrix();
     PGRenderView mainRenderView;
     mainRenderView.renderList = &s_RenderList;
@@ -317,15 +379,22 @@ void PGRenderer::RenderFrame() {
     memcpy(perFrameGlobalConstantBuffer.g_DirectionLightProjMatrices, shadowProjMatrices, sizeof(Matrix4) * MAX_SHADOW_CASCADE_COUNT);
 
     PGRenderView shadowCascadeRenderViews[MAX_SHADOW_CASCADE_COUNT];
-    for (size_t cascadeIndex = 0; cascadeIndex < MAX_SHADOW_CASCADE_COUNT; ++cascadeIndex) {
+    for (size_t cascadeIndex = 0; cascadeIndex < s_RendererConfig.shadowCascadeCount; ++cascadeIndex) {
         PGRenderView& renderView = shadowCascadeRenderViews[cascadeIndex];
         Matrix4& cascadeProjMatrix = shadowProjMatrices[cascadeIndex];
 
-        renderView.renderList = &s_RenderList;
         renderView.cameraPos = directionalLight->position;
         renderView.viewMatrix = lightView;
         renderView.projMatrix = cascadeProjMatrix;
         renderView.projViewMatrix = cascadeProjMatrix * lightView;
+
+        RenderList& cascadeRenderList = shadowRenderLists[cascadeIndex];
+        cascadeRenderList.Clear();
+        FrustumCulling(renderView.projViewMatrix, renderView.cameraPos, s_ActiveSceneData->sceneObjects.data(),
+                       s_ActiveSceneData->sceneObjects.size(), &cascadeRenderList);
+        renderView.renderList = &cascadeRenderList;
+        cascadeRenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
+        cascadeRenderList.SortByDepth();
     }
 
     void* data = s_RendererAPI->Map(PGRendererResources::s_PerFrameGlobalConstantBuffer);

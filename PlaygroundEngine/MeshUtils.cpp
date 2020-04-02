@@ -202,8 +202,9 @@ static void LoadNode(HWRendererAPI* rendererAPI, const tinygltf::Model& model, c
                         Vector4 transformedMax = parentTransform.GetTransformMatrix() * Vector4(maxVector, 1.0f);
 
                         Box meshBoundingBox;
-                        meshBoundingBox.min = transformedMin.xyz() / transformedMin.w;
-                        meshBoundingBox.max = transformedMax.xyz() / transformedMax.w;
+                        meshBoundingBox.max = Vector3(std::max(transformedMax.x, transformedMin.x), std::max(transformedMax.y, transformedMin.y), std::max(transformedMax.z, transformedMin.z));
+                        meshBoundingBox.min = Vector3(std::min(transformedMax.x, transformedMin.x), std::min(transformedMax.y, transformedMin.y), std::min(transformedMax.z, transformedMin.z));
+
                         submesh->boundingBox = meshBoundingBox;
 
                         if (meshBoundingBox.min.x < outScene->boundingBox.min.x) {

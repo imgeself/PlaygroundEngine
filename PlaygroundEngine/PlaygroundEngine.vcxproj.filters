@@ -323,6 +323,15 @@
     <ClInclude Include="Renderer\DX11\DX11PipelineStates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Math\simd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\simd_avx2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\simd_sse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Imgui\LICENSE.txt" />

@@ -129,6 +129,7 @@
       <PreprocessorDefinitions>PLATFORM_WINDOWS;NOMINMAX;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -187,6 +188,7 @@
       <PreprocessorDefinitions>PLATFORM_WINDOWS;NOMINMAX;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -262,6 +264,9 @@
     <ClInclude Include="Math\math_matrix.h" />
     <ClInclude Include="Math\math_util.h" />
     <ClInclude Include="Math\math_vector.h" />
+    <ClInclude Include="Math\simd.h" />
+    <ClInclude Include="Math\simd_avx2.h" />
+    <ClInclude Include="Math\simd_sse.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshUtils.h" />
     <ClInclude Include="PGApplication.h" />

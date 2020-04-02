@@ -114,14 +114,14 @@ struct RenderList {
     }
 
     void SortByKey() {
-        PG_PROFILE_FUNCTION();
+        //PG_PROFILE_FUNCTION();
         std::sort(elements.begin(), elements.begin() + elementCount, [](RenderList::Element& left, RenderList::Element& right) {
             return left.sortKey.key < right.sortKey.key;
         });
     }
 
     void SortByDepth() {
-        PG_PROFILE_FUNCTION();
+        //PG_PROFILE_FUNCTION();
         std::sort(elements.begin(), elements.begin() + elementCount, [](RenderList::Element& left, RenderList::Element& right) {
             return left.depthKey.key < right.depthKey.key;
         });

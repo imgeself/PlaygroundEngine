@@ -110,7 +110,8 @@ private:
     static PGScene* s_ActiveSceneData;
 
     static PGRendererConfig s_RendererConfig;
-    static RenderList s_RenderList;
+
+    static std::array<RenderList, RL_COUNT> s_RenderLists;
 
     static ShadowGenStage s_ShadowGenStage;
     static SceneRenderPass s_SceneZPrePass;

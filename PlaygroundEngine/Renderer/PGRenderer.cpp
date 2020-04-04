@@ -13,7 +13,8 @@ PGShaderLib* PGRenderer::s_ShaderLib = nullptr;
 PGScene* PGRenderer::s_ActiveSceneData = nullptr;
 
 PGRendererConfig PGRenderer::s_RendererConfig;
-RenderList PGRenderer::s_RenderList;
+
+std::array<RenderList, RL_COUNT> PGRenderer::s_RenderLists;
 
 ShadowGenStage PGRenderer::s_ShadowGenStage = ShadowGenStage();
 SceneRenderPass PGRenderer::s_SceneZPrePass = SceneRenderPass();
@@ -80,7 +81,7 @@ void PGRenderer::Destroy() {
 }
 
 void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObject* sceneObjects, size_t sceneObjectCount,
-                    RenderList* outRenderList) {
+                    RenderList* outOpaqueRenderList, RenderList* outTransparentRenderList) {
     PG_PROFILE_FUNCTION();
 
     Vector4 planes[8];
@@ -177,7 +178,16 @@ void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObj
             }
 
             if (MaskIsZeroed(finalMask)) {
-                outRenderList->AddSubmesh(submesh, sceneObject->transform, cameraPos);
+                bool isTransparent = submesh->material->alphaMode == AlphaMode_BLEND_ADDITIVE;
+                if (isTransparent) {
+                    if (outTransparentRenderList) {
+                        outTransparentRenderList->AddSubmesh(submesh, sceneObject->transform, cameraPos);
+                    }
+                } else {
+                    if (outOpaqueRenderList) {
+                        outOpaqueRenderList->AddSubmesh(submesh, sceneObject->transform, cameraPos);
+                    }
+                }
             }
         }
     }
@@ -390,7 +400,6 @@ void PGRenderer::ResizeResources(size_t newWidth, size_t newHeight) {
 void PGRenderer::BeginFrame() {
 }
 
-static RenderList shadowRenderLists[MAX_SHADOW_CASCADE_COUNT];
 
 void PGRenderer::RenderFrame() {
     s_ShaderLib->ReloadShadersIfNeeded();
@@ -399,13 +408,18 @@ void PGRenderer::RenderFrame() {
     PGCamera* mainCamera = s_ActiveSceneData->camera;
     Matrix4 pvMatrix = mainCamera->GetProjectionViewMatrix();
 
-    s_RenderList.Clear();
-    FrustumCulling(pvMatrix, mainCamera->GetPosition(), s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), &s_RenderList);
-    s_RenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
+    RenderList& opaqueRenderList = s_RenderLists[RL_OPAQUE];
+    RenderList& transparentRenderList = s_RenderLists[RL_TRANSPARENT];
+
+    opaqueRenderList.Clear();
+    transparentRenderList.Clear();
+
+    FrustumCulling(pvMatrix, mainCamera->GetPosition(), s_ActiveSceneData->sceneObjects.data(), s_ActiveSceneData->sceneObjects.size(), 
+                   &opaqueRenderList, &transparentRenderList);
 
     Matrix4 cameraInverseProjViewMatrix = mainCamera->GetInverseProjectionViewMatrix();
     PGRenderView mainRenderView;
-    mainRenderView.renderList = &s_RenderList;
+    mainRenderView.renderList = &opaqueRenderList;
     mainRenderView.cameraPos = mainCamera->GetPosition();
     mainRenderView.viewMatrix = mainCamera->GetViewMatrix();
     mainRenderView.projMatrix = mainCamera->GetProjectionMatrix();
@@ -435,12 +449,11 @@ void PGRenderer::RenderFrame() {
         renderView.projMatrix = cascadeProjMatrix;
         renderView.projViewMatrix = cascadeProjMatrix * lightView;
 
-        RenderList& cascadeRenderList = shadowRenderLists[cascadeIndex];
+        RenderList& cascadeRenderList = s_RenderLists[RL_SHADOW_GEN_CASCADE_1 + cascadeIndex];
         cascadeRenderList.Clear();
         FrustumCulling(renderView.projViewMatrix, renderView.cameraPos, s_ActiveSceneData->sceneObjects.data(),
-                       s_ActiveSceneData->sceneObjects.size(), &cascadeRenderList);
+                       s_ActiveSceneData->sceneObjects.size(), &cascadeRenderList, nullptr);
         renderView.renderList = &cascadeRenderList;
-        cascadeRenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
         cascadeRenderList.SortByDepth();
     }
 
@@ -448,7 +461,12 @@ void PGRenderer::RenderFrame() {
     memcpy(data, &perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer));
     s_RendererAPI->Unmap(PGRendererResources::s_PerFrameGlobalConstantBuffer);
 
-    s_RenderList.SortByDepth();
+    // Validate pipeline states
+    for (size_t renderListIndex = 0; renderListIndex < RL_COUNT; ++renderListIndex) {
+        s_RenderLists[renderListIndex].ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
+    }
+
+    mainRenderView.renderList->SortByDepth();
     {
         PG_PROFILE_SCOPE("Z Prepass");
         s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS, true, "Z PREPASS");
@@ -456,7 +474,7 @@ void PGRenderer::RenderFrame() {
 
     s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
 
-    s_RenderList.SortByKey();
+    mainRenderView.renderList->SortByKey();
     {
         PG_PROFILE_SCOPE("Forward Pass");
         s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false, "FORWARD OPAQUE");
@@ -467,9 +485,17 @@ void PGRenderer::RenderFrame() {
         g_SkyboxRenderer->RenderSkybox(s_RendererAPI, s_ActiveSceneData->skyboxTexture);
     }
 
+    transparentRenderList.SortByReverseDepth();
+    mainRenderView.renderList = &transparentRenderList;
+    {
+        PG_PROFILE_SCOPE("Forward Transparent Pass");
+        s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false, "FORWARD TRANSPARENT");
+    }
+
     if (s_RendererConfig.debugDrawBoundingBoxes) {
         PG_PROFILE_SCOPE("Debug Rendering");
-        g_DebugSceneRenderer->Execute(s_RendererAPI, &s_RenderList);
+        g_DebugSceneRenderer->Execute(s_RendererAPI, &opaqueRenderList);
+        g_DebugSceneRenderer->Execute(s_RendererAPI, &transparentRenderList);
     }
 
     if (s_RendererConfig.msaaSampleCount > 1) {

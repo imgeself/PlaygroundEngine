@@ -8,7 +8,8 @@
 
 enum AlphaMode {
     AlphaMode_ALWAYS_PASS,
-    AlphaMode_ALPHA_TEST
+    AlphaMode_ALPHA_TEST,
+    AlphaMode_BLEND_ADDITIVE
 };
 
 struct Material : DrawMaterial {

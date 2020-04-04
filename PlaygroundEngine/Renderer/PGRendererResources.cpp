@@ -36,6 +36,12 @@ uint8_t PGRendererResources::CreateCachedPipelineState(HWRendererAPI* rendererAP
             newCachedPipelineState.hash = hashPSO;
 
             HWBlendDesc blendDesc = {};
+            if (pipelineDesc.blendEnable) {
+                blendDesc.renderTarget[0].blendEnable = true;
+                blendDesc.renderTarget[0].srcBlend = BLEND_SRC_ALPHA;
+                blendDesc.renderTarget[0].destBlend = BLEND_INV_SRC_ALPHA;
+                blendDesc.renderTarget[0].blendOp = BLEND_OP_ADD;
+            }
 
             HWDepthStencilDesc depthStencilDesc = {};
             depthStencilDesc.depthFunc = pipelineDesc.depthFunction;

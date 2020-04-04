@@ -103,6 +103,8 @@ struct PGPipelineDesc {
     uint8_t doubleSided;
     InputLayoutType layoutType;
 
+    bool blendEnable;
+
     uint8_t writeDepth;
     HWComparionsFunc depthFunction;
 };

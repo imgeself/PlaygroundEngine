@@ -11,6 +11,19 @@
 
 const size_t MAX_RENDER_LIST_ELEMENT_COUNT = 1024;
 
+enum RenderListType {
+    RL_OPAQUE,
+    RL_TRANSPARENT,
+
+    RL_SHADOW_GEN_CASCADE_1,
+    RL_SHADOW_GEN_CASCADE_2,
+    RL_SHADOW_GEN_CASCADE_3,
+    RL_SHADOW_GEN_CASCADE_4,
+    RL_SHADOW_GEN_CASCADE_5,
+
+    RL_COUNT
+};
+
 struct RenderList {
     struct Element {
         SubMesh* mesh;
@@ -110,13 +123,19 @@ struct RenderList {
                 element.pipelineStates[passType] = PGRendererResources::CreateCachedPipelineState(rendererAPI, passType, psoDesc);
             }
         }
-
     }
 
     void SortByKey() {
         //PG_PROFILE_FUNCTION();
         std::sort(elements.begin(), elements.begin() + elementCount, [](RenderList::Element& left, RenderList::Element& right) {
             return left.sortKey.key < right.sortKey.key;
+        });
+    }
+
+    void SortByReverseDepth() {
+        //PG_PROFILE_FUNCTION();
+        std::sort(elements.begin(), elements.begin() + elementCount, [](RenderList::Element& left, RenderList::Element& right) {
+            return left.depthKey.key > right.depthKey.key;
         });
     }
 
@@ -147,12 +166,10 @@ private:
 
         if (passType == SceneRenderPassType::DEPTH_PASS) {
             outDesc.shader = shaderLib->GetDefaultShader("DepthGen");
-            if (material->alphaMode == AlphaMode_ALWAYS_PASS) {
-                outDesc.layoutType = InputLayoutType::POS;
-            } else if (material->alphaMode == AlphaMode_ALPHA_TEST) {
+            if (material->alphaMode == AlphaMode_ALPHA_TEST) {
                 outDesc.layoutType = InputLayoutType::POS_TC;
             } else {
-                PG_ASSERT(false, "Unsupported alpha mode");
+                outDesc.layoutType = InputLayoutType::POS;
             }
         } else if (passType == SceneRenderPassType::FORWARD) {
             if (material->normalMappingEnabled) {
@@ -164,6 +181,14 @@ private:
 
             outDesc.writeDepth = false;
             outDesc.depthFunction = COMPARISON_EQUAL;
+        }
+
+        if (material->alphaMode == AlphaMode_BLEND_ADDITIVE) {
+            outDesc.blendEnable = true;
+            outDesc.writeDepth = false;
+            outDesc.depthFunction = COMPARISON_LESS;
+        } else {
+            outDesc.blendEnable = false;
         }
 
         outDesc.shaderFlags = shaderFlags;

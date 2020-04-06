@@ -382,6 +382,8 @@ void LoadSceneFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material*
 
         if (!gltfMaterial.alphaMode.compare("MASK")) {
             material->alphaMode = AlphaMode_ALPHA_TEST;
+        } else if (!gltfMaterial.alphaMode.compare("BLEND")) {
+            material->alphaMode = AlphaMode_BLEND_OVER_OP;
         } else {
             material->alphaMode = AlphaMode_ALWAYS_PASS;
         }

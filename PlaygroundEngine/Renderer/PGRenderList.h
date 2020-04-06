@@ -183,7 +183,7 @@ private:
             outDesc.depthFunction = COMPARISON_EQUAL;
         }
 
-        if (material->alphaMode == AlphaMode_BLEND_ADDITIVE) {
+        if (material->alphaMode == AlphaMode_BLEND_OVER_OP) {
             outDesc.blendEnable = true;
             outDesc.writeDepth = false;
             outDesc.depthFunction = COMPARISON_LESS;

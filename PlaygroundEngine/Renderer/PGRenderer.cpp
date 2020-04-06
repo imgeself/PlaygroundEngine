@@ -178,7 +178,7 @@ void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObj
             }
 
             if (MaskIsZeroed(finalMask)) {
-                bool isTransparent = submesh->material->alphaMode == AlphaMode_BLEND_ADDITIVE;
+                bool isTransparent = submesh->material->alphaMode >= AlphaMode_BLEND_OVER_OP;
                 if (isTransparent) {
                     if (outTransparentRenderList) {
                         outTransparentRenderList->AddSubmesh(submesh, sceneObject->transform, cameraPos);

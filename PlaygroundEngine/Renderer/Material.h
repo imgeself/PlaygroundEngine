@@ -9,7 +9,7 @@
 enum AlphaMode {
     AlphaMode_ALWAYS_PASS,
     AlphaMode_ALPHA_TEST,
-    AlphaMode_BLEND_ADDITIVE
+    AlphaMode_BLEND_OVER_OP // Over operator c0 = as * cs + (1 - as) cd
 };
 
 struct Material : DrawMaterial {

@@ -59,10 +59,8 @@ VSOut VSMain(VSInput input) {
 ///////////////////////////////////////////////////////////////////////////
 float4 PSMain(VSOut input) : SV_Target {
     float3 cameraPos = g_CameraPos.xyz;
-    //float3 lightPos = g_LightPos.xyz;
 
     float3 viewVector = normalize(cameraPos - input.worldPos);
-    float3 lightVector = normalize(-g_DirectionLightDirection.xyz);
 
     float3 albedoColor = g_Material.diffuseColor.rgb;
     float alpha = g_Material.diffuseColor.a;
@@ -113,22 +111,70 @@ float4 PSMain(VSOut input) : SV_Target {
     float3 normalVector = normalize(input.normal);
 #endif
 
-    float3 Lo = BRDF(lightVector, normalVector, viewVector, albedoColor, roughness, metallic);
+    float3 surfaceColor = float3(0.0f, 0.0f, 0.0f);
+    float3 cascadeColor = float3(1.0f, 1.0f, 1.0f);
+    // Directional Light
+    {
+        float3 lightVector = normalize(-g_DirectionLightDirection.xyz);
+        float3 Lo = BRDF(lightVector, normalVector, viewVector, albedoColor, roughness, metallic);
 
-    uint hitCascadeIndex;
-    float shadowFactor = CalculateShadowValue(input.worldPos, hitCascadeIndex);
+        uint hitCascadeIndex;
+        float shadowFactor = CalculateShadowValue(input.worldPos, hitCascadeIndex);
 
-    // Visualize cascades
-    float3 cascadeVisualizeColors[4] = {
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 1.0f,
-                0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 1.0f,
-    };
+        // Visualize cascades
+        float3 cascadeVisualizeColors[4] = {
+                    1.0f, 0.0f, 0.0f,
+                    1.0f, 0.0f, 1.0f,
+                    0.0f, 1.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f,
+        };
 
-    float3 lightColor = g_DirectionLightColor.rgb;
-    float intensity = g_DirectionLightColor.a;
-    float3 cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
+        float3 lightColor = g_DirectionLightColor.rgb;
+        float intensity = g_DirectionLightColor.a;
+        cascadeColor = cascadeVisualizeColors[hitCascadeIndex];
+
+        float3 color = Lo * lightColor * intensity * shadowFactor;
+        surfaceColor += color;
+    }
+
+    // Point lights
+    for (uint i = 0; i < g_PointLightCount; i++) {
+        PointLightData light = g_PointLights[i];
+
+        float3 lightVector = light.position.xyz - input.worldPos;
+        float distanceSq = dot(lightVector, lightVector);
+        float attenuation = 1 / distanceSq;
+
+        lightVector = normalize(lightVector);
+        float3 Lo = BRDF(lightVector, normalVector, viewVector, albedoColor, roughness, metallic);
+
+        float3 lightColor = light.color;
+        float intensity = light.intensity;
+
+        float3 color = Lo * lightColor * intensity * attenuation;
+        surfaceColor += color;
+    }
+
+    // Spot lights
+    for (uint spotLightIndex = 0; spotLightIndex < g_SpotLightCount; spotLightIndex++) {
+        SpotLightData light = g_SpotLights[spotLightIndex];
+
+        float3 lightVector = light.position - input.worldPos;
+        lightVector = normalize(lightVector);
+
+        float minConeAngleCos = light.minConeAngleCos;
+        float maxConeAngleCos = light.maxConeAngleCos;
+
+        float coneAngle = dot(lightVector, normalize(-light.direction));
+        float smooth = smoothstep(maxConeAngleCos, minConeAngleCos, coneAngle);
+        float3 Lo = BRDF(lightVector, normalVector, viewVector, albedoColor, roughness, metallic);
+
+        float3 lightColor = light.color;
+        float intensity = light.intensity;
+
+        float3 color = Lo * lightColor * intensity * smooth;
+        surfaceColor += color;
+    }
 
     float3 f0 = lerp((float3) 0.04f, albedoColor, metallic);
     float NdotV = saturate(dot(normalVector, viewVector));
@@ -146,9 +192,9 @@ float4 PSMain(VSOut input) : SV_Target {
     
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
     float3 ambient = diffuseAmbient + radiance * (kS * envBRDF.x + envBRDF.y);
-    ambient *= ao * 0.2f;
+    ambient *= ao * 0.4f;
 
-    float3 color = Lo * lightColor * intensity * shadowFactor + ambient + emissiveColor;
+    float3 color = surfaceColor + ambient + emissiveColor;
 
     if (g_VisualizeCascades) {
         return float4(color * cascadeColor, alpha);

@@ -103,11 +103,36 @@ CBUFFER(PerViewGlobalConstantBuffer, PER_VIEW_CBUFFER_SLOT) {
     Matrix4 g_InverseViewProjMatrix;
 };
 
+struct SpotLightData {
+    Vector3 position;
+    float minConeAngleCos;
+    Vector3 direction;
+    float maxConeAngleCos;
+    Vector3 color;
+    float intensity;
+};
+
+struct PointLightData {
+    Vector4 position;
+    Vector3 color;
+    float intensity;
+};
+
+#define MAX_POINT_LIGHT_COUNT 8
+#define MAX_SPOT_LIGHT_COUNT 8
+
 CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
     Vector4 g_DirectionLightDirection;
     Vector4 g_DirectionLightColor; // xyz color, w intensity
     Matrix4 g_DirectionLightViewMatrix;
     Matrix4 g_DirectionLightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
+
+    PointLightData g_PointLights[MAX_POINT_LIGHT_COUNT];
+    SpotLightData g_SpotLights[MAX_SPOT_LIGHT_COUNT];
+
+    uint32_t g_PointLightCount;
+    uint32_t g_SpotLightCount;
+    Vector2 pad;
 
     Vector4 g_ScreenDimensions;
 };

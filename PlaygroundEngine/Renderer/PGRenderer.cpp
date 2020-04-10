@@ -426,8 +426,8 @@ void PGRenderer::RenderFrame() {
     mainRenderView.projViewMatrix = mainCamera->GetProjectionViewMatrix();
     mainRenderView.inverseProjViewMatrix = cameraInverseProjViewMatrix;
 
-    PGLight* directionalLight = s_ActiveSceneData->directionalLight;
-    Vector3 directionalLightDirection = Normalize(-directionalLight->position);
+    PGDirectionalLight* directionalLight = s_ActiveSceneData->directionalLight;
+    Vector3 directionalLightDirection = Normalize(directionalLight->direction);
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
     perFrameGlobalConstantBuffer.g_DirectionLightDirection = Vector4(directionalLightDirection, 1.0f);
     perFrameGlobalConstantBuffer.g_DirectionLightColor = Vector4(directionalLight->color, directionalLight->intensity);
@@ -444,7 +444,6 @@ void PGRenderer::RenderFrame() {
         PGRenderView& renderView = shadowCascadeRenderViews[cascadeIndex];
         Matrix4& cascadeProjMatrix = shadowProjMatrices[cascadeIndex];
 
-        renderView.cameraPos = directionalLight->position;
         renderView.viewMatrix = lightView;
         renderView.projMatrix = cascadeProjMatrix;
         renderView.projViewMatrix = cascadeProjMatrix * lightView;
@@ -456,6 +455,31 @@ void PGRenderer::RenderFrame() {
         renderView.renderList = &cascadeRenderList;
         cascadeRenderList.SortByDepth();
     }
+
+    std::vector<PGPointLight> pointLights = s_ActiveSceneData->pointLights;
+    for (size_t pointLightIndex = 0; pointLightIndex < std::max(pointLights.size(), (size_t) MAX_POINT_LIGHT_COUNT); ++pointLightIndex) {
+        PGPointLight pointLight = pointLights[pointLightIndex];
+
+        PointLightData& lightData = perFrameGlobalConstantBuffer.g_PointLights[pointLightIndex];
+        lightData.position = Vector4(pointLight.position, 1.0f);
+        lightData.color = pointLight.color;
+        lightData.intensity = pointLight.intensity;
+    }
+    perFrameGlobalConstantBuffer.g_PointLightCount = pointLights.size();
+
+    std::vector<PGSpotLight> spotLights = s_ActiveSceneData->spotLights;
+    for (size_t spotLightIndex = 0; spotLightIndex < std::max(spotLights.size(), (size_t) MAX_SPOT_LIGHT_COUNT); ++spotLightIndex) {
+        PGSpotLight spotLight = spotLights[spotLightIndex];
+
+        SpotLightData& lightData = perFrameGlobalConstantBuffer.g_SpotLights[spotLightIndex];
+        lightData.position = spotLight.position;
+        lightData.minConeAngleCos = spotLight.minConeAngleCos;
+        lightData.direction = spotLight.direction;
+        lightData.maxConeAngleCos = spotLight.maxConeAngleCos;
+        lightData.color = spotLight.color;
+        lightData.intensity = spotLight.intensity;
+    }
+    perFrameGlobalConstantBuffer.g_SpotLightCount = spotLights.size();
 
     void* data = s_RendererAPI->Map(PGRendererResources::s_PerFrameGlobalConstantBuffer);
     memcpy(data, &perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer));

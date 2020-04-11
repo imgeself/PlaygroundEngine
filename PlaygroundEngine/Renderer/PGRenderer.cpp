@@ -457,7 +457,7 @@ void PGRenderer::RenderFrame() {
     }
 
     std::vector<PGPointLight> pointLights = s_ActiveSceneData->pointLights;
-    for (size_t pointLightIndex = 0; pointLightIndex < std::max(pointLights.size(), (size_t) MAX_POINT_LIGHT_COUNT); ++pointLightIndex) {
+    for (size_t pointLightIndex = 0; pointLightIndex < std::min(pointLights.size(), (size_t) MAX_POINT_LIGHT_COUNT); ++pointLightIndex) {
         PGPointLight pointLight = pointLights[pointLightIndex];
 
         PointLightData& lightData = perFrameGlobalConstantBuffer.g_PointLights[pointLightIndex];
@@ -468,7 +468,7 @@ void PGRenderer::RenderFrame() {
     perFrameGlobalConstantBuffer.g_PointLightCount = pointLights.size();
 
     std::vector<PGSpotLight> spotLights = s_ActiveSceneData->spotLights;
-    for (size_t spotLightIndex = 0; spotLightIndex < std::max(spotLights.size(), (size_t) MAX_SPOT_LIGHT_COUNT); ++spotLightIndex) {
+    for (size_t spotLightIndex = 0; spotLightIndex < std::min(spotLights.size(), (size_t) MAX_SPOT_LIGHT_COUNT); ++spotLightIndex) {
         PGSpotLight spotLight = spotLights[spotLightIndex];
 
         SpotLightData& lightData = perFrameGlobalConstantBuffer.g_SpotLights[spotLightIndex];

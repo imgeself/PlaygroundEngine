@@ -9,5 +9,6 @@
 
 #include "PGResouceManager.h"
 
+PG_API void LoadScene(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename);
 PG_API void LoadSceneFromGLTFFile(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename, bool leftHandedNormalMap);
 PG_API void CreateQuad(HWRendererAPI* rendererAPI, PGSceneObject* outSceneObject, Material* defaultMaterial, Vector2 leftBottom, Vector2 rightTop, float zVal);

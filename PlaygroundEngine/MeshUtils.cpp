@@ -2,10 +2,13 @@
 
 #include "Utility/tiny_obj_loader.h"
 
+#define TINYGLTF_USE_RAPIDJSON
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #include "Utility/tiny_gltf.h"
 
 #include "Platform/PGTime.h"
+
+
 
 void CreateTangentsGLTF(HWRendererAPI* rendererAPI, SubMesh* submesh, bool leftHandedNormalMap, const tinygltf::Model& model, const tinygltf::Primitive& prim,
     const tinygltf::BufferView& positionBufferView, const tinygltf::BufferView& normalBufferView, const tinygltf::BufferView& texCoordBufferView) {
@@ -515,5 +518,129 @@ void CreateQuad(HWRendererAPI* rendererAPI, PGSceneObject* outSceneObject, Mater
 
     outSceneObject->mesh = mesh;
 }
+
+#include "Utility/rapidjson/error/en.h"
+#include "Utility/rapidjson/rapidjson.h"
+#include "Utility/rapidjson/document.h"
+
+void LoadScene(HWRendererAPI* rendererAPI, PGScene* scene, Material* defaultMaterial, const std::string& filename) {
+    FILE* sceneJsonFile;
+    fopen_s(&sceneJsonFile, filename.c_str(), "r");
+
+    std::filesystem::path filenamePath(filename);
+    std::string directory = filenamePath.parent_path().string() + "/";
+
+    if (sceneJsonFile) {
+        fseek(sceneJsonFile, 0, SEEK_END);
+        size_t fileSize = ftell(sceneJsonFile);
+        fseek(sceneJsonFile, 0, SEEK_SET);
+
+        char* jsonString = (char*) _malloca(fileSize + 1);
+        memset(jsonString, 0, fileSize + 1);
+        fread(jsonString, 1, fileSize, sceneJsonFile);
+
+        rapidjson::Document doc;
+        rapidjson::ParseResult parseResult = doc.Parse(jsonString);
+
+        if (!parseResult) {
+            PG_LOG_ERROR("JSON parse error: %s (%u)", GetParseError_En(parseResult.Code()), parseResult.Offset());
+        }
+
+        rapidjson::GenericArray models = doc["models"].GetArray();
+        rapidjson::SizeType numModels = models.Size();
+        for (rapidjson::SizeType modelIndex = 0; modelIndex < numModels; ++modelIndex) {
+            rapidjson::Value& model = models[modelIndex];
+
+            std::string filepath = model["filepath"].GetString();
+            bool leftHandedNormalMaps = model["leftHandedNormalMap"].GetBool();
+
+            LoadSceneFromGLTFFile(rendererAPI, scene, defaultMaterial, directory + filepath, leftHandedNormalMaps);
+        }
+
+        // Camera
+        {
+            rapidjson::Value& camera = doc["camera"];
+            rapidjson::GenericArray positionArray = camera["position"].GetArray();
+            float nearPlane = camera["nearPlane"].GetFloat();
+            float farPlane = camera["farPlane"].GetFloat();
+            float fovDegrees = camera["fov"].GetFloat();
+
+
+            PGCamera* sceneCamera = new PGCamera;
+            sceneCamera->SetFrustum(1280, 720, nearPlane, farPlane, toRadians(fovDegrees));
+            Transform cameraTransform;
+            cameraTransform.Translate(Vector3(positionArray[0].GetFloat(), positionArray[1].GetFloat(), positionArray[2].GetFloat()));
+            sceneCamera->TransformCamera(&cameraTransform);
+
+            scene->camera = sceneCamera;
+        }
+
+        // Directional light
+        {
+            rapidjson::Value& directionalLight = doc["directionalLight"];
+            rapidjson::GenericArray directionArray = directionalLight["direction"].GetArray();
+            rapidjson::GenericArray colorArray = directionalLight["color"].GetArray();
+            float intensity = directionalLight["intensity"].GetFloat();
+
+            PGDirectionalLight light = {};
+            light.direction = Vector3(directionArray[0].GetFloat(), directionArray[1].GetFloat(), directionArray[2].GetFloat());
+            light.color = Vector3(colorArray[0].GetFloat(), colorArray[1].GetFloat(), colorArray[2].GetFloat());
+            light.intensity = intensity;
+
+            scene->directionalLight = light;
+        }
+
+        // Point lights
+        {
+            rapidjson::GenericArray pointLightArray = doc["pointLights"].GetArray();
+            rapidjson::SizeType numPointLights = pointLightArray.Size();
+            for (rapidjson::SizeType pointLightIndex = 0; pointLightIndex < numPointLights; ++pointLightIndex) {
+                rapidjson::Value& pointLight = pointLightArray[pointLightIndex];
+
+                rapidjson::GenericArray positionArray = pointLight["position"].GetArray();
+                rapidjson::GenericArray colorArray = pointLight["color"].GetArray();
+                float intensity = pointLight["intensity"].GetFloat();
+
+                PGPointLight light = {};
+                light.position = Vector3(positionArray[0].GetFloat(), positionArray[1].GetFloat(), positionArray[2].GetFloat());
+                light.color = Vector3(colorArray[0].GetFloat(), colorArray[1].GetFloat(), colorArray[2].GetFloat());
+                light.intensity = intensity;
+
+                scene->pointLights.push_back(light);
+            }
+        }
+
+        // Spot lights
+        {
+            rapidjson::GenericArray spotLightArray = doc["spotLights"].GetArray();
+            rapidjson::SizeType numSpotLights = spotLightArray.Size();
+            for (rapidjson::SizeType spotLightIndex = 0; spotLightIndex < numSpotLights; ++spotLightIndex) {
+                rapidjson::Value& spotLight = spotLightArray[spotLightIndex];
+
+                rapidjson::GenericArray positionArray = spotLight["position"].GetArray();
+                rapidjson::GenericArray directionArray = spotLight["direction"].GetArray();
+                rapidjson::GenericArray colorArray = spotLight["color"].GetArray();
+                float intensity = spotLight["intensity"].GetFloat();
+                float minConeAngleCos = std::cosf(toRadians(spotLight["minConeAngle"].GetFloat()));
+                float maxConeAngleCos = std::cosf(toRadians(spotLight["maxConeAngle"].GetFloat()));
+
+                PGSpotLight light = {};
+                light.position = Vector3(positionArray[0].GetFloat(), positionArray[1].GetFloat(), positionArray[2].GetFloat());
+                light.direction = Vector3(directionArray[0].GetFloat(), directionArray[1].GetFloat(), directionArray[2].GetFloat());
+                light.color = Vector3(colorArray[0].GetFloat(), colorArray[1].GetFloat(), colorArray[2].GetFloat());
+                light.intensity = intensity;
+                light.minConeAngleCos = minConeAngleCos;
+                light.maxConeAngleCos = maxConeAngleCos;
+
+                scene->spotLights.push_back(light);
+            }
+        }
+
+
+        fclose(sceneJsonFile);
+        _freea(jsonString);
+    }
+}
+
 
 

@@ -426,11 +426,11 @@ void PGRenderer::RenderFrame() {
     mainRenderView.projViewMatrix = mainCamera->GetProjectionViewMatrix();
     mainRenderView.inverseProjViewMatrix = cameraInverseProjViewMatrix;
 
-    PGDirectionalLight* directionalLight = s_ActiveSceneData->directionalLight;
-    Vector3 directionalLightDirection = Normalize(directionalLight->direction);
+    PGDirectionalLight directionalLight = s_ActiveSceneData->directionalLight;
+    Vector3 directionalLightDirection = Normalize(directionalLight.direction);
     PerFrameGlobalConstantBuffer perFrameGlobalConstantBuffer = {};
     perFrameGlobalConstantBuffer.g_DirectionLightDirection = Vector4(directionalLightDirection, 1.0f);
-    perFrameGlobalConstantBuffer.g_DirectionLightColor = Vector4(directionalLight->color, directionalLight->intensity);
+    perFrameGlobalConstantBuffer.g_DirectionLightColor = Vector4(directionalLight.color, directionalLight.intensity);
 
     Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), directionalLightDirection, Vector3(0.0f, 0.0f, 1.0f));
     perFrameGlobalConstantBuffer.g_DirectionLightViewMatrix = lightView;

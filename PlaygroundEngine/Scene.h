@@ -31,7 +31,7 @@ struct PGSceneObject {
 
 struct PGScene {
     PGCamera* camera;
-    PGDirectionalLight* directionalLight;
+    PGDirectionalLight directionalLight;
     std::vector<PGPointLight> pointLights;
     std::vector<PGSpotLight> spotLights;
     PGTexture* skyboxTexture;

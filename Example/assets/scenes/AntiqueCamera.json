@@ -1,0 +1,23 @@
+{
+  "name": "AntiqueCamera",
+
+  "models": [
+    {
+      "filepath": "../AntiqueCamera.glb",
+      "leftHandedNormalMap": false
+    }
+  ],
+
+  "camera": {
+    "fov": 45.0,
+    "nearPlane": 0.1,
+    "farPlane": 100.0,
+    "position": [ 0.0, 3.0, -4.0 ]
+  },
+
+  "directionalLight": {
+    "direction": [ -20.0, -54.0, 20.0 ],
+    "color": [ 1.0, 0.8, 0.6 ],
+    "intensity": 4.0
+  }
+}

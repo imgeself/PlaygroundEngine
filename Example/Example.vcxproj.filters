@@ -30,4 +30,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\scenes\sponza.json" />
+    <None Include="assets\scenes\AntiqueCamera.json" />
+    <None Include="assets\scenes\DamagedHelmet.json" />
+  </ItemGroup>
 </Project>

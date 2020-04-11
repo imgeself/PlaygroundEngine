@@ -9,12 +9,20 @@ PGCamera::PGCamera()
 
 void PGCamera::SetFrustum(uint32_t imageWidth, uint32_t imageHeight, float nearPlaneDistance, float farPlaneDistance, float fovRadians) {
     m_ProjectionMatrix = PerspectiveMatrixLH(imageWidth, imageHeight, nearPlaneDistance, farPlaneDistance, fovRadians);
+
+    m_NearPlaneDistance = nearPlaneDistance;
+    m_FarPlaneDistance = farPlaneDistance;
+    m_FovRadians = fovRadians;
 }
 
 void PGCamera::SetView(Vector3 cameraPosition, Vector3 targetPoint) {
     // Left-handed look-at function
     m_ViewMatrix = LookAtLH(cameraPosition, targetPoint, Vector3(0.0f, 1.0f, 0.0f));
     m_Position = cameraPosition;
+}
+
+void PGCamera::UpdateAspectRatio(uint32_t width, uint32_t height) {
+    m_ProjectionMatrix = PerspectiveMatrixLH(width, height, m_NearPlaneDistance, m_FarPlaneDistance, m_FovRadians);
 }
 
 void PGCamera::TransformCamera(Transform* transform) {

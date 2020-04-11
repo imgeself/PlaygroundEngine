@@ -11,6 +11,10 @@
 #define PI 3.14159265f
 #define HALF_PI PI * 0.5f
 
+inline float toRadians(float x) {
+    return x * PI / 180.0f;
+}
+
 inline float Clamp(float low, float value, float high) {
     if (value < low) {
         return low;

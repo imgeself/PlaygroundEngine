@@ -18,12 +18,8 @@ public:
 
 private:
     PGSystem* m_System;
-    PGCamera m_MainCamera;
-
     Material* m_DefaultMaterial;
-
     ShaderRef m_PBRShader;
-
     PGScene m_Scene;
 
 };

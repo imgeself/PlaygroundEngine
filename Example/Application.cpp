@@ -22,19 +22,8 @@ Application::~Application() {
 
 void Application::OnInit() {
 
-    m_MainCamera.SetFrustum(1280, 720, 0.01f, 100.0f, PI / 4.0f);
-
     PGShaderLib* shaderLib = m_System->GetShaderLib();
     m_PBRShader = shaderLib->GetDefaultShader("PBRForward");
-
-    Vector3 lightPosition(20.0f, 54.0f, -20.0f);
-    PGDirectionalLight* sunLight = new PGDirectionalLight;
-    sunLight->direction = -lightPosition;
-    sunLight->color = Vector3(1.0f, 0.8f, 0.6f);
-    sunLight->intensity = 4.0f;
-
-    m_Scene.camera = &m_MainCamera;
-    m_Scene.directionalLight = sunLight;
 
     PGTexture* skybox = (PGTexture*) PGResourceManager::CreateResource("./assets/beach/beach.dds");
     PGTexture* irradiance = (PGTexture*) PGResourceManager::CreateResource("./assets/beach/beachirradiance.dds");
@@ -59,59 +48,9 @@ void Application::OnInit() {
     m_DefaultMaterial->doubleSided = true;
     m_DefaultMaterial->alphaMode = AlphaMode_BLEND_OVER_OP;
 
-
-    //LoadSceneFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/DamagedHelmet/DamagedHelmet.gltf", false);
-    LoadSceneFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/Sponza/Sponza.gltf", true);
-    //LoadSceneFromGLTFFile(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/AntiqueCamera.glb", true);
-
-    Transform cameraTransform;
-    cameraTransform.Translate(Vector3(0.0f,-0.5f, -4.0f));
-    m_MainCamera.TransformCamera(&cameraTransform);
-
-    PGPointLight pointLight = {};
-    pointLight.position = Vector3(-3.0, 1.0f, 1.0f);
-    pointLight.color = Vector3(0.0f, 0.8f, 1.0f);
-    pointLight.intensity = 5.0f;
-
-    PGPointLight pointLight2 = {};
-    pointLight2.position = Vector3(3.0, 1.0f, 1.0f);
-    pointLight2.color = Vector3(1.0f, 0.0f, 1.0f);
-    pointLight2.intensity = 5.0f;
-
-    PGPointLight pointLight3 = {};
-    pointLight3.position = Vector3(-3.0, 5.0f, 3.0f);
-    pointLight3.color = Vector3(0.0f, 0.8f, 0.0f);
-    pointLight3.intensity = 4.0f;
-
-    PGPointLight pointLight4 = {};
-    pointLight4.position = Vector3(-5.0, 5.0f, -2.0f);
-    pointLight4.color = Vector3(1.0f, 0.0f, 0.0f);
-    pointLight4.intensity = 3.0f;
-
-    m_Scene.pointLights.push_back(pointLight);
-    m_Scene.pointLights.push_back(pointLight2);
-    m_Scene.pointLights.push_back(pointLight3);
-    m_Scene.pointLights.push_back(pointLight4);
-
-    PGSpotLight spotLight = {};
-    spotLight.position = Vector3(0.0f, 1.0f, 0.5f);
-    spotLight.minConeAngleCos = std::cosf(PI / 6.0f);
-    spotLight.direction = Vector3(-1.0f, -0.5f, 0.0f);
-    spotLight.maxConeAngleCos = std::cosf(PI / 4.0f);
-    spotLight.color = Vector3(1.0f, 1.0f, 0.3f);
-    spotLight.intensity = 2.0f;
-
-    PGSpotLight spotLight2 = {};
-    spotLight2.position = Vector3(0.0f, 1.0f, -0.5f);
-    spotLight2.minConeAngleCos = std::cosf(PI / 6.0f);
-    spotLight2.direction = Vector3(-1.0f, -0.5f, 0.0f);
-    spotLight2.maxConeAngleCos = std::cosf(PI / 4.0f);
-    spotLight2.color = Vector3(1.0f, 1.0f, 0.3f);
-    spotLight2.intensity = 2.0f;
-
-    m_Scene.spotLights.push_back(spotLight);
-    m_Scene.spotLights.push_back(spotLight2);
-
+    LoadScene(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/scenes/sponza.json");
+    //LoadScene(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/scenes/DamagedHelmet.json");
+    //LoadScene(PGRenderer::GetRendererAPI(), &m_Scene, m_DefaultMaterial, "./assets/scenes/AntiqueCamera.json");
 
 
     PGRenderer::EndScene();
@@ -119,7 +58,7 @@ void Application::OnInit() {
 
 void Application::OnSystemEvent(SystemEvent event, uint64_t param1, uint64_t param2) {
     if (event == SystemEvent::RESIZE) {
-        m_MainCamera.SetFrustum((uint32_t) param1, (uint32_t) param2, 0.01f, 100.0f, PI / 4.0f);
+        m_Scene.camera->UpdateAspectRatio((uint32_t) param1, (uint32_t) param2);
     }
 }
 
@@ -182,7 +121,7 @@ void Application::OnUpdate(float deltaTime) {
     cameraTransform.Translate(cameraPos + cameraMove);
     m_Scene.camera->TransformCamera(&cameraTransform);
 
-    Vector3 lightDirection = m_Scene.directionalLight->direction;
+    Vector3 lightDirection = m_Scene.directionalLight.direction;
     if (PGInput::IsKeyPressed(PGKEY_I)) {
         lightDirection.z += 15.0f * deltaTime;
     }
@@ -203,7 +142,7 @@ void Application::OnUpdate(float deltaTime) {
     else if (PGInput::IsKeyPressed(PGKEY_O)) {
         lightDirection.y += 15.0f * deltaTime;
     }
-    m_Scene.directionalLight->direction = lightDirection;
+    m_Scene.directionalLight.direction = lightDirection;
 
 }
 

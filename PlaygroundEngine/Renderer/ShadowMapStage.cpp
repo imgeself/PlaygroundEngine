@@ -26,6 +26,42 @@ void ShadowGenStage::Execute(HWRendererAPI* rendererAPI, PGRenderView renderView
     rendererAPI->EndEvent();
 }
 
+void ShadowGenStage::ExecutePointLightShadow(HWRendererAPI* rendererAPI, GPUResource* pointLightShadowTexture, 
+                                             PGRenderView renderView, const PGRendererConfig& rendererConfig, 
+                                             uint32_t pointLightShadowIndex, uint32_t cubeMapFaceIndex, bool clear) {
+    PG_PROFILE_FUNCTION();
+    rendererAPI->BeginEvent("POINT SHADOW GEN");
+
+    HWViewport viewport = {};
+    viewport.width = rendererConfig.pointLightShadowMapSize;
+    viewport.height = rendererConfig.pointLightShadowMapSize;
+
+    rendererAPI->SetViewport(&viewport);
+    uint32_t shadowDSVIndex = pointLightShadowIndex * 6 + cubeMapFaceIndex;
+    HWDepthStencilView* shadowMapDSV = m_PointShadowMapTargets[shadowDSVIndex];
+    if (!shadowMapDSV) {
+        HWResourceViewDesc resourceViewDesc = {};
+        resourceViewDesc.firstArraySlice = shadowDSVIndex;
+        resourceViewDesc.sliceArrayCount = 1;
+        resourceViewDesc.firstMip = 0;
+        resourceViewDesc.mipCount = 1;
+        HWDepthStencilView* DSV = rendererAPI->CreateDepthStencilView((HWTexture2D*) pointLightShadowTexture->resource, resourceViewDesc);
+        m_PointShadowMapTargets[shadowDSVIndex] = DSV;
+        shadowMapDSV = DSV;
+    }
+
+    rendererAPI->SetRenderTargets(nullptr, 0, shadowMapDSV);
+    if (clear) {
+        rendererAPI->ClearDepthStencilView(shadowMapDSV, false, 1.0f, 0);
+    }
+
+    renderView.UpdatePerViewConstantBuffer(rendererAPI);
+    RenderScene(rendererAPI, renderView.renderList, SceneRenderPassType::DEPTH_PASS);
+
+    rendererAPI->EndEvent();
+}
+
+
 void ShadowGenStage::SetShadowMapTarget(HWRendererAPI* rendererAPI, HWTexture2D* shadowMapTexture, const PGRendererConfig& rendererConfig) {
     m_ShadowMapViewport.topLeftX = 0.0f;
     m_ShadowMapViewport.topLeftY = 0.0f;

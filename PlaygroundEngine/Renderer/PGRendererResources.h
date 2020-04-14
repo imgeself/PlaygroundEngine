@@ -15,6 +15,8 @@ struct PGRendererConfig {
     float gamma = 2.2f;
 
     uint32_t shadowMapSize = 1024;
+    uint32_t pointLightShadowMapSize = 256;
+    uint32_t spotLightShadowMapSize = 256;
     uint8_t shadowCascadeCount = 4;
 
     uint8_t msaaSampleCount = 1;
@@ -149,6 +151,8 @@ struct PGRendererResources {
     static GPUResource* s_DepthStencilTarget;
     static GPUResource* s_ResolvedHDRRenderTarget; // if msaa enabled
     static GPUResource* s_ShadowMapCascadesTexture;
+    static GPUResource* s_PointLightsShadowArray;
+    static GPUResource* s_SpotLightsShadowArray;
 
     static void CreateDefaultBuffers(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig);
     static void CreateDefaultSamplerStates(HWRendererAPI* rendererAPI);

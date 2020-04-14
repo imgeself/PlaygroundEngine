@@ -22,6 +22,8 @@ GPUResource* PGRendererResources::s_HDRRenderTarget;
 GPUResource* PGRendererResources::s_DepthStencilTarget;
 GPUResource* PGRendererResources::s_ResolvedHDRRenderTarget; // if msaa enabled
 GPUResource* PGRendererResources::s_ShadowMapCascadesTexture;
+GPUResource* PGRendererResources::s_PointLightsShadowArray;
+GPUResource* PGRendererResources::s_SpotLightsShadowArray;
 
 uint8_t PGRendererResources::CreateCachedPipelineState(HWRendererAPI* rendererAPI, SceneRenderPassType scenePassType, const PGPipelineDesc& pipelineDesc) {
     size_t hashPSO = Hash((const uint8_t*)&pipelineDesc, sizeof(PGPipelineDesc));
@@ -244,6 +246,8 @@ void PGRendererResources::CreateSizeDependentResources(HWRendererAPI* rendererAP
 
 void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, const PGRendererConfig& rendererConfig) {
     SAFE_DELETE(s_ShadowMapCascadesTexture);
+    SAFE_DELETE(s_PointLightsShadowArray);
+    SAFE_DELETE(s_SpotLightsShadowArray);
 
     Texture2DDesc initParams = {};
     initParams.width = rendererConfig.shadowMapSize;
@@ -255,6 +259,28 @@ void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, c
     initParams.flags = HWResourceFlags::BIND_DEPTH_STENCIL | HWResourceFlags::BIND_SHADER_RESOURCE;
     // Only create shader resource view. Depth-stencil views will be created in shadow gen stage.
     s_ShadowMapCascadesTexture = new GPUResource(rendererAPI, &initParams, nullptr, GPUResource::CreationFlags::CREATE_SHADER_RESOURCE_VIEW, "ShadowMap");
+
+    Texture2DDesc pointLightShadowInitParams = {};
+    pointLightShadowInitParams.width = rendererConfig.pointLightShadowMapSize;
+    pointLightShadowInitParams.height = rendererConfig.pointLightShadowMapSize;
+    pointLightShadowInitParams.format = DXGI_FORMAT_R16_TYPELESS;
+    pointLightShadowInitParams.sampleCount = 1;
+    pointLightShadowInitParams.mipCount = 1;
+    pointLightShadowInitParams.arraySize = MAX_POINT_LIGHT_COUNT * 6;
+    pointLightShadowInitParams.flags = HWResourceFlags::BIND_DEPTH_STENCIL | HWResourceFlags::BIND_SHADER_RESOURCE | HWResourceFlags::MISC_TEXTURE_CUBE;
+    // Only create shader resource view. Depth-stencil views will be created in shadow gen stage.
+    s_PointLightsShadowArray = new GPUResource(rendererAPI, &pointLightShadowInitParams, nullptr, GPUResource::CreationFlags::CREATE_SHADER_RESOURCE_VIEW, "PointShadowMap");
+
+    Texture2DDesc spotLightShadowInitParams = {};
+    spotLightShadowInitParams.width = rendererConfig.spotLightShadowMapSize;
+    spotLightShadowInitParams.height = rendererConfig.spotLightShadowMapSize;
+    spotLightShadowInitParams.format = DXGI_FORMAT_R16_TYPELESS;
+    spotLightShadowInitParams.sampleCount = 1;
+    spotLightShadowInitParams.mipCount = 1;
+    spotLightShadowInitParams.arraySize = MAX_SPOT_LIGHT_COUNT;
+    spotLightShadowInitParams.flags = HWResourceFlags::BIND_DEPTH_STENCIL | HWResourceFlags::BIND_SHADER_RESOURCE;
+    // Only create shader resource view. Depth-stencil views will be created in shadow gen stage.
+    s_SpotLightsShadowArray = new GPUResource(rendererAPI, &spotLightShadowInitParams, nullptr, GPUResource::CreationFlags::CREATE_SHADER_RESOURCE_VIEW, "SpotShadowMap");
 }
 
 void PGRendererResources::ClearResources() {
@@ -269,6 +295,8 @@ void PGRendererResources::ClearResources() {
     SAFE_DELETE(s_DepthStencilTarget);
     SAFE_DELETE(s_ResolvedHDRRenderTarget);
     SAFE_DELETE(s_ShadowMapCascadesTexture);
+    SAFE_DELETE(s_PointLightsShadowArray);
+    SAFE_DELETE(s_SpotLightsShadowArray);
 
     for (HWSamplerState* samplerState : s_DefaultSamplers) {
         if (samplerState) {

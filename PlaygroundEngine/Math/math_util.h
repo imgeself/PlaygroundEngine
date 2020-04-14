@@ -8,8 +8,13 @@
 
 #define U32Max ((uint32_t)-1)
 #define F32Max FLT_MAX
-#define PI 3.14159265f
-#define HALF_PI PI * 0.5f
+
+#define PI 3.141592654f
+#define TWOPI 6.283185307f
+#define IVVPI 0.318309886f
+#define INV2PI 0.159154943f
+#define PIDIV2 1.570796327f
+#define PIDIV4 0.785398163f
 
 inline float toRadians(float x) {
     return x * PI / 180.0f;

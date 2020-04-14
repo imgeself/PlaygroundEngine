@@ -45,3 +45,40 @@ inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex
     return shadowFactor;
 }
 
+static const float3 sampleOffsetDirections[20] = {
+    float3(1, 1, 1),  float3(1, -1, 1),  float3(-1, -1, 1),  float3(-1, 1, 1),
+    float3(1, 1, -1), float3(1, -1, -1), float3(-1, -1, -1), float3(-1, 1, -1),
+    float3(1, 1, 0),  float3(1, -1, 0),  float3(-1, -1, 0),  float3(-1, 1, 0),
+    float3(1, 0, 1),  float3(-1, 0, 1),  float3(1, 0, -1),   float3(-1, 0, -1),
+    float3(0, 1, 1),  float3(0, -1, 1),  float3(0, -1, -1),  float3(0, 1, -1)
+};
+
+inline float PointLightPCFShadowMap(float3 shadowCoord, uint lightIndex, float bias) {
+    float n = g_PointLightProjNearPlane;
+    float f = g_PointLightProjFarPlane;
+
+    float3 absVec = abs(shadowCoord);
+    float viewZ = max(absVec.x, max(absVec.y, absVec.z));
+
+    float projectedZ = (f + n) / (f - n) - ((2 * f * n) / (f - n)) / viewZ;
+    projectedZ = (projectedZ + 1.0) * 0.5;
+    float compareValue = projectedZ - bias;
+
+    float shadowValue = 0;
+    float diskRadius = 0.015f;
+    uint sampleCount = 20;
+    for (uint i = 0; i < sampleCount; ++i) {
+        float3 offset = sampleOffsetDirections[i] * diskRadius;
+        float sampleCmp = g_PointLightShadowMapArray.SampleCmpLevelZero(g_ShadowMapSampler, float4(shadowCoord + offset, lightIndex), compareValue);
+        shadowValue += sampleCmp;
+    }
+
+    return shadowValue / sampleCount;
+}
+
+inline float CalculatePointLightShadow(float3 unnormalizedLightVector, uint lightIndex) {
+    float bias = 0.01f;
+
+    return PointLightPCFShadowMap(-unnormalizedLightVector, lightIndex, bias);
+}
+

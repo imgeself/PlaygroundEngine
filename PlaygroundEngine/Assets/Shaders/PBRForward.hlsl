@@ -138,20 +138,22 @@ float4 PSMain(VSOut input) : SV_Target {
     }
 
     // Point lights
-    for (uint i = 0; i < g_PointLightCount; i++) {
-        PointLightData light = g_PointLights[i];
+    for (uint pointLightIndex = 0; pointLightIndex < g_PointLightCount; pointLightIndex++) {
+        PointLightData light = g_PointLights[pointLightIndex];
 
-        float3 lightVector = light.position.xyz - input.worldPos;
-        float distanceSq = dot(lightVector, lightVector);
+        float3 unnormalizedLightVector = light.position.xyz - input.worldPos;
+        float distanceSq = dot(unnormalizedLightVector, unnormalizedLightVector);
         float attenuation = 1 / distanceSq;
 
-        lightVector = normalize(lightVector);
+        float3 lightVector = normalize(unnormalizedLightVector);
         float3 Lo = BRDF(lightVector, normalVector, viewVector, albedoColor, roughness, metallic);
 
         float3 lightColor = light.color;
         float intensity = light.intensity;
 
-        float3 color = Lo * lightColor * intensity * attenuation;
+        float shadowFactor = CalculatePointLightShadow(unnormalizedLightVector, pointLightIndex);
+
+        float3 color = Lo * lightColor * intensity * attenuation * shadowFactor;
         surfaceColor += color;
     }
 

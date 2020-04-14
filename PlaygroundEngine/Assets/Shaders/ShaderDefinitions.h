@@ -13,18 +13,20 @@
 
 // Texture slots
 #define SHADOW_MAP_TEXTURE2D_SLOT 0
+#define POINT_LIGHT_SHADOW_MAP_TEXTURECUBEARRAY_SLOT 1
+#define SPOT_LIGHT_SHADOW_MAP_TEXTURE2DARRAY_SLOT 2
 
-#define ALBEDO_TEXTURE2D_SLOT 1
-#define ROUGHNESS_TEXTURE2D_SLOT 2
-#define METALLIC_TEXTURE2D_SLOT 3
-#define AO_TEXTURE2D_SLOT 4
-#define METALLIC_ROUGHNESS_TEXTURE2D_SLOT 5
-#define NORMAL_TEXTURE2D_SLOT 6
-#define EMISSIVE_TEXTURE2D_SLOT 7
+#define ALBEDO_TEXTURE2D_SLOT 3
+#define ROUGHNESS_TEXTURE2D_SLOT 4
+#define METALLIC_TEXTURE2D_SLOT 5
+#define AO_TEXTURE2D_SLOT 6
+#define METALLIC_ROUGHNESS_TEXTURE2D_SLOT 7
+#define NORMAL_TEXTURE2D_SLOT 8
+#define EMISSIVE_TEXTURE2D_SLOT 9
 
-#define RADIANCE_TEXTURECUBE_SLOT 8
-#define IRRADIANCE_TEXTURECUBE_SLOT 9
-#define BRDF_LUT_TEXTURE_SLOT 10
+#define RADIANCE_TEXTURECUBE_SLOT 10
+#define IRRADIANCE_TEXTURECUBE_SLOT 11
+#define BRDF_LUT_TEXTURE_SLOT 12
 
 #define SKYBOX_TEXTURECUBE_SLOT 5
 
@@ -54,6 +56,8 @@
 #define TEXTURE2DARRAY(name, format, slotNumber) Texture2DArray<format> name : register(t ## slotNumber)
 #define RWTEXTURE2DARRAY(name, format, slotNumber) RWTexture2DArray<format> name : register(u ## slotNumber)
 #define TEXTURECUBE(name, format, slotNumber) TextureCube<format> name : register(t ## slotNumber)
+#define TEXTURECUBEARRAY(name, format, slotNumber) TextureCubeArray<format> name : register(t ## slotNumber)
+
 #define SAMPLER_STATE(name, slotNumber) SamplerState name : register(s ## slotNumber)
 #define SAMPLER_COMPARISON_STATE(name, slotNumber) SamplerComparisonState name : register(s ## slotNumber)
 #else 
@@ -63,6 +67,8 @@
 #define TEXTURE2DARRAY(name, format, slotNumber)
 #define RWTEXTURE2DARRAY(name, format, slotNumber)
 #define TEXTURECUBE(name, format, slotNumber)
+#define TEXTURECUBEARRAY(name, format, slotNumber)
+
 #define SAMPLER_STATE(name, slotNumber)
 #define SAMPLER_COMPARISON_STATE(name, slotNumber)
 #include "../../Math/math_util.h"
@@ -128,11 +134,14 @@ CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
     Matrix4 g_DirectionLightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
 
     PointLightData g_PointLights[MAX_POINT_LIGHT_COUNT];
+
     SpotLightData g_SpotLights[MAX_SPOT_LIGHT_COUNT];
+    //Matrix4 g_SpotLightProjViewMatrices[MAX_SPOT_LIGHT_COUNT];
 
     uint32_t g_PointLightCount;
     uint32_t g_SpotLightCount;
-    Vector2 pad;
+    float g_PointLightProjNearPlane;
+    float g_PointLightProjFarPlane;
 
     Vector4 g_ScreenDimensions;
 };
@@ -155,6 +164,8 @@ CBUFFER(RendererVariablesConstantBuffer, RENDERER_VARIABLES_CBUFFER_SLOT) {
 
 /////////// Textures
 TEXTURE2DARRAY(g_ShadowMapTexture, float, SHADOW_MAP_TEXTURE2D_SLOT);
+TEXTURECUBEARRAY(g_PointLightShadowMapArray, float, POINT_LIGHT_SHADOW_MAP_TEXTURECUBEARRAY_SLOT);
+TEXTURE2DARRAY(g_SpotLightShadowMapArray, float, SPOT_LIGHT_SHADOW_MAP_TEXTURE2DARRAY_SLOT);
 
 // PBR textures
 TEXTURE2D(g_AlbedoTexture, float4, ALBEDO_TEXTURE2D_SLOT);

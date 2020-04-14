@@ -30,7 +30,13 @@ DX11ShaderResourceView::DX11ShaderResourceView(ID3D11Device* device, ID3D11Textu
             shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMS;
         }
     } else {
-        if (textureDesc.ArraySize > 1 && textureDesc.MiscFlags & D3D11_RESOURCE_MISC_TEXTURECUBE) {
+        if (textureDesc.ArraySize > 6 && textureDesc.MiscFlags & D3D11_RESOURCE_MISC_TEXTURECUBE) {
+            shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+            shaderResouceViewDesc.TextureCubeArray.First2DArrayFace = resourceViewDesc.firstArraySlice;
+            shaderResouceViewDesc.TextureCubeArray.NumCubes = resourceViewDesc.sliceArrayCount / 6;
+            shaderResouceViewDesc.TextureCubeArray.MostDetailedMip = resourceViewDesc.firstMip;
+            shaderResouceViewDesc.TextureCubeArray.MipLevels = resourceViewDesc.mipCount;
+        } else if (textureDesc.ArraySize > 1 && textureDesc.MiscFlags & D3D11_RESOURCE_MISC_TEXTURECUBE) {
             shaderResouceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
             shaderResouceViewDesc.TextureCube.MostDetailedMip = resourceViewDesc.firstMip;
             shaderResouceViewDesc.TextureCube.MipLevels = resourceViewDesc.mipCount;

@@ -249,10 +249,15 @@ void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, c
     SAFE_DELETE(s_PointLightsShadowArray);
     SAFE_DELETE(s_SpotLightsShadowArray);
 
+    DXGI_FORMAT depthFormat = DXGI_FORMAT_R16_TYPELESS;
+    if (rendererConfig.shadowFormat32Bit) {
+        depthFormat = DXGI_FORMAT_R32_TYPELESS;
+    }
+
     Texture2DDesc initParams = {};
     initParams.width = rendererConfig.shadowMapSize;
     initParams.height = rendererConfig.shadowMapSize;
-    initParams.format = DXGI_FORMAT_R16_TYPELESS;
+    initParams.format = depthFormat;
     initParams.sampleCount = 1;
     initParams.mipCount = 1;
     initParams.arraySize = rendererConfig.shadowCascadeCount;
@@ -263,7 +268,7 @@ void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, c
     Texture2DDesc pointLightShadowInitParams = {};
     pointLightShadowInitParams.width = rendererConfig.pointLightShadowMapSize;
     pointLightShadowInitParams.height = rendererConfig.pointLightShadowMapSize;
-    pointLightShadowInitParams.format = DXGI_FORMAT_R16_TYPELESS;
+    pointLightShadowInitParams.format = depthFormat;
     pointLightShadowInitParams.sampleCount = 1;
     pointLightShadowInitParams.mipCount = 1;
     pointLightShadowInitParams.arraySize = MAX_POINT_LIGHT_COUNT * 6;
@@ -274,7 +279,7 @@ void PGRendererResources::CreateShadowMapResources(HWRendererAPI* rendererAPI, c
     Texture2DDesc spotLightShadowInitParams = {};
     spotLightShadowInitParams.width = rendererConfig.spotLightShadowMapSize;
     spotLightShadowInitParams.height = rendererConfig.spotLightShadowMapSize;
-    spotLightShadowInitParams.format = DXGI_FORMAT_R16_TYPELESS;
+    spotLightShadowInitParams.format = depthFormat;
     spotLightShadowInitParams.sampleCount = 1;
     spotLightShadowInitParams.mipCount = 1;
     spotLightShadowInitParams.arraySize = MAX_SPOT_LIGHT_COUNT;

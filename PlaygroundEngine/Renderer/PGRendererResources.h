@@ -18,6 +18,7 @@ struct PGRendererConfig {
     uint32_t pointLightShadowMapSize = 256;
     uint32_t spotLightShadowMapSize = 256;
     uint8_t shadowCascadeCount = 4;
+    bool shadowFormat32Bit = false;
 
     uint8_t msaaSampleCount = 1;
 

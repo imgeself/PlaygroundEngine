@@ -82,7 +82,7 @@ void PGRenderer::Destroy() {
 
 void FrustumCulling(Matrix4& viewProjectionMatrix, Vector3 cameraPos, PGSceneObject* sceneObjects, size_t sceneObjectCount,
                     RenderList* outOpaqueRenderList, RenderList* outTransparentRenderList) {
-    PG_PROFILE_FUNCTION();
+    //PG_PROFILE_FUNCTION();
 
     Vector4 planes[8];
     Matrix4 mat = viewProjectionMatrix;
@@ -357,7 +357,8 @@ bool PGRenderer::Initialize(PGWindow* window) {
     // init shadow mapping
     PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);
     s_ShadowGenStage.Initialize(s_RendererAPI);
-    s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, (HWTexture2D*) PGRendererResources::s_ShadowMapCascadesTexture->resource, s_RendererConfig);
+    s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, s_RendererConfig, (HWTexture2D*)PGRendererResources::s_ShadowMapCascadesTexture->resource,
+        (HWTexture2D*)PGRendererResources::s_PointLightsShadowArray->resource, (HWTexture2D*)PGRendererResources::s_SpotLightsShadowArray->resource);
     s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
     s_SceneRenderPass.SetShaderResource(POINT_LIGHT_SHADOW_MAP_TEXTURECUBEARRAY_SLOT, PGRendererResources::s_PointLightsShadowArray->srv, ShaderStage::PIXEL);
     s_SceneRenderPass.SetShaderResource(SPOT_LIGHT_SHADOW_MAP_TEXTURE2DARRAY_SLOT, PGRendererResources::s_SpotLightsShadowArray->srv, ShaderStage::PIXEL);
@@ -436,11 +437,9 @@ void PGRenderer::RenderFrame() {
     perFrameGlobalConstantBuffer.g_DirectionLightColor = Vector4(directionalLight.color, directionalLight.intensity);
 
     Matrix4 lightView = LookAtLH(Vector3(0.0f, 0.0f, 0.0f), directionalLightDirection, Vector3(0.0f, 0.0f, 1.0f));
-    perFrameGlobalConstantBuffer.g_DirectionLightViewMatrix = lightView;
     Matrix4 shadowProjMatrices[MAX_SHADOW_CASCADE_COUNT];
     CalculateCascadeProjMatrices(cameraInverseProjViewMatrix, lightView, s_RendererConfig, s_ActiveSceneData->boundingBox,
                                  shadowProjMatrices);
-    memcpy(perFrameGlobalConstantBuffer.g_DirectionLightProjMatrices, shadowProjMatrices, sizeof(Matrix4) * MAX_SHADOW_CASCADE_COUNT);
 
     PGRenderView shadowCascadeRenderViews[MAX_SHADOW_CASCADE_COUNT];
     for (size_t cascadeIndex = 0; cascadeIndex < s_RendererConfig.shadowCascadeCount; ++cascadeIndex) {
@@ -451,6 +450,8 @@ void PGRenderer::RenderFrame() {
         renderView.viewMatrix = lightView;
         renderView.projMatrix = cascadeProjMatrix;
         renderView.projViewMatrix = cascadeProjMatrix * lightView;
+        memcpy(perFrameGlobalConstantBuffer.g_DirectionLightProjViewMatrices + cascadeIndex, &renderView.projViewMatrix, sizeof(Matrix4));
+
 
         RenderList& cascadeRenderList = s_RenderLists[RL_SHADOW_GEN_CASCADE_1 + cascadeIndex];
         cascadeRenderList.Clear();
@@ -510,12 +511,12 @@ void PGRenderer::RenderFrame() {
         lightData.color = spotLight.color;
         lightData.intensity = spotLight.intensity;
 
-        Matrix4 projMatrix = PerspectiveMatrixLH(spotLightShadowMapSize, spotLightShadowMapSize, 0.1f, 50.0f, std::acosf(spotLight.maxConeAngleCos));
+        Matrix4 projMatrix = PerspectiveMatrixLH(spotLightShadowMapSize, spotLightShadowMapSize, 0.1f, 50.0f, 2.0f * std::acosf(spotLight.maxConeAngleCos));
         Matrix4 viewMatrix = LookAtLH(spotLight.position, spotLight.position + spotLight.direction, Vector3(0.0f, 1.0f, 0.0f));
         spotLightProjViewMatrices[spotLightIndex] = projMatrix * viewMatrix;
     }
     perFrameGlobalConstantBuffer.g_SpotLightCount = spotLights.size();
-    //memcpy(perFrameGlobalConstantBuffer.g_SpotLightProjViewMatrices, spotLightProjViewMatrices, sizeof(Matrix4) * MAX_SPOT_LIGHT_COUNT);
+    memcpy(perFrameGlobalConstantBuffer.g_SpotLightProjViewMatrices, spotLightProjViewMatrices, sizeof(Matrix4) * MAX_SPOT_LIGHT_COUNT);
 
     void* data = s_RendererAPI->Map(PGRendererResources::s_PerFrameGlobalConstantBuffer);
     memcpy(data, &perFrameGlobalConstantBuffer, sizeof(PerFrameGlobalConstantBuffer));
@@ -532,15 +533,18 @@ void PGRenderer::RenderFrame() {
         s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS, true, "Z PREPASS");
     }
 
-    s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
+    {
+        PG_PROFILE_SCOPE("Direction light shadow gen");
+        s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
+    }
 
     // Point light shadows
+    PGRenderView shadowRenderView;
+    RenderList shadowRenderList;
+    shadowRenderView.renderList = &shadowRenderList;
     {
-        PG_PROFILE_SCOPE("Point light shadow gen")
-        PGRenderView shadowRenderView;
-        RenderList shadowRenderList;
-        shadowRenderView.renderList = &shadowRenderList;
-        for (size_t pointLightIndex = 0; pointLightIndex < std::min(pointLights.size(), (size_t)MAX_SPOT_LIGHT_COUNT); ++pointLightIndex) {
+        PG_PROFILE_SCOPE("Point light shadow gen");
+        for (size_t pointLightIndex = 0; pointLightIndex < std::min(pointLights.size(), (size_t)MAX_POINT_LIGHT_COUNT); ++pointLightIndex) {
             PGPointLight& pointLight = pointLights[pointLightIndex];
             for (size_t cubeMapIndex = 0; cubeMapIndex < 6; ++cubeMapIndex) {
                 Matrix4& projViewMatrix = pointLightProjViewMatrices[pointLightIndex * 6 + cubeMapIndex];
@@ -557,6 +561,27 @@ void PGRenderer::RenderFrame() {
                 s_ShadowGenStage.ExecutePointLightShadow(s_RendererAPI, PGRendererResources::s_PointLightsShadowArray, shadowRenderView,
                     s_RendererConfig, pointLightIndex, cubeMapIndex);
             }
+        }
+    }
+
+    // Spot light shadows
+    {
+        PG_PROFILE_SCOPE("Spot light shadow gen");
+        for (size_t spotLightIndex = 0; spotLightIndex < std::min(spotLights.size(), (size_t)MAX_SPOT_LIGHT_COUNT); ++spotLightIndex) {
+            PGSpotLight& spotLight = spotLights[spotLightIndex];
+            Matrix4& projViewMatrix = spotLightProjViewMatrices[spotLightIndex];
+
+            shadowRenderView.cameraPos = spotLight.position;
+            shadowRenderView.projViewMatrix = projViewMatrix;
+
+            shadowRenderList.Clear();
+            FrustumCulling(shadowRenderView.projViewMatrix, shadowRenderView.cameraPos, s_ActiveSceneData->sceneObjects.data(),
+                s_ActiveSceneData->sceneObjects.size(), &shadowRenderList, nullptr);
+            shadowRenderList.ValidatePipelineStates(s_ShaderLib, s_RendererAPI);
+            shadowRenderList.SortByDepth();
+
+            s_ShadowGenStage.ExecuteSpotLightShadow(s_RendererAPI, PGRendererResources::s_SpotLightsShadowArray, shadowRenderView,
+                s_RendererConfig, spotLightIndex);
         }
     }
 

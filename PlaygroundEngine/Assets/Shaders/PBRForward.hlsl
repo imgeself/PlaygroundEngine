@@ -174,7 +174,9 @@ float4 PSMain(VSOut input) : SV_Target {
         float3 lightColor = light.color;
         float intensity = light.intensity;
 
-        float3 color = Lo * lightColor * intensity * smooth;
+        float shadowFactor = CalculateSpotLightShadow(input.worldPos, spotLightIndex);
+
+        float3 color = Lo * lightColor * intensity * smooth * shadowFactor;
         surfaceColor += color;
     }
 
@@ -194,7 +196,7 @@ float4 PSMain(VSOut input) : SV_Target {
     
     float3 diffuseAmbient = kD * (irradiance * albedoColor);
     float3 ambient = diffuseAmbient + radiance * (kS * envBRDF.x + envBRDF.y);
-    ambient *= ao * 0.4f;
+    ambient *= ao * 0.1f;
 
     float3 color = surfaceColor + ambient + emissiveColor;
 

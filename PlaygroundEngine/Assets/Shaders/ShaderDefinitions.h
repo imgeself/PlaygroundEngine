@@ -130,13 +130,12 @@ struct PointLightData {
 CBUFFER(PerFrameGlobalConstantBuffer, PER_FRAME_CBUFFER_SLOT) {
     Vector4 g_DirectionLightDirection;
     Vector4 g_DirectionLightColor; // xyz color, w intensity
-    Matrix4 g_DirectionLightViewMatrix;
-    Matrix4 g_DirectionLightProjMatrices[MAX_SHADOW_CASCADE_COUNT];
+    Matrix4 g_DirectionLightProjViewMatrices[MAX_SHADOW_CASCADE_COUNT];
 
     PointLightData g_PointLights[MAX_POINT_LIGHT_COUNT];
 
     SpotLightData g_SpotLights[MAX_SPOT_LIGHT_COUNT];
-    //Matrix4 g_SpotLightProjViewMatrices[MAX_SPOT_LIGHT_COUNT];
+    Matrix4 g_SpotLightProjViewMatrices[MAX_SPOT_LIGHT_COUNT];
 
     uint32_t g_PointLightCount;
     uint32_t g_SpotLightCount;

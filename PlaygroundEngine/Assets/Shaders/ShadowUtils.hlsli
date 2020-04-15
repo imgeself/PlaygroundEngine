@@ -24,7 +24,7 @@ inline float CalculateShadowValue(float3 worldSpacePos, out uint hitCascadeIndex
     
     for (uint cascadeIndex = 0; cascadeIndex < g_ShadowCascadeCount; ++cascadeIndex) {
         // ShadowCoordinates
-        float4 worldPosLightSpace = mul(g_DirectionLightProjMatrices[cascadeIndex], mul(g_DirectionLightViewMatrix, float4(worldSpacePos, 1.0f)));
+        float4 worldPosLightSpace = mul(g_DirectionLightProjViewMatrices[cascadeIndex], float4(worldSpacePos, 1.0f));
         float3 shadowCoord = worldPosLightSpace.xyz / worldPosLightSpace.w;
         shadowCoord.x = shadowCoord.x * 0.5f + 0.5f;
         shadowCoord.y = shadowCoord.y * -0.5f + 0.5f;
@@ -65,7 +65,7 @@ inline float PointLightPCFShadowMap(float3 shadowCoord, uint lightIndex, float b
     float compareValue = projectedZ - bias;
 
     float shadowValue = 0;
-    float diskRadius = 0.015f;
+    float diskRadius = 0.01f;
     uint sampleCount = 20;
     for (uint i = 0; i < sampleCount; ++i) {
         float3 offset = sampleOffsetDirections[i] * diskRadius;
@@ -77,8 +77,37 @@ inline float PointLightPCFShadowMap(float3 shadowCoord, uint lightIndex, float b
 }
 
 inline float CalculatePointLightShadow(float3 unnormalizedLightVector, uint lightIndex) {
-    float bias = 0.01f;
+    float bias = 0.005f;
 
     return PointLightPCFShadowMap(-unnormalizedLightVector, lightIndex, bias);
+}
+
+inline float SpotLightPCFShadowMap(float3 shadowCoord, uint lightIndex, float bias) {
+    float kernelSize = 3;
+    int index = floor(kernelSize / 2);
+    float shadowValue = 0;
+    float compareValue = shadowCoord.z - bias;
+    [unroll]
+    for (int i = -index; i <= index; ++i) {
+        [unroll]
+        for (int j = -index; j <= index; ++j) {
+            float2 offset = float2(i, j) * 0.002f;
+            float sampleCmp = g_SpotLightShadowMapArray.SampleCmpLevelZero(g_ShadowMapSampler, float3(shadowCoord.xy + offset, lightIndex), compareValue);
+            shadowValue += sampleCmp;
+        }
+    }
+    shadowValue /= (kernelSize * kernelSize);
+    return shadowValue;
+}
+
+inline float CalculateSpotLightShadow(float3 worldSpacePos, uint lightIndex) {
+    float bias = 0.001f;
+
+    float4 worldPosLightClipSpace = mul(g_SpotLightProjViewMatrices[lightIndex], float4(worldSpacePos, 1.0f));
+    float3 shadowCoord = worldPosLightClipSpace.xyz / worldPosLightClipSpace.w;
+    shadowCoord.x = shadowCoord.x * 0.5f + 0.5f;
+    shadowCoord.y = shadowCoord.y * -0.5f + 0.5f;
+
+    return SpotLightPCFShadowMap(shadowCoord, lightIndex, bias);
 }
 

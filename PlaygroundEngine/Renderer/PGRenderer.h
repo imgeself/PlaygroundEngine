@@ -57,8 +57,11 @@ public:
     static void SetShadowMapResolution(uint32_t shadowMapResolution) {
         s_RendererConfig.shadowMapSize = shadowMapResolution;
         PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);
-        s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, (HWTexture2D*) PGRendererResources::s_ShadowMapCascadesTexture->resource, s_RendererConfig);
+        s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, s_RendererConfig, (HWTexture2D*)PGRendererResources::s_ShadowMapCascadesTexture->resource,
+            (HWTexture2D*)PGRendererResources::s_PointLightsShadowArray->resource, (HWTexture2D*)PGRendererResources::s_SpotLightsShadowArray->resource);
         s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
+        s_SceneRenderPass.SetShaderResource(POINT_LIGHT_SHADOW_MAP_TEXTURECUBEARRAY_SLOT, PGRendererResources::s_PointLightsShadowArray->srv, ShaderStage::PIXEL);
+        s_SceneRenderPass.SetShaderResource(SPOT_LIGHT_SHADOW_MAP_TEXTURE2DARRAY_SLOT, PGRendererResources::s_SpotLightsShadowArray->srv, ShaderStage::PIXEL);
 
         RendererVariablesConstantBuffer rendererVariablesConstantBuffer = {};
         rendererVariablesConstantBuffer.g_ShadowCascadeCount = s_RendererConfig.shadowCascadeCount;
@@ -68,6 +71,16 @@ public:
         void* data = s_RendererAPI->Map(PGRendererResources::s_RendererVarsConstantBuffer);
         memcpy(data, &rendererVariablesConstantBuffer, sizeof(RendererVariablesConstantBuffer));
         s_RendererAPI->Unmap(PGRendererResources::s_RendererVarsConstantBuffer);
+    }
+
+    static void SetShadowMapDepth(bool shadowDepth32Bit) {
+        s_RendererConfig.shadowFormat32Bit = shadowDepth32Bit;
+        PGRendererResources::CreateShadowMapResources(s_RendererAPI, s_RendererConfig);
+        s_ShadowGenStage.SetShadowMapTarget(s_RendererAPI, s_RendererConfig, (HWTexture2D*)PGRendererResources::s_ShadowMapCascadesTexture->resource,
+            (HWTexture2D*)PGRendererResources::s_PointLightsShadowArray->resource, (HWTexture2D*)PGRendererResources::s_SpotLightsShadowArray->resource);
+        s_SceneRenderPass.SetShaderResource(SHADOW_MAP_TEXTURE2D_SLOT, PGRendererResources::s_ShadowMapCascadesTexture->srv, ShaderStage::PIXEL);
+        s_SceneRenderPass.SetShaderResource(POINT_LIGHT_SHADOW_MAP_TEXTURECUBEARRAY_SLOT, PGRendererResources::s_PointLightsShadowArray->srv, ShaderStage::PIXEL);
+        s_SceneRenderPass.SetShaderResource(SPOT_LIGHT_SHADOW_MAP_TEXTURE2DARRAY_SLOT, PGRendererResources::s_SpotLightsShadowArray->srv, ShaderStage::PIXEL);
     }
 
     static void SetMSAASampleCount(uint8_t sampleCount) {

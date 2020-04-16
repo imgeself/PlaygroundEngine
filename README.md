@@ -10,6 +10,7 @@ It is more like a renderer than a game engine now but I want to implement animat
 - Multisample Anti-aliasing (MSAA)
 - HDR rendering
 - Cascaded Shadow Mapping
+- Omnidirectional Shadow Mapping
 - Forward shading with Z prepass
 - Logging, Profiling, etc
 
@@ -26,8 +27,8 @@ You can just clone this repo and open the solution file in VS2019 and press F5. 
 Use WASD keys to move the camera, hold left-click and drag the mouse to rotate the camera.
 
 ### Screenshots
+![scrrenshot3](https://github.com/imgeself/PlaygroundEngine/blob/master/screenshots/screenshot3.png)
+
 ![scrrenshot1](https://github.com/imgeself/PlaygroundEngine/blob/master/screenshots/screenshot1.png)
 
 ![scrrenshot2](https://github.com/imgeself/PlaygroundEngine/blob/master/screenshots/screenshot2.png)
-
-![scrrenshot3](https://github.com/imgeself/PlaygroundEngine/blob/master/screenshots/screenshot3.png)

@@ -71,5 +71,21 @@ static void DrawPerformanceWindow() {
     }
     ImGui::End();
     PGProfileTimer::s_ProfileResults.clear();
+
+    std::vector<ProfileData> gpuProfileData;
+    PGGPUProfilerTimer::GetProfileList(PGRenderer::GetRendererAPI(), gpuProfileData);
+    std::sort(gpuProfileData.begin(), gpuProfileData.end(), CompareProfile);
+
+    std::vector<ProfileNode> gpuProfileTree;
+    for (ProfileData profileData : gpuProfileData) {
+        InsertProfileData(gpuProfileTree, profileData);
+    }
+
+    if (ImGui::Begin("GPU Performance")) {
+        DrawChildNodes(gpuProfileTree);
+    }
+    ImGui::End();
+
+
 }
 

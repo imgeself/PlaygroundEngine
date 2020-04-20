@@ -6,6 +6,7 @@
 #include "HWShaderResourceView.h"
 #include "HWSamplerState.h"
 #include "HWPipelineStates.h"
+#include "HWQuery.h"
 
 #include <vector>
 #include <string>
@@ -48,6 +49,7 @@ public:
     virtual HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName = 0) = 0;
     virtual HWUnorderedAccessView* CreateUnorderedAccessView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName = 0) = 0;
     virtual HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName = 0) = 0;
+    virtual HWQuery* CreateQuery(const HWQueryDesc& queryDesc, const char* debugName = 0) = 0;
 
     virtual HWGraphicsPipelineState* CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName = 0) = 0;
     virtual HWComputePipelineState* CreateComputePipelineState(const HWComputePipelineStateDesc& pipelineDesc, const char* debugName = 0) = 0;
@@ -87,6 +89,10 @@ public:
 
     virtual void BeginEvent(const char* eventName) = 0;
     virtual void EndEvent() = 0;
+
+    virtual void BeginQuery(HWQuery* query) = 0;
+    virtual void EndQuery(HWQuery* query) = 0;
+    virtual bool GetDataQuery(HWQuery* query, void* outData, uint32_t size, uint32_t flags) = 0;
 
     virtual size_t GetWidth() = 0;
     virtual size_t GetHeight() = 0;

@@ -9,6 +9,7 @@
 #include "DX11ShaderResourceView.h"
 #include "DX11SamplerState.h"
 #include "DX11PipelineStates.h"
+#include "DX11Query.h"
 
 #include <d3d11_4.h>
 
@@ -35,6 +36,7 @@ public:
     HWShaderResourceView* CreateShaderResourceView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) override;
     HWUnorderedAccessView* CreateUnorderedAccessView(HWTexture2D* texture, const HWResourceViewDesc& resourceViewDesc, const char* debugName) override;
     HWSamplerState* CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) override;
+    HWQuery* CreateQuery(const HWQueryDesc& queryDesc, const char* debugName = 0) override;
 
     HWGraphicsPipelineState* CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
     HWComputePipelineState* CreateComputePipelineState(const HWComputePipelineStateDesc& pipelineDesc, const char* debugName = 0) override;
@@ -74,6 +76,10 @@ public:
 
     void BeginEvent(const char* eventName) override;
     void EndEvent() override;
+
+    void BeginQuery(HWQuery* query) override;
+    void EndQuery(HWQuery* query) override;
+    bool GetDataQuery(HWQuery* query, void* outData, uint32_t size, uint32_t flags) override;
 
     ID3D11Device* GetDX11Device() { return m_Device; }
     ID3D11DeviceContext* GetDX11DeviceContext() { return m_DeviceContext; }

@@ -196,10 +196,14 @@ HWUnorderedAccessView* DX11RendererAPI::CreateUnorderedAccessView(HWTexture2D* t
     return new DX11UnorderedAccessView(m_Device, dxTexture2D->GetDXTexture2D(), resourceViewDesc, debugName);
 }
 
-
 HWSamplerState* DX11RendererAPI::CreateSamplerState(SamplerStateInitParams* initParams, const char* debugName) {
     return new DX11SamplerState(m_Device, initParams, debugName);
 }
+
+HWQuery* DX11RendererAPI::CreateQuery(const HWQueryDesc& queryDesc, const char* debugName) {
+    return new DX11Query(m_Device, queryDesc, debugName);
+}
+
 
 HWGraphicsPipelineState* DX11RendererAPI::CreateGraphicsPipelineState(const HWGraphicsPipelineStateDesc& pipelineDesc, const char* debugName) {
     return new DX11GraphicsPipelineState(m_Device, pipelineDesc, debugName);
@@ -473,5 +477,21 @@ void DX11RendererAPI::BeginEvent(const char* eventName) {
 
 void DX11RendererAPI::EndEvent() {
     m_UserDefinedAnnotation->EndEvent();
+}
+
+void DX11RendererAPI::BeginQuery(HWQuery* query) {
+    DX11Query* dx11Query = (DX11Query*) query;
+    m_DeviceContext->Begin(dx11Query->GetDXQuery());
+}
+
+void DX11RendererAPI::EndQuery(HWQuery* query) {
+    DX11Query* dx11Query = (DX11Query*) query;
+    m_DeviceContext->End(dx11Query->GetDXQuery());
+}
+
+bool DX11RendererAPI::GetDataQuery(HWQuery* query, void* outData, uint32_t size, uint32_t flags) {
+    DX11Query* dx11Query = (DX11Query*) query;
+    HRESULT result = m_DeviceContext->GetData(dx11Query->GetDXQuery(), outData, size, flags);
+    return result == S_OK;
 }
 

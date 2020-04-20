@@ -233,6 +233,7 @@
     <ClCompile Include="Platform\Win32\PGWindowWin32.cpp" />
     <ClCompile Include="Renderer\DX11\DX11Buffer.cpp" />
     <ClCompile Include="Renderer\DX11\DX11PipelineStates.cpp" />
+    <ClCompile Include="Renderer\DX11\DX11Query.cpp" />
     <ClCompile Include="Renderer\DX11\DX11RendererAPI.cpp" />
     <ClCompile Include="Renderer\DX11\DX11RenderTargets.cpp" />
     <ClCompile Include="Renderer\DX11\DX11SamplerState.cpp" />
@@ -287,6 +288,7 @@
     <ClInclude Include="Renderer\BaseRenderPass.h" />
     <ClInclude Include="Renderer\DX11\DX11Buffer.h" />
     <ClInclude Include="Renderer\DX11\DX11PipelineStates.h" />
+    <ClInclude Include="Renderer\DX11\DX11Query.h" />
     <ClInclude Include="Renderer\DX11\DX11RendererAPI.h" />
     <ClInclude Include="Renderer\DX11\DX11RenderTargets.h" />
     <ClInclude Include="Renderer\DX11\DX11SamplerState.h" />
@@ -294,6 +296,7 @@
     <ClInclude Include="Renderer\DX11\DX11Texture2D.h" />
     <ClInclude Include="Renderer\FullscreenPass.h" />
     <ClInclude Include="Renderer\HWPipelineStates.h" />
+    <ClInclude Include="Renderer\HWQuery.h" />
     <ClInclude Include="Renderer\HWRenderTarget.h" />
     <ClInclude Include="Renderer\HWResource.h" />
     <ClInclude Include="Renderer\HWSamplerState.h" />

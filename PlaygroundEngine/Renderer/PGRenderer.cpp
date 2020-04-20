@@ -72,6 +72,7 @@ Skybox* g_SkyboxRenderer = nullptr;
 
 void PGRenderer::Destroy() {
     PGRendererResources::ClearResources();
+    PGGPUProfilerTimer::Destroy();
 
     SAFE_DELETE(g_SkyboxRenderer);
     SAFE_DELETE(g_DebugSceneRenderer);
@@ -370,6 +371,8 @@ bool PGRenderer::Initialize(PGWindow* window) {
     g_SkyboxRenderer = new Skybox(s_RendererAPI, s_ShaderLib);
     g_DebugSceneRenderer = new DebugSceneRenderer(s_RendererAPI, s_ShaderLib, s_RendererConfig);
 
+    PGGPUProfilerTimer::Initialize(s_RendererAPI);
+
     return true;
 }
 
@@ -408,6 +411,8 @@ void PGRenderer::BeginFrame() {
 void PGRenderer::RenderFrame() {
     s_ShaderLib->ReloadShadersIfNeeded();
     PGRendererResources::UpdateShaders(s_RendererAPI);
+
+    PGGPUProfilerTimer::BeginFrame(s_RendererAPI);
 
     PGCamera* mainCamera = s_ActiveSceneData->camera;
     Matrix4 pvMatrix = mainCamera->GetProjectionViewMatrix();
@@ -530,11 +535,13 @@ void PGRenderer::RenderFrame() {
     mainRenderView.renderList->SortByDepth();
     {
         PG_PROFILE_SCOPE("Z Prepass");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Z Prepass");
         s_SceneZPrePass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::DEPTH_PASS, true, "Z PREPASS");
     }
 
     {
         PG_PROFILE_SCOPE("Direction light shadow gen");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Direction light shadow gen");
         s_ShadowGenStage.Execute(s_RendererAPI, shadowCascadeRenderViews, s_RendererConfig);
     }
 
@@ -544,6 +551,7 @@ void PGRenderer::RenderFrame() {
     shadowRenderView.renderList = &shadowRenderList;
     {
         PG_PROFILE_SCOPE("Point light shadow gen");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Point light shadow gen");
         for (size_t pointLightIndex = 0; pointLightIndex < std::min(pointLights.size(), (size_t)MAX_POINT_LIGHT_COUNT); ++pointLightIndex) {
             PGPointLight& pointLight = pointLights[pointLightIndex];
             for (size_t cubeMapIndex = 0; cubeMapIndex < 6; ++cubeMapIndex) {
@@ -567,6 +575,7 @@ void PGRenderer::RenderFrame() {
     // Spot light shadows
     {
         PG_PROFILE_SCOPE("Spot light shadow gen");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Spot light shadow gen");
         for (size_t spotLightIndex = 0; spotLightIndex < std::min(spotLights.size(), (size_t)MAX_SPOT_LIGHT_COUNT); ++spotLightIndex) {
             PGSpotLight& spotLight = spotLights[spotLightIndex];
             Matrix4& projViewMatrix = spotLightProjViewMatrices[spotLightIndex];
@@ -588,6 +597,7 @@ void PGRenderer::RenderFrame() {
     mainRenderView.renderList->SortByKey();
     {
         PG_PROFILE_SCOPE("Forward Pass");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Forward Pass");
         s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false, "FORWARD OPAQUE");
     }
 
@@ -596,15 +606,17 @@ void PGRenderer::RenderFrame() {
         g_SkyboxRenderer->RenderSkybox(s_RendererAPI, s_ActiveSceneData->skyboxTexture);
     }
 
-    transparentRenderList.SortByReverseDepth();
-    mainRenderView.renderList = &transparentRenderList;
-    {
+    if (transparentRenderList.elementCount > 0) {
         PG_PROFILE_SCOPE("Forward Transparent Pass");
+        transparentRenderList.SortByReverseDepth();
+        mainRenderView.renderList = &transparentRenderList;
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Forward Transparent Pass");
         s_SceneRenderPass.Execute(s_RendererAPI, mainRenderView, SceneRenderPassType::FORWARD, false, "FORWARD TRANSPARENT");
     }
 
     if (s_RendererConfig.debugDrawBoundingBoxes) {
         PG_PROFILE_SCOPE("Debug Rendering");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Debug Rendering");
         g_DebugSceneRenderer->Execute(s_RendererAPI, &opaqueRenderList);
         g_DebugSceneRenderer->Execute(s_RendererAPI, &transparentRenderList);
     }
@@ -616,6 +628,7 @@ void PGRenderer::RenderFrame() {
     // PostProcess
     {
         PG_PROFILE_SCOPE("Tone Mapping");
+        PG_GPU_PROFILE_SCOPE(s_RendererAPI, "Tone Mapping");
         s_ToneMappingPass.Execute(s_RendererAPI, false, "TONEMAPPING");
     }
 
@@ -623,6 +636,8 @@ void PGRenderer::RenderFrame() {
     // Clear all texture slots
     HWShaderResourceView* nullView[16] = { 0 };
     s_RendererAPI->SetShaderResourcesPS(0, nullView, ARRAYSIZE(nullView));
+
+    PGGPUProfilerTimer::EndFrame(s_RendererAPI);
 }
 
 void PGRenderer::EndFrame() {
